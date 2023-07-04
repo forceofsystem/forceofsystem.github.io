@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://example.com/2023/06/24/%E8%81%8A%E8%81%8A%E6%9C%80%E8%BF%91/</loc>
+    <loc>https://www.forceoflife.cn/2023/06/24/%E8%81%8A%E8%81%8A%E6%9C%80%E8%BF%91/</loc>
     
     <lastmod>2023-07-02</lastmod>
     
@@ -11,7 +11,7 @@
   </url>
   
   <url>
-    <loc>http://example.com/2023/07/02/%E7%BB%86%E8%AF%BB%E3%80%8A%E6%88%91%E4%B8%8E%E5%9C%B0%E5%9D%9B%E3%80%8B/</loc>
+    <loc>https://www.forceoflife.cn/2023/07/02/%E7%BB%86%E8%AF%BB%E3%80%8A%E6%88%91%E4%B8%8E%E5%9C%B0%E5%9D%9B%E3%80%8B/</loc>
     
     <lastmod>2023-07-02</lastmod>
     
@@ -20,7 +20,7 @@
   </url>
   
   <url>
-    <loc>http://example.com/2023/05/02/%E6%AD%A6%E6%B1%89%E6%B8%B8%E8%AE%B0/</loc>
+    <loc>https://www.forceoflife.cn/2023/05/02/%E6%AD%A6%E6%B1%89%E6%B8%B8%E8%AE%B0/</loc>
     
     <lastmod>2023-07-02</lastmod>
     
@@ -29,7 +29,7 @@
   </url>
   
   <url>
-    <loc>http://example.com/2023/05/31/%E6%96%87%E8%8B%91%E6%9D%82%E8%B0%88%EF%BC%88%E4%B8%80%EF%BC%89/</loc>
+    <loc>https://www.forceoflife.cn/2023/05/31/%E6%96%87%E8%8B%91%E6%9D%82%E8%B0%88%EF%BC%88%E4%B8%80%EF%BC%89/</loc>
     
     <lastmod>2023-07-02</lastmod>
     
@@ -38,7 +38,7 @@
   </url>
   
   <url>
-    <loc>http://example.com/2023/06/28/%E5%9C%A8Mac%E4%B8%8A%E9%85%8D%E7%BD%AEHaskell%E7%8E%AF%E5%A2%83/</loc>
+    <loc>https://www.forceoflife.cn/2023/06/28/%E5%9C%A8Mac%E4%B8%8A%E9%85%8D%E7%BD%AEHaskell%E7%8E%AF%E5%A2%83/</loc>
     
     <lastmod>2023-07-01</lastmod>
     
@@ -47,7 +47,7 @@
   </url>
   
   <url>
-    <loc>http://example.com/2023/06/30/%E6%88%91%E5%9C%A8%E5%81%9A%E4%BB%80%E4%B9%88-%E6%9C%AA%E6%9D%A5%E6%88%91%E8%A6%81%E5%81%9A%E4%BB%80%E4%B9%88/</loc>
+    <loc>https://www.forceoflife.cn/2023/06/30/%E6%88%91%E5%9C%A8%E5%81%9A%E4%BB%80%E4%B9%88-%E6%9C%AA%E6%9D%A5%E6%88%91%E8%A6%81%E5%81%9A%E4%BB%80%E4%B9%88/</loc>
     
     <lastmod>2023-06-30</lastmod>
     
@@ -56,7 +56,7 @@
   </url>
   
   <url>
-    <loc>http://example.com/2023/06/07/%E5%9C%A8%E5%B7%9D%E5%A4%A7%E8%BD%AF%E4%BB%B6%E5%AD%A6%E9%99%A2%E4%B8%A4%E5%B9%B4%E5%90%8E/</loc>
+    <loc>https://www.forceoflife.cn/2023/06/07/%E5%9C%A8%E5%B7%9D%E5%A4%A7%E8%BD%AF%E4%BB%B6%E5%AD%A6%E9%99%A2%E4%B8%A4%E5%B9%B4%E5%90%8E/</loc>
     
     <lastmod>2023-06-19</lastmod>
     
@@ -65,7 +65,7 @@
   </url>
   
   <url>
-    <loc>http://example.com/2023/05/31/Neovim-%E9%85%8D%E7%BD%AE%EF%BC%9A%E4%BB%8E-Vimscript-%E5%88%B0-Lua/</loc>
+    <loc>https://www.forceoflife.cn/2023/05/31/Neovim-%E9%85%8D%E7%BD%AE%EF%BC%9A%E4%BB%8E-Vimscript-%E5%88%B0-Lua/</loc>
     
     <lastmod>2023-05-31</lastmod>
     
@@ -75,7 +75,7 @@
   
 
   <url>
-    <loc>http://example.com/</loc>
+    <loc>https://www.forceoflife.cn/</loc>
     <lastmod>2023-07-04</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
@@ -83,42 +83,42 @@
 
   
   <url>
-    <loc>http://example.com/tags/%E6%8A%80%E6%9C%AF/</loc>
+    <loc>https://www.forceoflife.cn/tags/%E6%8A%80%E6%9C%AF/</loc>
     <lastmod>2023-07-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>http://example.com/tags/Haskell/</loc>
+    <loc>https://www.forceoflife.cn/tags/Haskell/</loc>
     <lastmod>2023-07-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>http://example.com/tags/%E6%9D%82%E8%B0%88/</loc>
+    <loc>https://www.forceoflife.cn/tags/%E6%9D%82%E8%B0%88/</loc>
     <lastmod>2023-07-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>http://example.com/tags/%E7%94%9F%E6%B4%BB/</loc>
+    <loc>https://www.forceoflife.cn/tags/%E7%94%9F%E6%B4%BB/</loc>
     <lastmod>2023-07-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>http://example.com/tags/%E6%96%87%E5%AD%A6/</loc>
+    <loc>https://www.forceoflife.cn/tags/%E6%96%87%E5%AD%A6/</loc>
     <lastmod>2023-07-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>http://example.com/tags/%E6%95%A3%E6%96%87/</loc>
+    <loc>https://www.forceoflife.cn/tags/%E6%95%A3%E6%96%87/</loc>
     <lastmod>2023-07-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
