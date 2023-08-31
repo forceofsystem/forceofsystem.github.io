@@ -1,5 +1,9 @@
 body {
-  background-image: url("https://cdn.jsdelivr.net/gh/zzxdyf1314/mycloudimg@master/firedcloud.jpg");
+  background: url("https://cdn.jsdelivr.net/gh/zzxdyf1314/mycloudimg@master/firedcloud.jpg");
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 @-moz-keyframes spinAround {
   from {
