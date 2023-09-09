@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Haskell on 为生活</title>
-    <link>forceofsystem.github.io/tags/haskell/</link>
+    <link>https://forceofsystem.github.io/tags/haskell/</link>
     <description>Recent content in Haskell on 为生活</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 28 Jun 2023 18:10:03 +0800</lastBuildDate><atom:link href="forceofsystem.github.io/tags/haskell/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 28 Jun 2023 18:10:03 +0800</lastBuildDate><atom:link href="https://forceofsystem.github.io/tags/haskell/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>在Mac上配置Haskell环境</title>
-      <link>forceofsystem.github.io/blog/2023-06-28-%E5%9C%A8mac%E4%B8%8A%E9%85%8D%E7%BD%AEhaskell%E7%8E%AF%E5%A2%83/</link>
+      <link>https://forceofsystem.github.io/blog/2023-06-28-%E5%9C%A8mac%E4%B8%8A%E9%85%8D%E7%BD%AEhaskell%E7%8E%AF%E5%A2%83/</link>
       <pubDate>Wed, 28 Jun 2023 18:10:03 +0800</pubDate>
       
-      <guid>forceofsystem.github.io/blog/2023-06-28-%E5%9C%A8mac%E4%B8%8A%E9%85%8D%E7%BD%AEhaskell%E7%8E%AF%E5%A2%83/</guid>
+      <guid>https://forceofsystem.github.io/blog/2023-06-28-%E5%9C%A8mac%E4%B8%8A%E9%85%8D%E7%BD%AEhaskell%E7%8E%AF%E5%A2%83/</guid>
       <description>&lt;blockquote&gt;
 &lt;p&gt;这篇博客将介绍如何在&lt;strong&gt;中国&lt;/strong&gt;安装、配置 Mac 的 Haskell 环境和编辑器的高亮、补全，其中编辑器包括 Vim/Neovim、Visual Studio Code。&lt;/p&gt;
 &lt;/blockquote&gt;</description>

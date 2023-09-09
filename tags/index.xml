@@ -2,98 +2,98 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Tags on 为生活</title>
-    <link>forceofsystem.github.io/tags/</link>
+    <link>https://forceofsystem.github.io/tags/</link>
     <description>Recent content in Tags on 为生活</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sat, 09 Sep 2023 16:30:25 +0800</lastBuildDate><atom:link href="forceofsystem.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 09 Sep 2023 16:30:25 +0800</lastBuildDate><atom:link href="https://forceofsystem.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>hugo</title>
-      <link>forceofsystem.github.io/tags/hugo/</link>
+      <link>https://forceofsystem.github.io/tags/hugo/</link>
       <pubDate>Sat, 09 Sep 2023 16:30:25 +0800</pubDate>
       
-      <guid>forceofsystem.github.io/tags/hugo/</guid>
+      <guid>https://forceofsystem.github.io/tags/hugo/</guid>
       <description></description>
     </item>
     
     <item>
       <title>博客</title>
-      <link>forceofsystem.github.io/tags/%E5%8D%9A%E5%AE%A2/</link>
+      <link>https://forceofsystem.github.io/tags/%E5%8D%9A%E5%AE%A2/</link>
       <pubDate>Sat, 09 Sep 2023 16:30:25 +0800</pubDate>
       
-      <guid>forceofsystem.github.io/tags/%E5%8D%9A%E5%AE%A2/</guid>
+      <guid>https://forceofsystem.github.io/tags/%E5%8D%9A%E5%AE%A2/</guid>
       <description></description>
     </item>
     
     <item>
       <title>生活</title>
-      <link>forceofsystem.github.io/tags/%E7%94%9F%E6%B4%BB/</link>
+      <link>https://forceofsystem.github.io/tags/%E7%94%9F%E6%B4%BB/</link>
       <pubDate>Thu, 03 Aug 2023 00:22:41 +0800</pubDate>
       
-      <guid>forceofsystem.github.io/tags/%E7%94%9F%E6%B4%BB/</guid>
+      <guid>https://forceofsystem.github.io/tags/%E7%94%9F%E6%B4%BB/</guid>
       <description></description>
     </item>
     
     <item>
       <title>史铁生</title>
-      <link>forceofsystem.github.io/tags/%E5%8F%B2%E9%93%81%E7%94%9F/</link>
+      <link>https://forceofsystem.github.io/tags/%E5%8F%B2%E9%93%81%E7%94%9F/</link>
       <pubDate>Sun, 02 Jul 2023 15:42:25 +0800</pubDate>
       
-      <guid>forceofsystem.github.io/tags/%E5%8F%B2%E9%93%81%E7%94%9F/</guid>
+      <guid>https://forceofsystem.github.io/tags/%E5%8F%B2%E9%93%81%E7%94%9F/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Haskell</title>
-      <link>forceofsystem.github.io/tags/haskell/</link>
+      <link>https://forceofsystem.github.io/tags/haskell/</link>
       <pubDate>Wed, 28 Jun 2023 18:10:03 +0800</pubDate>
       
-      <guid>forceofsystem.github.io/tags/haskell/</guid>
+      <guid>https://forceofsystem.github.io/tags/haskell/</guid>
       <description></description>
     </item>
     
     <item>
       <title>技术</title>
-      <link>forceofsystem.github.io/tags/%E6%8A%80%E6%9C%AF/</link>
+      <link>https://forceofsystem.github.io/tags/%E6%8A%80%E6%9C%AF/</link>
       <pubDate>Wed, 28 Jun 2023 18:10:03 +0800</pubDate>
       
-      <guid>forceofsystem.github.io/tags/%E6%8A%80%E6%9C%AF/</guid>
+      <guid>https://forceofsystem.github.io/tags/%E6%8A%80%E6%9C%AF/</guid>
       <description></description>
     </item>
     
     <item>
       <title>学校</title>
-      <link>forceofsystem.github.io/tags/%E5%AD%A6%E6%A0%A1/</link>
+      <link>https://forceofsystem.github.io/tags/%E5%AD%A6%E6%A0%A1/</link>
       <pubDate>Sat, 24 Jun 2023 00:51:59 +0800</pubDate>
       
-      <guid>forceofsystem.github.io/tags/%E5%AD%A6%E6%A0%A1/</guid>
+      <guid>https://forceofsystem.github.io/tags/%E5%AD%A6%E6%A0%A1/</guid>
       <description></description>
     </item>
     
     <item>
       <title>文学</title>
-      <link>forceofsystem.github.io/tags/%E6%96%87%E5%AD%A6/</link>
+      <link>https://forceofsystem.github.io/tags/%E6%96%87%E5%AD%A6/</link>
       <pubDate>Wed, 31 May 2023 18:06:33 +0800</pubDate>
       
-      <guid>forceofsystem.github.io/tags/%E6%96%87%E5%AD%A6/</guid>
+      <guid>https://forceofsystem.github.io/tags/%E6%96%87%E5%AD%A6/</guid>
       <description></description>
     </item>
     
     <item>
       <title>杂谈</title>
-      <link>forceofsystem.github.io/tags/%E6%9D%82%E8%B0%88/</link>
+      <link>https://forceofsystem.github.io/tags/%E6%9D%82%E8%B0%88/</link>
       <pubDate>Wed, 31 May 2023 18:06:33 +0800</pubDate>
       
-      <guid>forceofsystem.github.io/tags/%E6%9D%82%E8%B0%88/</guid>
+      <guid>https://forceofsystem.github.io/tags/%E6%9D%82%E8%B0%88/</guid>
       <description></description>
     </item>
     
     <item>
       <title>散文</title>
-      <link>forceofsystem.github.io/tags/%E6%95%A3%E6%96%87/</link>
+      <link>https://forceofsystem.github.io/tags/%E6%95%A3%E6%96%87/</link>
       <pubDate>Tue, 02 May 2023 16:44:49 +0800</pubDate>
       
-      <guid>forceofsystem.github.io/tags/%E6%95%A3%E6%96%87/</guid>
+      <guid>https://forceofsystem.github.io/tags/%E6%95%A3%E6%96%87/</guid>
       <description></description>
     </item>
     
