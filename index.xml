@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>为生活</title>
+    <link>https://forceoflife.cn/</link>
+    <description>Recent content on 为生活</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Sat, 09 Sep 2023 17:09:20 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>个人简介</title>
+      <link>https://forceoflife.cn/about/</link>
+      <pubDate>Sat, 09 Sep 2023 17:09:20 +0800</pubDate>
+      
+      <guid>https://forceoflife.cn/about/</guid>
+      <description>我是生活之力</description>
+    </item>
+    
+    <item>
+      <title>书籍推荐</title>
+      <link>https://forceoflife.cn/book/</link>
+      <pubDate>Sat, 09 Sep 2023 17:09:20 +0800</pubDate>
+      
+      <guid>https://forceoflife.cn/book/</guid>
+      <description>技术书籍 文学书籍 社科书籍 </description>
+    </item>
+    
+  </channel>
+</rss>
