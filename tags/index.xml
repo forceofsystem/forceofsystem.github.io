@@ -6,7 +6,25 @@
     <description>Recent content in Tags on 为生活</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 20 Sep 2023 01:14:05 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 15 Oct 2023 22:10:05 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>tag1</title>
+      <link>https://forceoflife.cn/tags/tag1/</link>
+      <pubDate>Sun, 15 Oct 2023 22:10:05 +0800</pubDate>
+      
+      <guid>https://forceoflife.cn/tags/tag1/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>tag2</title>
+      <link>https://forceoflife.cn/tags/tag2/</link>
+      <pubDate>Sun, 15 Oct 2023 22:10:05 +0800</pubDate>
+      
+      <guid>https://forceoflife.cn/tags/tag2/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>大学</title>
       <link>https://forceoflife.cn/tags/%E5%A4%A7%E5%AD%A6/</link>
