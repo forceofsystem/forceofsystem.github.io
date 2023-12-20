@@ -6,96 +6,77 @@
     <description>Recent content in Categories on 为生活</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 08 Nov 2023 11:31:10 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/categories/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 08 Nov 2023 11:31:10 +0800</lastBuildDate>
+    <atom:link href="https://forceoflife.cn/categories/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>生活</title>
       <link>https://forceoflife.cn/categories/%E7%94%9F%E6%B4%BB/</link>
       <pubDate>Wed, 08 Nov 2023 11:31:10 +0800</pubDate>
-      
       <guid>https://forceoflife.cn/categories/%E7%94%9F%E6%B4%BB/</guid>
       <description></description>
     </item>
-    
     <item>
       <title>围炉夜话</title>
       <link>https://forceoflife.cn/categories/%E5%9B%B4%E7%82%89%E5%A4%9C%E8%AF%9D/</link>
       <pubDate>Sun, 29 Oct 2023 07:32:15 +0800</pubDate>
-      
       <guid>https://forceoflife.cn/categories/%E5%9B%B4%E7%82%89%E5%A4%9C%E8%AF%9D/</guid>
       <description></description>
     </item>
-    
     <item>
       <title>日记</title>
       <link>https://forceoflife.cn/categories/%E6%97%A5%E8%AE%B0/</link>
       <pubDate>Sun, 15 Oct 2023 22:10:05 +0800</pubDate>
-      
       <guid>https://forceoflife.cn/categories/%E6%97%A5%E8%AE%B0/</guid>
       <description></description>
     </item>
-    
     <item>
       <title>杂谈</title>
       <link>https://forceoflife.cn/categories/%E6%9D%82%E8%B0%88/</link>
       <pubDate>Sun, 15 Oct 2023 22:10:05 +0800</pubDate>
-      
       <guid>https://forceoflife.cn/categories/%E6%9D%82%E8%B0%88/</guid>
       <description></description>
     </item>
-    
     <item>
       <title>社科</title>
       <link>https://forceoflife.cn/categories/%E7%A4%BE%E7%A7%91/</link>
       <pubDate>Wed, 20 Sep 2023 01:14:05 +0800</pubDate>
-      
       <guid>https://forceoflife.cn/categories/%E7%A4%BE%E7%A7%91/</guid>
       <description></description>
     </item>
-    
     <item>
       <title>人文</title>
       <link>https://forceoflife.cn/categories/%E4%BA%BA%E6%96%87/</link>
       <pubDate>Tue, 19 Sep 2023 08:21:50 +0800</pubDate>
-      
       <guid>https://forceoflife.cn/categories/%E4%BA%BA%E6%96%87/</guid>
       <description></description>
     </item>
-    
     <item>
       <title>其他技术</title>
       <link>https://forceoflife.cn/categories/%E5%85%B6%E4%BB%96%E6%8A%80%E6%9C%AF/</link>
       <pubDate>Sat, 09 Sep 2023 16:30:25 +0800</pubDate>
-      
       <guid>https://forceoflife.cn/categories/%E5%85%B6%E4%BB%96%E6%8A%80%E6%9C%AF/</guid>
       <description></description>
     </item>
-    
     <item>
       <title>文学</title>
       <link>https://forceoflife.cn/categories/%E6%96%87%E5%AD%A6/</link>
       <pubDate>Sun, 02 Jul 2023 15:42:25 +0800</pubDate>
-      
       <guid>https://forceoflife.cn/categories/%E6%96%87%E5%AD%A6/</guid>
       <description></description>
     </item>
-    
     <item>
       <title>环境搭建</title>
       <link>https://forceoflife.cn/categories/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</link>
       <pubDate>Wed, 28 Jun 2023 18:10:03 +0800</pubDate>
-      
       <guid>https://forceoflife.cn/categories/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</guid>
       <description></description>
     </item>
-    
     <item>
       <title>旅行</title>
       <link>https://forceoflife.cn/categories/%E6%97%85%E8%A1%8C/</link>
       <pubDate>Tue, 02 May 2023 16:44:49 +0800</pubDate>
-      
       <guid>https://forceoflife.cn/categories/%E6%97%85%E8%A1%8C/</guid>
       <description></description>
     </item>
-    
   </channel>
 </rss>
