@@ -5,22 +5,65 @@
     <link>https://forceoflife.cn/page/</link>
     <description>Recent content in Pages on 为生活</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>zh-cn</language>
-    <lastBuildDate>Sat, 09 Sep 2023 17:09:20 +0800</lastBuildDate>
-    <atom:link href="https://forceoflife.cn/page/index.xml" rel="self" type="application/rss+xml" />
+    <language>zh</language>
+    <managingEditor>Zhixiao-Zhang@outlook.com (Patrick)</managingEditor>
+    <webMaster>Zhixiao-Zhang@outlook.com (Patrick)</webMaster>
+    <lastBuildDate>Sat, 09 Sep 2023 17:09:20 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/page/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>个人简介</title>
       <link>https://forceoflife.cn/about/</link>
       <pubDate>Sat, 09 Sep 2023 17:09:20 +0800</pubDate>
+      <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
       <guid>https://forceoflife.cn/about/</guid>
-      <description>我是生活之力，一个热爱生活、文学和计算机底层的内蒙古人。&#xA;志趣简介 我热爱生活，但对生活的看法经常改变。时而认为安稳是美好，时而认为浪漫是美好；时而想在家乡小城市待一辈子，时而想去外面的世界闯荡一番。&#xA;我最喜欢的节日是春节，最喜欢的音乐是《春节序曲》，关于这部分内容我会写几篇文章来分享。&#xA;截至目前，我的目标是：赚够足够的资本，回到家乡小城生活。（如果你问我关于婚姻和孩子的问题，我只能说，还没想好）&#xA;（未完待续……）&#xA;环境简介 作为一个喜欢底层的计算机科班生，还是有必要介绍一下我的环境的。&#xA;我目前有两台电脑，一台 Macbook Air M1，一台二手的 ThinkPad T480（用来提供 x86-64 环境）。&#xA;我最喜欢的 PC 操作系统是 Mac OS，其次是 Linux，之后才是 Windows。喜欢 Mac OS 的原因是我喜欢它的动画、UI 设计等与计算机无关的东西（哈哈，有点冷幽默），它让我很有生活的感觉；喜欢 Linux 是因为它高度可定制，而且写代码配置环境很方便，而且对系统有很高的掌控程度，但是 Linux 不太稳定，需要经常折腾（也许是我爱折腾罢），Mac OS 与之相比就要省心很多；对于 Windows，说实话它并没有多少让我喜欢的点，只是很多软件都只能跑在 Windows 上，而且相对 Linux 来说它也不需要太多配置，并且从小一直用到现在。我并不是很讨厌 Windows，毕竟我偶尔也会玩玩游戏，做反汇编也需要 ida，只是 Windows 并没有足够的特色让我喜欢它。Windows 是 mac 和 Linux 的中间值，既不像 mac 一样非常稳定，对用户的限制非常多且细；也不像 Linux 一样任由用户去操作，有时这很方便，但也有很多时候令人抓狂。&#xA;最喜欢的 Linux 发行版是 Gentoo Linux，现在在用的是 Debian Linux。之所以不用 Gentoo，是因为它安装软件都要编译，笔记本吃不消，而且我对 Gentoo 的了解也不够深，没有办法很好地使用。用 Debian 的主要原因是它足够省事，同时也能提供很好的体验，软件版本也刚好。&#xA;使用的桌面环境是 Wayland 环境下的 gnome，最大的原因是 gnome-terminal 对 fcitx5 支持的不错，而且颜值也还可以。</description>
+      
+      <description>&lt;p&gt;我是生活之力，一个热爱生活、文学和计算机底层的内蒙古人。&lt;/p&gt;
+&lt;h2 id=&#34;志趣简介&#34;&gt;志趣简介&lt;/h2&gt;
+&lt;p&gt;我热爱生活，但对生活的看法经常改变。时而认为安稳是美好，时而认为浪漫是美好；时而想在家乡小城市待一辈子，时而想去外面的世界闯荡一番。&lt;/p&gt;
+&lt;p&gt;我最喜欢的节日是春节，最喜欢的音乐是《春节序曲》，关于这部分内容我会写几篇文章来分享。&lt;/p&gt;
+&lt;p&gt;截至目前，我的目标是：赚够足够的资本，回到家乡小城生活。（如果你问我关于婚姻和孩子的问题，我只能说，还没想好）&lt;/p&gt;
+&lt;p&gt;（未完待续……）&lt;/p&gt;
+&lt;h2 id=&#34;环境简介&#34;&gt;环境简介&lt;/h2&gt;
+&lt;p&gt;作为一个喜欢底层的计算机科班生，还是有必要介绍一下我的环境的。&lt;/p&gt;
+&lt;p&gt;我目前有两台电脑，一台 Macbook Air M1，一台二手的 ThinkPad T480（用来提供 x86-64 环境）。&lt;/p&gt;
+&lt;p&gt;我最喜欢的 PC 操作系统是 Mac OS，其次是 Linux，之后才是 Windows。喜欢 Mac OS 的原因是我喜欢它的动画、UI 设计等与计算机无关的东西（&lt;del&gt;哈哈，有点冷幽默&lt;/del&gt;），它让我很有生活的感觉；喜欢 Linux 是因为它高度可定制，而且写代码配置环境很方便，而且对系统有很高的掌控程度，但是 Linux 不太稳定，需要经常折腾（也许是我爱折腾罢），Mac OS 与之相比就要省心很多；对于 Windows，说实话它并没有多少让我喜欢的点，只是很多软件都只能跑在 Windows 上，而且相对 Linux 来说它也不需要太多配置，并且从小一直用到现在。我并不是很讨厌 Windows，毕竟我偶尔也会玩玩游戏，做反汇编也需要 ida，只是 Windows 并没有足够的特色让我喜欢它。Windows 是 mac 和 Linux 的中间值，既不像 mac 一样非常稳定，对用户的限制非常多且细；也不像 Linux 一样任由用户去操作，有时这很方便，但也有很多时候令人抓狂。&lt;/p&gt;
+&lt;p&gt;最喜欢的 Linux 发行版是 Gentoo Linux，现在在用的是 Debian Linux。之所以不用 Gentoo，是因为它安装软件都要编译，笔记本吃不消，而且我对 Gentoo 的了解也不够深，没有办法很好地使用。用 Debian 的主要原因是它足够省事，同时也能提供很好的体验，软件版本也刚好。&lt;/p&gt;
+&lt;p&gt;使用的桌面环境是 Wayland 环境下的 gnome，最大的原因是 gnome-terminal 对 fcitx5 支持的不错，而且颜值也还可以。&lt;/p&gt;
+&lt;p&gt;常用的浏览器是 Safari，没啥特别的原因，mac 默认；在 Linux 上用 Firefox，支持开源。&lt;/p&gt;
+&lt;h2 id=&#34;个人履历&#34;&gt;个人履历&lt;/h2&gt;
+&lt;h3 id=&#34;2021-至今&#34;&gt;2021 至今&lt;/h3&gt;
+&lt;p&gt;我是 2021 年完成高考的大学本科生，就读于四川大学软件学院软件工程专业。&lt;/p&gt;
+&lt;p&gt;（未完待续……）&lt;/p&gt;
+</description>
+      
     </item>
+    
     <item>
       <title>书籍推荐</title>
       <link>https://forceoflife.cn/book/</link>
       <pubDate>Sat, 09 Sep 2023 17:09:20 +0800</pubDate>
+      <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
       <guid>https://forceoflife.cn/book/</guid>
-      <description>我并不会在这里推荐很多书，只会推荐几本对我影响很深的书，并附上推荐理由。 对于大多数书籍，我会在读完后写一篇博文来分享，只有真正令我震撼的书才会出现在这个榜单之中。&#xA;技术书籍 文学书籍 社科书籍 《优秀的绵羊》 优秀的绵羊-豆瓣&#xA;推荐对象 还在上学的大学生。&#xA;推荐理由 这是一本关于美国精英教育的书籍，但不只是一本关于精英教育的书，里面的很多内容对当前国内的大学生也很有启发。&#xA;这本书的前一部分，主要是在讲作为一个大学生，我们需要什么，我们应该要在大学里做什么，获取什么。如果你刚结束高考，说实话我并不推荐你马上看这本书，因为里面的内容在你看来可能非常滑稽，我推荐你在上大学一个月或者说两个月后再看这本书。&#xA;这本书的第二部分，主要是在讲大学的老师应该做什么？我在看到这部分内容时已经大二下学期了，换句话说，我已经对大学中的一切都相当了解。这两年里，我一直很困惑，困惑于为什么我们学校的老师对教学如此之不在意。当我看到这部分时，我对这个现象产生了全新的理解，至于具体是什么理解，还需要你去探索。&#xA;本书的第三部分，讲了美国精英教育的失败，以及应该如何挽救这“失败”的精英教育。实话说，当时读到这里还是很惊讶的，以人才辈出著称于世界的美国，精英教育居然是失败的。也是在这里，作者讲了他所理解的精英教育，或者说美国人真正需要的精英教育是什么样子的。我不是美国人，我对美国未来的发展也没那么感兴趣，只是在看这本书时，我惊奇地发现里面所描述的一些问题，中国当下也同样存在，这就不得不引人思考了。&#xA;总而言之，我认为这是一本作为大学生所必读的书，故列于此处，献与诸君。</description>
+      
+      <description>&lt;blockquote&gt;
+&lt;p&gt;我并不会在这里推荐很多书，只会推荐几本对我影响很深的书，并附上推荐理由。
+对于大多数书籍，我会在读完后写一篇博文来分享，只有真正令我震撼的书才会出现在这个榜单之中。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;技术书籍&#34;&gt;技术书籍&lt;/h2&gt;
+&lt;h2 id=&#34;文学书籍&#34;&gt;文学书籍&lt;/h2&gt;
+&lt;h2 id=&#34;社科书籍&#34;&gt;社科书籍&lt;/h2&gt;
+&lt;h3 id=&#34;优秀的绵羊&#34;&gt;《优秀的绵羊》&lt;/h3&gt;
+&lt;p&gt;&lt;a href=&#34;https://book.douban.com/subject/26747208/&#34;&gt;优秀的绵羊-豆瓣&lt;/a&gt;&lt;/p&gt;
+&lt;h4 id=&#34;推荐对象&#34;&gt;推荐对象&lt;/h4&gt;
+&lt;p&gt;还在上学的大学生。&lt;/p&gt;
+&lt;h4 id=&#34;推荐理由&#34;&gt;推荐理由&lt;/h4&gt;
+&lt;p&gt;这是一本关于美国精英教育的书籍，但不只是一本关于精英教育的书，里面的很多内容对当前国内的大学生也很有启发。&lt;/p&gt;
+&lt;p&gt;这本书的前一部分，主要是在讲作为一个大学生，我们需要什么，我们应该要在大学里做什么，获取什么。如果你刚结束高考，说实话我并不推荐你马上看这本书，因为里面的内容在你看来可能非常滑稽，我推荐你在上大学一个月或者说两个月后再看这本书。&lt;/p&gt;
+&lt;p&gt;这本书的第二部分，主要是在讲大学的老师应该做什么？我在看到这部分内容时已经大二下学期了，换句话说，我已经对大学中的一切都相当了解。这两年里，我一直很困惑，困惑于为什么我们学校的老师对教学如此之不在意。当我看到这部分时，我对这个现象产生了全新的理解，至于具体是什么理解，还需要你去探索。&lt;/p&gt;
+&lt;p&gt;本书的第三部分，讲了美国精英教育的失败，以及应该如何挽救这“失败”的精英教育。实话说，当时读到这里还是很惊讶的，以人才辈出著称于世界的美国，精英教育居然是失败的。也是在这里，作者讲了他所理解的精英教育，或者说美国人真正需要的精英教育是什么样子的。我不是美国人，我对美国未来的发展也没那么感兴趣，只是在看这本书时，我惊奇地发现里面所描述的一些问题，中国当下也同样存在，这就不得不引人思考了。&lt;/p&gt;
+&lt;p&gt;总而言之，我认为这是一本作为大学生所必读的书，故列于此处，献与诸君。&lt;/p&gt;
+</description>
+      
     </item>
+    
   </channel>
 </rss>

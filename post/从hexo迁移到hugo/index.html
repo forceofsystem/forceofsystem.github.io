@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  
+  <meta name="author" content="Patrick">
+
+  
+  
+  <meta name="description" content="一个分享生活的博客">
+  
+
+  
+  <link rel="icon" href="https://forceoflife.cn/logo.ico">
+
+  
+  
+  <meta name="keywords" content=" hugo  latex  theme ">
+  
+
+  
+  
+
+  
+  <meta property="og:title" content="从hexo到hugo" />
+<meta property="og:description" content="" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://forceoflife.cn/post/%E4%BB%8Ehexo%E8%BF%81%E7%A7%BB%E5%88%B0hugo/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-09-09T16:30:25+08:00" />
+<meta property="article:modified_time" content="2023-09-09T16:30:25+08:00" />
+
+
+
+  
+  <link rel="canonical" href="https://forceoflife.cn/post/%E4%BB%8Ehexo%E8%BF%81%E7%A7%BB%E5%88%B0hugo/">
+
+  
+  
+  <meta itemprop="name" content="从hexo到hugo">
+<meta itemprop="description" content=""><meta itemprop="datePublished" content="2023-09-09T16:30:25+08:00" />
+<meta itemprop="dateModified" content="2023-09-09T16:30:25+08:00" />
+<meta itemprop="wordCount" content="1830">
+<meta itemprop="keywords" content="hugo,博客," />
+
+  
+  <link media="screen" rel="stylesheet" href='https://forceoflife.cn/css/common.css'>
+  <link media="screen" rel="stylesheet" href='https://forceoflife.cn/css/content.css'>
+
+  
+  
+  <title>从hexo到hugo - 为生活</title>
+  
+
+  
+  <meta name="twitter:card" content="summary"/><meta name="twitter:title" content="从hexo到hugo"/>
+<meta name="twitter:description" content=""/>
+
+
+  
+<link rel="stylesheet" href='https://forceoflife.cn/css/single.css'>
+
+</head>
+
+<body>
+  <div id="wrapper">
+    <header id="header">
+  <h1>
+    <a href="https://forceoflife.cn">为生活</a>
+  </h1>
+
+  <nav>
+    
+    <span class="nav-bar-item">
+      <a class="link" href="/">首页</a>
+    </span>
+    
+    <span class="nav-bar-item">
+      <a class="link" href="/post/">归档</a>
+    </span>
+    
+    <span class="nav-bar-item">
+      <a class="link" href="/about/">关于我</a>
+    </span>
+    
+  </nav>
+</header>
+
+    
+<main id="main" class="post">
+  
+  
+  <h1>从hexo到hugo</h1>
+  
+  <div>
+    <b>Keywords: </b>
+    
+    <a class="link" href='https://forceoflife.cn/tags/hugo'>#hugo</a>
+    
+    <a class="link" href='https://forceoflife.cn/tags/%E5%8D%9A%E5%AE%A2'>#博客</a>
+    
+  </div>
+  
+  
+  
+  <details>
+    <summary>
+      <b>Table of Contents</b>
+    </summary>
+    <div class="toc"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#更换理由">更换理由</a>
+      <ul>
+        <li><a href="#nodejs">NodeJS</a></li>
+      </ul>
+    </li>
+    <li><a href="#hugo">Hugo</a></li>
+    <li><a href="#使用体验">使用体验</a></li>
+  </ul>
+</nav></div>
+  </details>
+  
+  
+  <article class="content">
+    
+    <p>没错，我从 hexo 迁移到了 hugo。这已经是我用过的第三个博客软件了，不出意外的话，短期内应该不会再更换了。</p>
+<h2 id="更换理由">更换理由</h2>
+<p>我的第一个博客软件是 <code>wordpress</code>，是在看 <code>TheCW</code> 的视频里知道的。当时正在上大一下的我还不懂什么是动态生成和静态生成，只知道 Wordpress 是一个被广泛使用的软件。当时用的还是 apache 服务器，而不是现在非常火的 nginx，就连安装也是通过宝塔一键完成的，基本谈不上任何技术含量。印象里并没有用那个软件发过一篇博客，只是配置了主题之后就搁置了。回想起来，动态生成的博客对于新手来说确实麻烦，当时只能在网页里写作，布局也没有配置文件，只能在网页里选择，或许当时放弃了也是一个值得庆幸的事。</p>
+<p>之后开始使用 hexo，不过这次并没有放在自己的服务器上。理由有几个，其一，服务器我只买了一年，后面续费的价格不低，我不一定会续费；其二，当时用 nginx 跑着自己的图书下载站和云笔记 docker，我对 nginx 并不熟悉；其三，如果部署到服务器，写博客就只能远程上去写，虽然也可以用 git、scp，但是仍然很麻烦……所以，最后选择了 GitHub pages，一直用到了现在。</p>
+<p>hexo 还是陪伴了我一段时间的，自打我用了 hexo，之前微信公众号的使用频率就降低了。我并不会把每一篇博文都转载到公众号去，只有当写了比较满意的文章才会发过去，毕竟公众号是真的会有人看，哈哈哈。我并没有像很多博客主一样对主题进行再加工，只是选择了一个比较火的 <a href="https://ppoffice.github.io/hexo-theme-icarus/">icarus</a> 主题，对里面的控件位置进行了修改，加了评论和 Google Search 的支持。我在上面写了不少博文，其中有几篇我还是比较满意的，但 hexo 的一些问题也给我造成了许多困扰。</p>
+<h3 id="nodejs">NodeJS</h3>
+<p>hexo 是基于 nodejs 的，这对我非常不友好。我对于 web 领域一窍不通，平日几乎不会主动学习这方面的知识。所以对于诸如 <code>node_modules</code>、<code>package.json </code>等，我可谓是又想动又不敢动。而且，也不知道是不是因为 nodejs，每次更新博客要等很久才能生成，经常已经刷新到不耐烦了，新的内容才部署上去。</p>
+<p>其次，由于我对 nodejs 的不熟悉，导致我无法对主题进行改动，有些在本地实现的效果，一部署上去就失效了，令人费解。而且 hexo 用的 js 并不是标准的 js，而是一个修改过的框架，使得本就对前端知之甚少的我更加无所适从。</p>
+<h2 id="hugo">Hugo</h2>
+<p>其实我知道 hugo 和 hexo 的时间是差不多的，在我刚使用 hexo 时，就看到一位比较著名的知乎答主，<a href="https://www.zhihu.com/people/skywind3000">韦易笑</a>的博客使用了 hugo。那时我并不知道 hexo 和 hugo 有甚区别，甚至觉得 hexo 是更先进的（并不是说 hugo 就更先进，只是那时无知），加之彼时还并未感受到 hexo 的问题，所以就选择了 hexo。</p>
+<p>前几天，当我为了 icarus 的几个效果而熬到很晚时，我便有了换一个软件的想法，第一时间就想到了 hugo。惭愧地说，促使我换到 hugo 的一大原因是我找到了我很喜欢的一个主题：<a href="https://themes.gohugo.io/themes/hugo-octopress/#mainsections">hugo-octopress</a>，这个主题非常符合我的想法。其实之前在 hexo 也有一个我喜欢的主题：<a href="https://jysperm.me/">王子亭的博客 (jysperm.me)</a>，但是我一直部署失败，不知为何。</p>
+<p>现在大部分博客主题都不符合我的审美，我个人审美非常复杂，经常出现矛盾的地方。我很喜欢上世纪 70-90 年代的那种简单甚至简陋的样子（简约这个词太现代而精致了，并不符合那个年代的风格），现在的绝大多数主题都是非常现代化的布局，颜色设计、对比度、模糊、毛玻璃等特效非常绚丽，但我却喜欢不起来；那些所谓复古的主题也不过是披着复古衣服的现代产品罢了。</p>
+<p>再加上有看到，hugo 基于 go 使得它有更快的生成速度，配置相对更明确等优点，我便下定决心迁移。实话说迁移也费了一番功夫，中文网的教程虽多，但不是过时，就是语焉不详。我查了一段时间才知道，如果要部署到 github pages，是要用两个仓库，一个存放根目录，一个存放 public，而不能像 hexo 一样用一个 git 插件就解决问题，不过用 git 手工生成倒是更符合我的习惯。最后花了大约半天的时间，搞定了所有的内容，成功部署了上去，并且重新解析了我的域名到这个新的博客。</p>
+<h2 id="使用体验">使用体验</h2>
+<p>刚换了没几天，所以没有什么深度的感受。最大的感觉就是掌控感变强了，之前由于对 nodejs 的不熟悉，导致改代码都不知道怎么改，而 hugo 似乎是使用了纯粹的 html + css + js，使得修改代码变得简单了。不过要吐槽的是，这个主题的代码质量实在不敢恭维，我几乎不敢相信这是一份开源出来的代码而不是为了赶时间外包的产物，不过我对 web 并不熟悉，也不敢随意修改，只能慢慢实践。</p>
+<p>总的来说，hugo 目前给我的体验还是很好的，配置上也比 hexo 要方便许多，整体看起来也更清爽，没有令我如鲠在喉的<code>node_modules</code> 和 <code>package.json</code>，之后要做的就是好好产出内容了。</p>
+    
+  </article>
+  <div class="paginator">
+    
+    <a class="link" href="https://forceoflife.cn/post/%E5%9B%B4%E7%82%89%E5%A4%9C%E8%AF%9D3/">← prev</a>
+    
+    
+    <a class="link" href="https://forceoflife.cn/post/liveincollege/">next →</a>
+    
+  </div>
+  <div class="comment">
+    
+    <div id="disqus_thread"></div>
+<script>
+    window.disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "codearts" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    
+    
+    
+    
+  </div>
+  
+</main>
+
+    <footer id="footer">
+  <div>
+    <span>© 2023</span> - <span>2024</span>
+  </div>
+
+  <div>
+    <span>Powered by </span>
+    <a class="link" href="https://gohugo.io/">Hugo</a>
+    <span> 🍦 Theme </span>
+    <a class="link" href="https://github.com/queensferryme/hugo-theme-texify">TeXify</a>
+  </div>
+
+  <div class="footnote">
+    <span>Follow me on <a class=link href=https://github.com/queensferryme>GitHub</a>,
+<a class=link href=https://twitter.com/queensferryme>Twitter</a> or
+<a class=link href=/index.xml>RSS</a> |
+<a class=link href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh target=_blank rel=noopener>CC BY-NC-SA 4.0</a>
+</span>
+  </div>
+</footer>
+
+  </div>
+
+  
+  
+
+  
+  
+
+  
+  
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'G-TZC1QJP9DV', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+</body>
+
+</html>

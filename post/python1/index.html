@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  
+  <meta name="author" content="Patrick">
+
+  
+  
+  <meta name="description" content="一个分享生活的博客">
+  
+
+  
+  <link rel="icon" href="https://forceoflife.cn/logo.ico">
+
+  
+  
+  <meta name="keywords" content=" hugo  latex  theme ">
+  
+
+  
+  
+
+  
+  <meta property="og:title" content="从零开始学 CPython - 0" />
+<meta property="og:description" content="" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://forceoflife.cn/post/python1/" /><meta property="article:section" content="post" />
+
+<meta property="article:modified_time" content="2023-12-19T14:28:43+08:00" />
+
+
+
+  
+  <link rel="canonical" href="https://forceoflife.cn/post/python1/">
+
+  
+  
+  <meta itemprop="name" content="从零开始学 CPython - 0">
+<meta itemprop="description" content="">
+<meta itemprop="dateModified" content="2023-12-19T14:28:43+08:00" />
+<meta itemprop="wordCount" content="6888">
+<meta itemprop="keywords" content="Python,编译原理," />
+
+  
+  <link media="screen" rel="stylesheet" href='https://forceoflife.cn/css/common.css'>
+  <link media="screen" rel="stylesheet" href='https://forceoflife.cn/css/content.css'>
+
+  
+  
+  <title>从零开始学 CPython - 0 - 为生活</title>
+  
+
+  
+  <meta name="twitter:card" content="summary"/><meta name="twitter:title" content="从零开始学 CPython - 0"/>
+<meta name="twitter:description" content=""/>
+
+
+  
+<link rel="stylesheet" href='https://forceoflife.cn/css/single.css'>
+
+</head>
+
+<body>
+  <div id="wrapper">
+    <header id="header">
+  <h1>
+    <a href="https://forceoflife.cn">为生活</a>
+  </h1>
+
+  <nav>
+    
+    <span class="nav-bar-item">
+      <a class="link" href="/">首页</a>
+    </span>
+    
+    <span class="nav-bar-item">
+      <a class="link" href="/post/">归档</a>
+    </span>
+    
+    <span class="nav-bar-item">
+      <a class="link" href="/about/">关于我</a>
+    </span>
+    
+  </nav>
+</header>
+
+    
+<main id="main" class="post">
+  
+  
+  <h1>从零开始学 CPython - 0</h1>
+  
+  <div>
+    <b>Keywords: </b>
+    
+    <a class="link" href='https://forceoflife.cn/tags/python'>#Python</a>
+    
+    <a class="link" href='https://forceoflife.cn/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86'>#编译原理</a>
+    
+  </div>
+  
+  
+  
+  <details>
+    <summary>
+      <b>Table of Contents</b>
+    </summary>
+    <div class="toc"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#前言">前言</a></li>
+    <li><a href="#环境搭建">环境搭建</a>
+      <ul>
+        <li><a href="#获取-cpython-源码">获取 CPython 源码</a></li>
+        <li><a href="#阅读代码环境搭建">阅读代码环境搭建</a></li>
+        <li><a href="#调试环境搭建">调试环境搭建</a></li>
+      </ul>
+    </li>
+    <li><a href="#python-学习基础">Python 学习基础</a>
+      <ul>
+        <li><a href="#目录">目录</a></li>
+        <li><a href="#命名约定">命名约定</a></li>
+      </ul>
+    </li>
+    <li><a href="#学习开始">学习开始</a>
+      <ul>
+        <li><a href="#学习目标">学习目标</a></li>
+        <li><a href="#找到入口">找到入口</a></li>
+        <li><a href="#初始化解释器">初始化解释器</a></li>
+        <li><a href="#运行开始">运行开始</a></li>
+        <li><a href="#进入-tokenizer">进入 Tokenizer</a></li>
+      </ul>
+    </li>
+    <li><a href="#参考资料">参考资料</a></li>
+  </ul>
+</nav></div>
+  </details>
+  
+  
+  <article class="content">
+    
+    <h2 id="前言">前言</h2>
+<p>Python 是时下最流行的编程语言，在 <a href="https://www.tiobe.com/tiobe-index/">TIOBE</a> 排行榜上连续多年位居榜首，作为一名计算机相关专业的学生，掌握 Python 是非常有必要的。可我还不会 CPython，真是闻着伤心见者落泪。于是我痛定思痛，打算新开一个系列，从零开始学习 CPython，努力成为一个会调包的合格大学生（误）。你可能注意到了我说我要从零开始学习 CPython，如果你对 CPython 不够了解的话，<del>CPython 是 Python 的别称，意思是像 C 一样快的 Python。</del></p>
+<p>好吧，玩笑到此就结束了，正式介绍一下，CPython 是 Python 解释器的官方实现，对于大多数人来说，平常写的 Python 代码就是由 CPython 来解释执行的。这个系列是我从零开始阅读 Python 源码，将编译原理、虚拟机等理论知识与工程上具体的实现相结合的尝试。</p>
+<h2 id="环境搭建">环境搭建</h2>
+<h3 id="获取-cpython-源码">获取 CPython 源码</h3>
+<p>既然是学习 Python 的源码，那么就有必要搭建一个环境来支持我们阅读、运行、修改源代码。在笔者写这篇文章时，Python 已经完全迁移到 Github 上开发了，可以用 git 将 CPython 的源码直接克隆到本地:</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ git clone https://github.com/python/cpython.git
+</span></span></code></pre></div><p>笔者的电脑是一台 M1 芯片的 Macbook Air：</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ uname -m -s
+</span></span><span style="display:flex;"><span>Darwin arm64
+</span></span></code></pre></div><p>之后可以运行下面的指令来编译 CPython:</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ ./configure --with-pydebug <span style="color:#666">&amp;&amp;</span> make -j
+</span></span></code></pre></div><blockquote>
+<p>简单解释一下，<code>./configure --with-pydebug</code> 是执行 <a href="https://www.gnu.org/software/autoconf/">GNU Autoconf</a> 来生成 Makefile。</p>
+</blockquote>
+<p>编译完成后可以运行一下测试：</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>./python.exe -m <span style="color:#a2f">test</span> -j3 
+</span></span></code></pre></div><p>你可能会奇怪为什么是 python.exe，这明明不是 Windows 系统。这是因为 Mac 系统是大小写不敏感的，如果不加后缀名的话会与目录中的 Python 目录冲突，加上 .exe 后缀可以避免这种情况。</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ file python.exe
+</span></span><span style="display:flex;"><span>python.exe: Mach-O 64-bit executable arm64
+</span></span></code></pre></div><p>到了这里，你就成功拥有了一份完整的 CPython 源码，笔者使用的源码是 3.13.0a2+。如果你在编译中遇到了问题，你可以访问 Python 的<a href="https://devguide.python.org">开发者指导</a>网站来获取不同操作系统的教程。</p>
+<h3 id="阅读代码环境搭建">阅读代码环境搭建</h3>
+<p>有了源码，接下来是如何阅读源码。对于 CPython 这个体量的项目，一般的工具肯定是不行的。所以，<del>我推荐大家使用 Notepad.exe。</del></p>
+<p>我没有尝试过将 CPython 的代码导入 IDE，但我猜这会吃掉我笔记本的所有内存并占用所有的 CPU 来建立索引。我无意挑起所谓的 <a href="https://en.wikipedia.org/wiki/Editor_war">Editor War</a>，我只是来分享一下我的方案。我使用 Vim + Clangd + Ctags + Ripgrep (rg) 来阅读代码，在 CPython 巨大的代码量下，LSP（Clangd）几乎失灵，我用 Ctags 建立了基本的索引，在无法跳转时，用 rg 搜索对应函数的位置（没有安装 rg 也可以用 grep）。不过有一点我觉得很重要，就是关闭 LSP 的 diagnostics 功能，不然你可能会看到“山河一片红”。</p>
+<blockquote>
+<p>如果你对我的 Vim 配置感兴趣，欢迎<a href="https://github.com/forceofsystem/dotvim">查看</a>并送我一颗星星，顺带一提，我的配置很简洁而轻量。</p>
+</blockquote>
+<p>无论如何，不管你选择 Vim、Emacs、Source Insight、VSCode 或是使用其他 IDE，你的目标都是能够方便地查看代码，而不是像以前的我一样为了配置编辑器而配置编辑器～。</p>
+<h3 id="调试环境搭建">调试环境搭建</h3>
+<p>没错，你还需要一个调试器。当你捋不清函数的调用关系时，你需要打开调试器，查看调用栈来获取更多信息。</p>
+<blockquote>
+<p>我在撰写本文时大量采用这种方法。</p>
+</blockquote>
+<p>在 Linux 上，你可以选择 GDB，因为 GDB 没有适配 M1，所以我选择了 LLDB，在 Windows 上，你可以选择 <a href="https://www.mingw-w6b4.org">MinGW64</a> 自带的 GDB。</p>
+<blockquote>
+<p>我的 LLDB 是通过 <a href="https://brew.sh">Homebrew</a> 安装的，不是 <code>xcode-select --install</code> 安装的版本。</p>
+</blockquote>
+<h2 id="python-学习基础">Python 学习基础</h2>
+<h3 id="目录">目录</h3>
+<p>在开始阅读源代码之前，我们先来了解一下 CPython 的目录结构。绝大多数 CPython 代码都在下面几个文件夹中：</p>
+<ul>
+<li>Include：头文件</li>
+<li>Objects：各种对象的实现</li>
+<li>Python：解释器、字节码编译器和其他重要的基础组件</li>
+<li>Parser：词法分析器、语法分析器以及语法分析生成器</li>
+<li>Modules：标准库模块以及 main.c</li>
+<li>Programs：包含了程序的入口函数 main()</li>
+</ul>
+<p>如果你是在 Linux 或 BSD （不包括 Mac OS X），这就是与你有关的所有目录；而如果你在用 Mac 或者 Windows，还有以下目录：</p>
+<ul>
+<li>Mac：专用于 Mac OS X 的代码</li>
+<li>PC：专用于 Windows 的代码（旧）</li>
+<li>PCBuild：专用于 Windows 使用的 MSVC 的代码（新）</li>
+</ul>
+<p>在这个系列的博客中，我们只关心公共部分的代码，而不会关注这些特定平台的代码。</p>
+<h3 id="命名约定">命名约定</h3>
+<p>在阅读之前，我们还需要学习一下 Python 的命名方式，根据 <a href="https://peps.python.org/pep-0007/#naming-conventions">PEP 7</a> 中对于命名约定的说明：</p>
+<ul>
+<li>除 static 函数外，对于所有的 public 函数，使用 <code>Py</code> 作前缀；对于 global service routines，使用 <code>Py_</code> 前缀，如 <code>Py_FatalError</code>；对于特定类型的例程，使用与之相关的较长的前缀，如 <code>PyString_</code> 之于字符串相关函数。</li>
+<li>public 函数和变量的命名混合使用大小写和下划线，如：<code>PyObject_GetAttr</code>，<code>Py_BuildValue</code>，<code>PyExc_TypeError</code>。</li>
+<li>需要将 internal 的函数可见时，使用 <code>_Py</code> 前缀，如：<code>_PyObject_Dump</code>。</li>
+<li>对于宏，其前缀是大小写混合，之后的部分全部使用大写，如：<code>PyString_AS_STRING</code>，<code>Py_PRINT_RAW</code>。</li>
+<li>宏参数应该使用 ALL_CAPS 风格，以便与变量和结构成员进行区分。
+<ul>
+<li>ALL_CAPS 风格：用下划线作分割，全部字母大写。</li>
+</ul>
+</li>
+</ul>
+<h2 id="学习开始">学习开始</h2>
+<h3 id="学习目标">学习目标</h3>
+<p>下面我们就可以开始正式学习 CPython 的代码了，虽然我迫不及待地想看看 Python 是如何进行语法分析（Parse），Python 的虚拟机是如何实现的、采用了什么垃圾回收算法，但是俗话说：“心急吃不了热豆腐”，我们还是从一个简单的目标开始。</p>
+<p>现在在你的终端运行我们刚编译好的 Python，什么参数也不要加，就像这样：</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ ./python.exe
+</span></span><span style="display:flex;"><span>Python 3.13.0a2+ <span style="color:#666">(</span>heads/main:21d52995ea<span style="color:#666">)</span> <span style="color:#666">[</span>Clang 15.0.0 <span style="color:#666">(</span>clang-1500.0.40.1<span style="color:#666">)]</span> on darwin
+</span></span><span style="display:flex;"><span>Type <span style="color:#b44">&#34;help&#34;</span>, <span style="color:#b44">&#34;copyright&#34;</span>, <span style="color:#b44">&#34;credits&#34;</span> or <span style="color:#b44">&#34;license&#34;</span> <span style="color:#a2f;font-weight:bold">for</span> more information.
+</span></span><span style="display:flex;"><span>&gt;&gt;&gt;
+</span></span></code></pre></div><p>现在我们就进入了 Python 的 REPL(Read-Eval-Print-Loop) 模式，作为一个“第一次”使用 Python 的新人，我非常好奇这个 Header 和交互提示符（Prompt）是怎么被打出来的。所以，我决定先探寻一下 Python 是怎么跑起来的，又是怎么打出那个经典的提示符 <code>&gt;&gt;&gt;</code> 的。</p>
+<h3 id="找到入口">找到入口</h3>
+<p>就想所有的 C 程序那样，CPython 也有一个入口函数，CPython 的入口函数位于 Programs 的 <code>python.c</code> 中：</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#0b0;font-weight:bold">int</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a000">main</span>(<span style="color:#0b0;font-weight:bold">int</span> argc, <span style="color:#0b0;font-weight:bold">char</span> <span style="color:#666">**</span>argv)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">return</span> <span style="color:#00a000">Py_BytesMain</span>(argc, argv);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>可以看到这个函数调用了定义在 Modules/main.c 中的 <code>Py_BytesMain</code> 函数。</p>
+<blockquote>
+<p>据 Guido 所说，main.c 不在 <code>Python</code> 目录下而在 <code>Modules</code> 目录下是由于一些不太重要的历史原因。</p>
+</blockquote>
+<p>可以看到，在保存了命令行参数后，<code>Py_BytesMain</code> 函数就调用了 <code>pymain_main</code> 函数。在这个函数里，首先执行了对解释器的初始化。</p>
+<blockquote>
+<p><code>Py_BytesMain</code> 是对 <code>Py_Main</code> 的包装，用来防治因为 locale 和编码模式不同而导致的错误。</p>
+</blockquote>
+<h3 id="初始化解释器">初始化解释器</h3>
+<p>在 <code>pymain_main</code> 中，调用 <code>pymain_init</code> 来初始化解释器：</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span>    PyStatus status <span style="color:#666">=</span> <span style="color:#00a000">pymain_init</span>(args);
+</span></span></code></pre></div><p>首先来看一下 <code>PyStatus</code> 这个类型，根据 <a href="https://peps.python.org/pep-0587/">PEP587</a>，其是用来存储初始化函数的状态，成功、错误或是退出，并且还会存储造成错误的函数名。简单看一下 <code>PyStatus</code> 的字段组成：</p>
+<ul>
+<li><code>exitcode</code> (int): Argument passed to exit().</li>
+<li><code>err_msg</code> (const char*): Error message.</li>
+<li><code>func</code> (const char *): Name of the function which created an error, can be NULL.</li>
+<li>private <code>_type</code> field: for internal usage only.</li>
+</ul>
+<p>进入 <code>pymain_init</code> 函数，可以看到初始化包括三个部分：运行时、preconfig、config。</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">static</span> PyStatus
+</span></span><span style="display:flex;"><span><span style="color:#00a000">pymain_init</span>(<span style="color:#a2f;font-weight:bold">const</span> _PyArgv <span style="color:#666">*</span>args)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    PyStatus status;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    status <span style="color:#666">=</span> <span style="color:#00a000">_PyRuntime_Initialize</span>();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    PyPreConfig preconfig;
+</span></span><span style="display:flex;"><span>    <span style="color:#00a000">PyPreConfig_InitPythonConfig</span>(<span style="color:#666">&amp;</span>preconfig);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    status <span style="color:#666">=</span> <span style="color:#00a000">_Py_PreInitializeFromPyArgv</span>(<span style="color:#666">&amp;</span>preconfig, args);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    PyConfig config;
+</span></span><span style="display:flex;"><span>    <span style="color:#00a000">PyConfig_InitPythonConfig</span>(<span style="color:#666">&amp;</span>config);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">if</span> (args<span style="color:#666">-&gt;</span>use_bytes_argv) {
+</span></span><span style="display:flex;"><span>        status <span style="color:#666">=</span> <span style="color:#00a000">PyConfig_SetBytesArgv</span>(<span style="color:#666">&amp;</span>config, args<span style="color:#666">-&gt;</span>argc, args<span style="color:#666">-&gt;</span>bytes_argv);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">else</span> {
+</span></span><span style="display:flex;"><span>        status <span style="color:#666">=</span> <span style="color:#00a000">PyConfig_SetArgv</span>(<span style="color:#666">&amp;</span>config, args<span style="color:#666">-&gt;</span>argc, args<span style="color:#666">-&gt;</span>wchar_argv);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    status <span style="color:#666">=</span> <span style="color:#00a000">Py_InitializeFromConfig</span>(<span style="color:#666">&amp;</span>config);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    status <span style="color:#666">=</span> <span style="color:#00a000">_PyStatus_OK</span>();
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><blockquote>
+<p>代码省略了部分错误处理。</p>
+</blockquote>
+<p>这对应着 <a href="https://peps.python.org/pep-0432/">PEP432</a> 中提到的解释器初始化的三个步骤：</p>
+<ul>
+<li>Python 核心运行时预初始化（Python core runtime preinitiallization）:
+<ul>
+<li>启动内存管理；</li>
+<li>决定系统接口使用的编码；</li>
+</ul>
+</li>
+<li>Python 核心运行时初始化（Python core runtime initialization）:
+<ul>
+<li>确保 C API 已经可以使用；</li>
+<li>确保内置模块与冻结模块（<code>frozen</code>）是可访问的；</li>
+</ul>
+</li>
+<li>主解释器配置（Main interpreter configuration）:
+<ul>
+<li>确保外部模块是可访问的；</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>在 3.8 之前，初始化过程都是分为 2 步。CPython 的开发者们从 2012 年末到 2020 中期，用了 8 年的时间来重构，以让 Python 的启动过程更容易维护，同时也更容易嵌入到大型应用中。大家可以去阅读 PEP 432 和 PEP 587 来获取更完整的信息。
+在现在的设计中，Python 的初始化过程分为以下四个阶段：</p>
+</blockquote>
+<ul>
+<li>未初始化：还未开始初始化过程；</li>
+<li>预初始化：解释器还不能使用；</li>
+<li>运行时已初始化：主解释器部分可用，还不能创建子解释器；</li>
+<li>初始化完成：主解释器完全可用，可以创建子解释器。</li>
+</ul>
+<p>在 Python 3.8 中，为上述步骤都添加了一些数据结构，我们可以在上面的代码中看到。</p>
+<p><code>PyPreConfig</code> 结构体用来预初始化 Python 的下述功能：</p>
+<ul>
+<li>设置内存分配器；</li>
+<li>配置 LC_CTYPE locale；</li>
+<li>设置 UTF-8 模式；</li>
+</ul>
+<p>在上面的代码中可以看到与预初始化相关的函数：<code>PyPreConfig_InitPythonConfig</code> 和 <code>Py_PreInitializeFromPyArgv</code>，前者用来初始化默认配置（preconfiguration），后者则用来预初始化 Python。</p>
+<p>预初始化结束后，开始初始化。首先初始化默认配置，将命令行参数存储到 <code>config-&gt;argv</code>，之后调用 <code>Py_InitializeFromConfig</code> 完成之后的初始化过程。<code>PyConfig</code> 是一个相当庞大的结构体，其定义有足足 100 行之多。</p>
+<h3 id="运行开始">运行开始</h3>
+<p>在执行完初始化过程后，<code>pymain_main</code> 函数调用了 <code>Py_RunMain</code> 函数，终于要开始正式运行了，初始化过程可真是漫长，呜呼～。进入这个函数，它的代码意外地简单，我还以为会很复杂呢。</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#0b0;font-weight:bold">int</span>
+</span></span><span style="display:flex;"><span><span style="color:#00a000">Py_RunMain</span>(<span style="color:#0b0;font-weight:bold">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#0b0;font-weight:bold">int</span> exitcode <span style="color:#666">=</span> <span style="color:#666">0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a000">pymain_run_python</span>(<span style="color:#666">&amp;</span>exitcode);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">if</span> (<span style="color:#00a000">Py_FinalizeEx</span>() <span style="color:#666">&lt;</span> <span style="color:#666">0</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#080;font-style:italic">/* Value unlikely to be confused with a non-error exit status or
+</span></span></span><span style="display:flex;"><span><span style="color:#080;font-style:italic">           other special meaning */</span>
+</span></span><span style="display:flex;"><span>        exitcode <span style="color:#666">=</span> <span style="color:#666">120</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a000">pymain_free</span>();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">if</span> (_PyRuntime.signals.unhandled_keyboard_interrupt) {
+</span></span><span style="display:flex;"><span>        exitcode <span style="color:#666">=</span> <span style="color:#00a000">exit_sigint</span>();
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">return</span> exitcode;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>很容易发现，这个函数是对 <code>pymain_run_python</code> 的一个包装，要想探究真正的运行过程，我们还需要继续抽丝剥茧地向里探查，<code>pymain_run_python</code> 启动！</p>
+<p>一进入这个函数，这个近 100 行的函数体就让我感到头晕。跳过一些获取解释器状态的代码，我们看到这个函数首先加载了 <code>readline</code> 模块,这个模块可以为我们提供获取输入的能力。<code>pymain_import_readling</code> 函数是对 <code>PyImport_ImportModule</code> 的封装，在这个函数里一共引入了两个模块，分别是 <code>readline</code> 和 <code>rlcompleter</code>，后者用于提供在交互式环境下的自动补全功能。</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span>    <span style="color:#00a000">pymain_import_readline</span>(config);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    PyObject <span style="color:#666">*</span>mod <span style="color:#666">=</span> <span style="color:#00a000">PyImport_ImportModule</span>(<span style="color:#b44">&#34;readline&#34;</span>);
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>    mod <span style="color:#666">=</span> <span style="color:#00a000">PyImport_ImportModule</span>(<span style="color:#b44">&#34;rlcompleter&#34;</span>);
+</span></span></code></pre></div><p>让我们越过那些冗长的错误处理（虽然它们是必要的，但是对于梳理代码运行逻辑可真没什么用），我们看到了今天的第一个目标，<code>pymain_header</code>，没错，这个函数会输出我们在进入 python repl 时显示的那几行关于版本的信息。</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span>    <span style="color:#00a000">fprintf</span>(stderr, <span style="color:#b44">&#34;Python %s on %s</span><span style="color:#b62;font-weight:bold">\n</span><span style="color:#b44">&#34;</span>, <span style="color:#00a000">Py_GetVersion</span>(), <span style="color:#00a000">Py_GetPlatform</span>());
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">if</span> (config<span style="color:#666">-&gt;</span>site_import) {
+</span></span><span style="display:flex;"><span>        <span style="color:#00a000">fprintf</span>(stderr, <span style="color:#b44">&#34;%s</span><span style="color:#b62;font-weight:bold">\n</span><span style="color:#b44">&#34;</span>, COPYRIGHT);
+</span></span><span style="display:flex;"><span>    }
+</span></span></code></pre></div><blockquote>
+<p>COPYRIGHT 是一个定义在 main.c 中的宏。</p>
+</blockquote>
+<p>之后我们就会看到通往下一个阶段的大门，一个 if-else if-else 语句，用来调用不同运行模式下的函数。</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">if</span> (config<span style="color:#666">-&gt;</span>run_command) {
+</span></span><span style="display:flex;"><span>        <span style="color:#666">*</span>exitcode <span style="color:#666">=</span> <span style="color:#00a000">pymain_run_command</span>(config<span style="color:#666">-&gt;</span>run_command);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">else</span> <span style="color:#a2f;font-weight:bold">if</span> (config<span style="color:#666">-&gt;</span>run_module) {
+</span></span><span style="display:flex;"><span>        <span style="color:#666">*</span>exitcode <span style="color:#666">=</span> <span style="color:#00a000">pymain_run_module</span>(config<span style="color:#666">-&gt;</span>run_module, <span style="color:#666">1</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">else</span> <span style="color:#a2f;font-weight:bold">if</span> (main_importer_path <span style="color:#666">!=</span> <span style="color:#a2f">NULL</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#666">*</span>exitcode <span style="color:#666">=</span> <span style="color:#00a000">pymain_run_module</span>(<span style="color:#b44">L</span><span style="color:#b44">&#34;__main__&#34;</span>, <span style="color:#666">0</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">else</span> <span style="color:#a2f;font-weight:bold">if</span> (config<span style="color:#666">-&gt;</span>run_filename <span style="color:#666">!=</span> <span style="color:#a2f">NULL</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#666">*</span>exitcode <span style="color:#666">=</span> <span style="color:#00a000">pymain_run_file</span>(config);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">else</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#666">*</span>exitcode <span style="color:#666">=</span> <span style="color:#00a000">pymain_run_stdin</span>(config);
+</span></span><span style="display:flex;"><span>    }
+</span></span></code></pre></div><p>因为我们是在终端运行的，所以会进入到 <code>pymain_run_stdin</code> 函数中去，跳过对能否交互和错误处理的部分，我们最终会进入到这一行：</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span>    <span style="color:#0b0;font-weight:bold">int</span> run <span style="color:#666">=</span> <span style="color:#00a000">PyRun_AnyFileExFlags</span>(stdin, <span style="color:#b44">&#34;&lt;stdin&gt;&#34;</span>, <span style="color:#666">0</span>, <span style="color:#666">&amp;</span>cf);
+</span></span></code></pre></div><p>我们不妨猜测一下，应该马上就要开始运行了。可以看出，这个函数是对标准输入和文件输入做了统一，当处于交互式模式（REPL）、用标准输入传递脚本文件（./python.exe &lt; hello.py）或是正常的运行脚本文件时都可以使用这个函数。在对文件系统的编码进行转换后，这个函数继续调用 <code>_PyRun_AnyFileObject</code>。</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span>    PyObject <span style="color:#666">*</span>filename_obj;
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">if</span> (filename <span style="color:#666">!=</span> <span style="color:#a2f">NULL</span>) {
+</span></span><span style="display:flex;"><span>        filename_obj <span style="color:#666">=</span> <span style="color:#00a000">PyUnicode_DecodeFSDefault</span>(filename);
+</span></span><span style="display:flex;"><span>        <span style="color:#a2f;font-weight:bold">if</span> (filename_obj <span style="color:#666">==</span> <span style="color:#a2f">NULL</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#00a000">PyErr_Print</span>();
+</span></span><span style="display:flex;"><span>            <span style="color:#a2f;font-weight:bold">return</span> <span style="color:#666">-</span><span style="color:#666">1</span>;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">else</span> {
+</span></span><span style="display:flex;"><span>        filename_obj <span style="color:#666">=</span> <span style="color:#a2f">NULL</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#0b0;font-weight:bold">int</span> res <span style="color:#666">=</span> <span style="color:#00a000">_PyRun_AnyFileObject</span>(fp, filename_obj, closeit, flags);
+</span></span></code></pre></div><p>在这个函数中，与运行直接相关的代码是下面这个条件语句：</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span>    <span style="color:#0b0;font-weight:bold">int</span> res;
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">if</span> (<span style="color:#00a000">_Py_FdIsInteractive</span>(fp, filename)) {
+</span></span><span style="display:flex;"><span>        res <span style="color:#666">=</span> <span style="color:#00a000">_PyRun_InteractiveLoopObject</span>(fp, filename, flags);
+</span></span><span style="display:flex;"><span>        <span style="color:#a2f;font-weight:bold">if</span> (closeit) {
+</span></span><span style="display:flex;"><span>            <span style="color:#00a000">fclose</span>(fp);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">else</span> {
+</span></span><span style="display:flex;"><span>        res <span style="color:#666">=</span> <span style="color:#00a000">_PyRun_SimpleFileObject</span>(fp, filename, closeit, flags);
+</span></span><span style="display:flex;"><span>    }
+</span></span></code></pre></div><p>对于可交互环境，它会调用 <code>_PyRun_InteracticeLoopObject</code> 函数，从命名就可以看出，这里面会包括一个循环用于不断进行交互；而如果是执行一个脚本文件，则会调用下面这个函数。因为我们的目标是找到 <code>&gt;&gt;&gt;</code> 是在哪里输出的，所以我们继续进入上面这个函数。一进入这个函数，我们就看到了我们想要的东西：</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span>    PyObject <span style="color:#666">*</span>v <span style="color:#666">=</span> <span style="color:#00a000">_PySys_GetAttr</span>(tstate, <span style="color:#666">&amp;</span><span style="color:#00a000">_Py_ID</span>(ps1));
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">if</span> (v <span style="color:#666">==</span> <span style="color:#a2f">NULL</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#00a000">_PySys_SetAttr</span>(<span style="color:#666">&amp;</span><span style="color:#00a000">_Py_ID</span>(ps1), v <span style="color:#666">=</span> <span style="color:#00a000">PyUnicode_FromString</span>(<span style="color:#b44">&#34;&gt;&gt;&gt; &#34;</span>));
+</span></span><span style="display:flex;"><span>        <span style="color:#00a000">Py_XDECREF</span>(v);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    v <span style="color:#666">=</span> <span style="color:#00a000">_PySys_GetAttr</span>(tstate, <span style="color:#666">&amp;</span><span style="color:#00a000">_Py_ID</span>(ps2));
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">if</span> (v <span style="color:#666">==</span> <span style="color:#a2f">NULL</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#00a000">_PySys_SetAttr</span>(<span style="color:#666">&amp;</span><span style="color:#00a000">_Py_ID</span>(ps2), v <span style="color:#666">=</span> <span style="color:#00a000">PyUnicode_FromString</span>(<span style="color:#b44">&#34;... &#34;</span>));
+</span></span><span style="display:flex;"><span>        <span style="color:#00a000">Py_XDECREF</span>(v);
+</span></span><span style="display:flex;"><span>    }
+</span></span></code></pre></div><p>是的，我们看到了 <code>&gt;&gt;&gt;</code>，不过别急，离它被输出到终端模拟器还有好一段距离。这段代码将系统的提示符，<code>sys.ps1</code> 和 <code>sys.ps2</code> 分别设置为 <code>&gt;&gt;&gt;</code> 和 <code>...</code>。由于对 sys 模块的属性操作非常频繁，所以有专门的辅助函数来完成设置，这两个函数定义在 Python 目录下的 sysmoudle.c 中。再往下看，我们果然看到了一个 do-while 循环，在 Guido 的教程里，我们可以看到最初使用的是 for 循环，不知道为什么改为了 do-while 循环，也许是使从无限循环用 break 跳出，do-while 循环结束的条件更清晰。在这个循环里，很明显我们需要关注下面这个函数：</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span>     ret <span style="color:#666">=</span> <span style="color:#00a000">PyRun_InteractiveOneObjectEx</span>(fp, filename, flags);
+</span></span></code></pre></div><p>进入这个函数后，我一眼就看到了 <code>pyrun_one_parse_ast</code> 和 <code>run_mod</code>，根据我开发解释器的经验，前者是用来进行语法分析，建立 AST （Abstract Syntax Tree，抽象语法树）的，后者则是用来执行字节码的。据此，我对 Python 的编译器架构有了一定的猜测，Python 是用 Parser 来驱动 Lexer，而不是同一级别顺次执行。进入 <code>pyrun_one_parse_ast</code> 函数，我们又看到了熟悉的 <code>sys.ps1</code>、<code>sys.ps2</code>，这个函数先设置了编码和两个提示符，之后作为参数传递给了 <code>_PyParser_InteractiveASTFromFile</code> 函数，后者作为包装函数又调用了 <code>_PyPegen_run_parser_from_file_pointer</code>。</p>
+<blockquote>
+<p>好深的调用关系qwq。</p>
+</blockquote>
+<p>在这个名字超长的函数里，我注意到了几行关键代码：</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">struct</span> tok_state <span style="color:#666">*</span>tok <span style="color:#666">=</span> <span style="color:#00a000">_PyTokenizer_FromFile</span>(fp, enc, ps1, ps2);
+</span></span><span style="display:flex;"><span>    Parser <span style="color:#666">*</span>p <span style="color:#666">=</span> <span style="color:#00a000">_PyPegen_Parser_New</span>(tok, start_rule, parser_flags, PY_MINOR_VERSION,
+</span></span><span style="display:flex;"><span>                                    errcode, arena);
+</span></span><span style="display:flex;"><span>    result <span style="color:#666">=</span> <span style="color:#00a000">_PyPegen_run_parser</span>(p);
+</span></span></code></pre></div><p>也就是说，CPython 是由 Parser 驱动 Tokenizer，Tokenizer 驱动 Lexer 的。第一行代码是获取一个 Tokenizer，第二行是创建一个新的 Parser，第三行则是执行这个 parser。</p>
+<blockquote>
+<p>Pegen 是 Parser generator 的缩写，与 Python Parser 的设计有关，之后的文章再写。</p>
+</blockquote>
+<p>我们现在只想知道 <code>&gt;&gt;&gt;</code> 是怎么来的，所以直接查看 <code>_PyPegen_run_parser</code> 的代码，而这个函数是对 <code>_PyPegen_parse</code> 的包装。在这个函数里，我们又看到了 if-else if-else 的代码结构来区分不同的执行方式：</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">if</span> (p<span style="color:#666">-&gt;</span>start_rule <span style="color:#666">==</span> Py_file_input) {
+</span></span><span style="display:flex;"><span>        result <span style="color:#666">=</span> <span style="color:#00a000">file_rule</span>(p);
+</span></span><span style="display:flex;"><span>    } <span style="color:#a2f;font-weight:bold">else</span> <span style="color:#a2f;font-weight:bold">if</span> (p<span style="color:#666">-&gt;</span>start_rule <span style="color:#666">==</span> Py_single_input) {
+</span></span><span style="display:flex;"><span>        result <span style="color:#666">=</span> <span style="color:#00a000">interactive_rule</span>(p);
+</span></span><span style="display:flex;"><span>    } <span style="color:#a2f;font-weight:bold">else</span> <span style="color:#a2f;font-weight:bold">if</span> (p<span style="color:#666">-&gt;</span>start_rule <span style="color:#666">==</span> Py_eval_input) {
+</span></span><span style="display:flex;"><span>        result <span style="color:#666">=</span> <span style="color:#00a000">eval_rule</span>(p);
+</span></span><span style="display:flex;"><span>    } <span style="color:#a2f;font-weight:bold">else</span> <span style="color:#a2f;font-weight:bold">if</span> (p<span style="color:#666">-&gt;</span>start_rule <span style="color:#666">==</span> Py_func_type_input) {
+</span></span><span style="display:flex;"><span>        result <span style="color:#666">=</span> <span style="color:#00a000">func_type_rule</span>(p);
+</span></span><span style="display:flex;"><span>    }
+</span></span></code></pre></div><p>我们是交互模式，所以进入 <code>interactive_rule</code> 函数，发现里面有一块没有被条件语句或循环语句包围的作用域：</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span>    { <span style="color:#080;font-style:italic">// statement_newline
+</span></span></span><span style="display:flex;"><span><span style="color:#080;font-style:italic"></span>        <span style="color:#a2f;font-weight:bold">if</span> (p<span style="color:#666">-&gt;</span>error_indicator) {
+</span></span><span style="display:flex;"><span>            p<span style="color:#666">-&gt;</span>level<span style="color:#666">--</span>;
+</span></span><span style="display:flex;"><span>            <span style="color:#a2f;font-weight:bold">return</span> <span style="color:#a2f">NULL</span>;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#00a000">D</span>(<span style="color:#00a000">fprintf</span>(stderr, <span style="color:#b44">&#34;%*c&gt; interactive[%d-%d]: %s</span><span style="color:#b62;font-weight:bold">\n</span><span style="color:#b44">&#34;</span>, p<span style="color:#666">-&gt;</span>level, <span style="color:#b44">&#39; &#39;</span>, _mark, p<span style="color:#666">-&gt;</span>mark, <span style="color:#b44">&#34;statement_newline&#34;</span>));
+</span></span><span style="display:flex;"><span>        asdl_stmt_seq<span style="color:#666">*</span> a;
+</span></span><span style="display:flex;"><span>        <span style="color:#a2f;font-weight:bold">if</span> (
+</span></span><span style="display:flex;"><span>            (a <span style="color:#666">=</span> <span style="color:#00a000">statement_newline_rule</span>(p))  <span style="color:#080;font-style:italic">// statement_newline
+</span></span></span><span style="display:flex;"><span><span style="color:#080;font-style:italic"></span>        )
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            <span style="color:#00a000">D</span>(<span style="color:#00a000">fprintf</span>(stderr, <span style="color:#b44">&#34;%*c+ interactive[%d-%d]: %s succeeded!</span><span style="color:#b62;font-weight:bold">\n</span><span style="color:#b44">&#34;</span>, p<span style="color:#666">-&gt;</span>level, <span style="color:#b44">&#39; &#39;</span>, _mark, p<span style="color:#666">-&gt;</span>mark, <span style="color:#b44">&#34;statement_newline&#34;</span>));
+</span></span><span style="display:flex;"><span>            _res <span style="color:#666">=</span> <span style="color:#00a000">_PyAST_Interactive</span> ( a , p <span style="color:#666">-&gt;</span> arena );
+</span></span><span style="display:flex;"><span>            <span style="color:#a2f;font-weight:bold">if</span> (_res <span style="color:#666">==</span> <span style="color:#a2f">NULL</span> <span style="color:#666">&amp;&amp;</span> <span style="color:#00a000">PyErr_Occurred</span>()) {
+</span></span><span style="display:flex;"><span>                p<span style="color:#666">-&gt;</span>error_indicator <span style="color:#666">=</span> <span style="color:#666">1</span>;
+</span></span><span style="display:flex;"><span>                p<span style="color:#666">-&gt;</span>level<span style="color:#666">--</span>;
+</span></span><span style="display:flex;"><span>                <span style="color:#a2f;font-weight:bold">return</span> <span style="color:#a2f">NULL</span>;
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>            <span style="color:#a2f;font-weight:bold">goto</span> done;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        p<span style="color:#666">-&gt;</span>mark <span style="color:#666">=</span> _mark;
+</span></span><span style="display:flex;"><span>        <span style="color:#00a000">D</span>(<span style="color:#00a000">fprintf</span>(stderr, <span style="color:#b44">&#34;%*c%s interactive[%d-%d]: %s failed!</span><span style="color:#b62;font-weight:bold">\n</span><span style="color:#b44">&#34;</span>, p<span style="color:#666">-&gt;</span>level, <span style="color:#b44">&#39; &#39;</span>,
+</span></span><span style="display:flex;"><span>                  p<span style="color:#666">-&gt;</span>error_indicator <span style="color:#666">?</span> <span style="color:#b44">&#34;ERROR!&#34;</span> <span style="color:#666">:</span> <span style="color:#b44">&#34;-&#34;</span>, _mark, p<span style="color:#666">-&gt;</span>mark, <span style="color:#b44">&#34;statement_newline&#34;</span>));
+</span></span><span style="display:flex;"><span>    }
+</span></span></code></pre></div><h3 id="进入-tokenizer">进入 Tokenizer</h3>
+<p>根据注释我们可以知道，这个作用域是用来处理新一行的。这里代码有些复杂，<code>D()</code> 是一个宏，用来在调试模式下输出一些内容，分析一下可以发现，prompt 是在每一行的开头输出的，所以我们的目标应该是 <code>statement_newline_rule</code> 函数。进入这个函数后，里面的内容印证了我前文中的猜测，Python 的 Tokenizer 是由 Parser 驱动的，理由就是这个函数：<code>_PyPegen_fill_token</code>。从名字可以看出，这个函数是用来填充 token 来供 Parser 解析的，函数内的前三行代码也反映了这一功能：</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">struct</span> token new_token;
+</span></span><span style="display:flex;"><span>    <span style="color:#00a000">_PyToken_Init</span>(<span style="color:#666">&amp;</span>new_token);
+</span></span><span style="display:flex;"><span>    <span style="color:#0b0;font-weight:bold">int</span> type <span style="color:#666">=</span> <span style="color:#00a000">_PyTokenizer_Get</span>(p<span style="color:#666">-&gt;</span>tok, <span style="color:#666">&amp;</span>new_token);
+</span></span></code></pre></div><p>新建，初始化，获取一气呵成。因为目前为止还没有看到获取输入的部分，所以我们还没有触及到输出提示符的位置。而根据编译器的性质，直接获取输入的都是 lexer，所以我们需要继续向下。</p>
+<blockquote>
+<p>代码真的好复杂呜呜。</p>
+</blockquote>
+<p>进入 <code>_PyTokenizer_Get</code> 函数，发现其是对 <code>tok_get</code> 的简单包装。后者对需要获取的 token 类型进行了判断，因为我们什么都没输入，所以不属于 f-string 类型，所以会调用 <code>tok_get_normal_mode</code> 函数。</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">if</span> (current_tok<span style="color:#666">-&gt;</span>kind <span style="color:#666">==</span> TOK_REGULAR_MODE) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a2f;font-weight:bold">return</span> <span style="color:#00a000">tok_get_normal_mode</span>(tok, current_tok, token);
+</span></span><span style="display:flex;"><span>    } <span style="color:#a2f;font-weight:bold">else</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#a2f;font-weight:bold">return</span> <span style="color:#00a000">tok_get_fstring_mode</span>(tok, current_tok, token);
+</span></span><span style="display:flex;"><span>    }
+</span></span></code></pre></div><blockquote>
+<p>f-string 是 Python 的一种特性，支持格式化字符串。</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-Python" data-lang="Python"><span style="display:flex;"><span>name <span style="color:#666">=</span> <span style="color:#b44">&#34;Alice&#34;</span>
+</span></span><span style="display:flex;"><span>age <span style="color:#666">=</span> <span style="color:#666">30</span>
+</span></span><span style="display:flex;"><span>formatted_string <span style="color:#666">=</span> <span style="color:#b44">f</span><span style="color:#b44">&#34;My name is </span><span style="color:#b68;font-weight:bold">{</span>name<span style="color:#b68;font-weight:bold">}</span><span style="color:#b44"> and I am </span><span style="color:#b68;font-weight:bold">{</span>age<span style="color:#b68;font-weight:bold">}</span><span style="color:#b44"> years old.&#34;</span>
+</span></span></code></pre></div></blockquote>
+<p>在函数中我们看到了一个无限的 for 循环：</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span>        <span style="color:#a2f;font-weight:bold">for</span> (;;) {
+</span></span><span style="display:flex;"><span>            c <span style="color:#666">=</span> <span style="color:#00a000">tok_nextc</span>(tok);
+</span></span><span style="display:flex;"><span>            <span style="color:#a2f;font-weight:bold">if</span> (c <span style="color:#666">==</span> <span style="color:#b44">&#39; &#39;</span>) {
+</span></span><span style="display:flex;"><span>                col<span style="color:#666">++</span>, altcol<span style="color:#666">++</span>;
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>            <span style="color:#a2f;font-weight:bold">else</span> <span style="color:#a2f;font-weight:bold">if</span> (c <span style="color:#666">==</span> <span style="color:#b44">&#39;\t&#39;</span>) {
+</span></span><span style="display:flex;"><span>                col <span style="color:#666">=</span> (col <span style="color:#666">/</span> tok<span style="color:#666">-&gt;</span>tabsize <span style="color:#666">+</span> <span style="color:#666">1</span>) <span style="color:#666">*</span> tok<span style="color:#666">-&gt;</span>tabsize;
+</span></span><span style="display:flex;"><span>                altcol <span style="color:#666">=</span> (altcol <span style="color:#666">/</span> ALTTABSIZE <span style="color:#666">+</span> <span style="color:#666">1</span>) <span style="color:#666">*</span> ALTTABSIZE;
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>            <span style="color:#a2f;font-weight:bold">else</span> <span style="color:#a2f;font-weight:bold">if</span> (c <span style="color:#666">==</span> <span style="color:#b44">&#39;\014&#39;</span>)  {<span style="color:#080;font-style:italic">/* Control-L (formfeed) */</span>
+</span></span><span style="display:flex;"><span>                col <span style="color:#666">=</span> altcol <span style="color:#666">=</span> <span style="color:#666">0</span>; <span style="color:#080;font-style:italic">/* For Emacs users */</span>
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>            <span style="color:#a2f;font-weight:bold">else</span> <span style="color:#a2f;font-weight:bold">if</span> (c <span style="color:#666">==</span> <span style="color:#b44">&#39;\\&#39;</span>) {
+</span></span><span style="display:flex;"><span>                   <span style="color:#a2f;font-weight:bold">if</span> ((c <span style="color:#666">=</span> <span style="color:#00a000">tok_continuation_line</span>(tok)) <span style="color:#666">==</span> <span style="color:#666">-</span><span style="color:#666">1</span>) {
+</span></span><span style="display:flex;"><span>                    <span style="color:#a2f;font-weight:bold">return</span> <span style="color:#00a000">MAKE_TOKEN</span>(ERRORTOKEN);
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>            <span style="color:#a2f;font-weight:bold">else</span> {
+</span></span><span style="display:flex;"><span>                <span style="color:#a2f;font-weight:bold">break</span>;
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span></code></pre></div><p>很明显可以看出，这个循环是获取缩进的，因为 Python 是一个缩进敏感的语言，而 <code>tok_nextc</code> 则很明显是我们接下来的目标。</p>
+<blockquote>
+<p>据 Guido 说，他把 Python 设计成这样是为了让程序员们能够好好格式化他们的代码，因为以前的编辑器自动格式化功能总是没办法使人满意。</p>
+</blockquote>
+<p>里面又是一个无限循环，与上同理，我们的关注目标是：<code>rc = tok-&gt;underflow(tok);</code>，rc 是我们获取的 token，而赋值右边的这个代码，如果你熟悉 C 语言的话就会认出，<code>tok-&gt;underflow</code> 是一个函数指针，它以 tok 作为参数调用了某个函数，那它究竟调用了哪个函数？</p>
+<p>因为 tok 的一个字段是函数指针，所以我们有必要回头关注一下 tok 的初始化过程。在 <code>_PyTokenizer_FromFile</code> 中，tok-&gt;underflow 被设置为了 <code>&amp;tok_underflow_interactive</code>。</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">if</span> (ps1 <span style="color:#666">||</span> ps2) {
+</span></span><span style="display:flex;"><span>        tok<span style="color:#666">-&gt;</span>underflow <span style="color:#666">=</span> <span style="color:#666">&amp;</span>tok_underflow_interactive;
+</span></span><span style="display:flex;"><span>    } <span style="color:#a2f;font-weight:bold">else</span> {
+</span></span><span style="display:flex;"><span>        tok<span style="color:#666">-&gt;</span>underflow <span style="color:#666">=</span> <span style="color:#666">&amp;</span>tok_underflow_file;
+</span></span><span style="display:flex;"><span>    }
+</span></span></code></pre></div><blockquote>
+<p>这并不是一个 C 语言的教程，所以我假定你对函数指针有一定的了解，并简单使用过它。</p>
+</blockquote>
+<p>也就是说 <code>tok-&gt;underflow(tok)</code> 会调用 tok_underflow_interactive(tok)，而在这个函数中会调用 PyOS_Readline 函数，经过初始化和获取可读锁后，调用了 PyOS_StdioReadline 函数。</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#a0a000">tok_underflow_interactive</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#0b0;font-weight:bold">char</span> <span style="color:#666">*</span>newtok <span style="color:#666">=</span> <span style="color:#00a000">PyOS_Readline</span>(tok<span style="color:#666">-&gt;</span>fp <span style="color:#666">?</span> tok<span style="color:#666">-&gt;</span><span style="color:#a0a000">fp</span> : stdin, stdout, tok<span style="color:#666">-&gt;</span>prompt);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a0a000">PyOS_Readline</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">if</span> (PyOS_ReadlineFunctionPointer <span style="color:#666">==</span> <span style="color:#a2f">NULL</span>) {
+</span></span><span style="display:flex;"><span>        PyOS_ReadlineFunctionPointer <span style="color:#666">=</span> PyOS_StdioReadline;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    _PyOS_ReadlineTState <span style="color:#666">=</span> tstate;
+</span></span><span style="display:flex;"><span>    Py_BEGIN_ALLOW_THREADS
+</span></span><span style="display:flex;"><span>    <span style="color:#00a000">PyThread_acquire_lock</span>(_PyOS_ReadlineLock, <span style="color:#666">1</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">if</span> (<span style="color:#666">!</span><span style="color:#00a000">isatty</span>(<span style="color:#00a000">fileno</span>(sys_stdin)) <span style="color:#666">||</span> <span style="color:#666">!</span><span style="color:#00a000">isatty</span>(<span style="color:#00a000">fileno</span>(sys_stdout)) <span style="color:#666">||</span> <span style="color:#666">!</span><span style="color:#00a000">_Py_IsMainInterpreter</span>(tstate<span style="color:#666">-&gt;</span>interp))
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        rv <span style="color:#666">=</span> <span style="color:#00a000">PyOS_StdioReadline</span>(sys_stdin, sys_stdout, prompt);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">else</span> {
+</span></span><span style="display:flex;"><span>        rv <span style="color:#666">=</span> (<span style="color:#666">*</span>PyOS_ReadlineFunctionPointer)(sys_stdin, sys_stdout, prompt);
+</span></span><span style="display:flex;"><span>    }
+</span></span></code></pre></div><p>这里你可能会疑惑为什么需要一个条件判断，而且条件判断执行的内容还是一样的。据 Guido 所说，因为 PyOS_ReadlineFunctionPointer 是一个公开的 C api，所以可以编写一个 C 扩展来自定义它，这会方便那些希望 GUI 能够处理 python 输入的开发者来更好地将 python 嵌入到他们自己的程序中。更多信息可以查看 Guido 自己的教程。</p>
+<p>不论如何，我们都进入到了 PyOS_StdioReadline 函数里，跳过关于 Windows console 的宏，我们就看到了最终的目标：</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span>    <span style="color:#00a000">fflush</span>(sys_stdout);
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">if</span> (prompt) {
+</span></span><span style="display:flex;"><span>        <span style="color:#00a000">fprintf</span>(stderr, <span style="color:#b44">&#34;%s&#34;</span>, prompt);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#00a000">fflush</span>(stderr);
+</span></span></code></pre></div><p>到了这里，你可以长舒一口气了，不过 prompt 是在哪里被设置的呢？我们先追溯这个参数第一次被传入的位置，我们刚刚在寻找 <code>tok-&gt;underflow</code> 是何时被绑定的时，最终确定是在 <code>_PyTokenizer_FromFile</code> 函数里，如果你观察仔细的话，你会发现它的上一行就是对提示符的赋值：</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span>  tok<span style="color:#666">-&gt;</span>prompt <span style="color:#666">=</span> ps1;
+</span></span><span style="display:flex;"><span>  tok<span style="color:#666">-&gt;</span>nextprompt <span style="color:#666">=</span> ps2;
+</span></span></code></pre></div><p>呜呼，所以我们知道了 Python 是如何初始化，REPL 中的 <code>&gt;&gt;&gt;</code> 是怎么打出来的，多么寻常而又不寻常的一条 <code>fprintf</code> 语句啊。那么这次的文章就到这里，之后我们可以再来看看 Python 是怎么运行起来的（lexer，tokenizer，parser）。</p>
+<p>等等，我还有一个疑问，就是在 <code>pymain_run_python</code> 函数中的 if-else if-else 语句中：它的下面还有一行：</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">if</span> (config<span style="color:#666">-&gt;</span>run_command) {
+</span></span><span style="display:flex;"><span>        <span style="color:#666">*</span>exitcode <span style="color:#666">=</span> <span style="color:#00a000">pymain_run_command</span>(config<span style="color:#666">-&gt;</span>run_command);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">else</span> <span style="color:#a2f;font-weight:bold">if</span> (config<span style="color:#666">-&gt;</span>run_module) {
+</span></span><span style="display:flex;"><span>        <span style="color:#666">*</span>exitcode <span style="color:#666">=</span> <span style="color:#00a000">pymain_run_module</span>(config<span style="color:#666">-&gt;</span>run_module, <span style="color:#666">1</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">else</span> <span style="color:#a2f;font-weight:bold">if</span> (main_importer_path <span style="color:#666">!=</span> <span style="color:#a2f">NULL</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#666">*</span>exitcode <span style="color:#666">=</span> <span style="color:#00a000">pymain_run_module</span>(<span style="color:#b44">L</span><span style="color:#b44">&#34;__main__&#34;</span>, <span style="color:#666">0</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">else</span> <span style="color:#a2f;font-weight:bold">if</span> (config<span style="color:#666">-&gt;</span>run_filename <span style="color:#666">!=</span> <span style="color:#a2f">NULL</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#666">*</span>exitcode <span style="color:#666">=</span> <span style="color:#00a000">pymain_run_file</span>(config);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a2f;font-weight:bold">else</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#666">*</span>exitcode <span style="color:#666">=</span> <span style="color:#00a000">pymain_run_stdin</span>(config);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00a000">pymain_repl</span>(config, exitcode);
+</span></span></code></pre></div><p>其内部调用的是 <code>PyRun_AnyFileFlags</code>，这个函数是 <code>pymain_run_stdin</code> 调用的函数的一个宏包装：</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#080">#define PyRun_AnyFileFlags(fp, name, flags) \
+</span></span></span><span style="display:flex;"><span><span style="color:#080">    PyRun_AnyFileExFlags((fp), (name), 0, (flags))
+</span></span></span></code></pre></div><p>但是在 <code>pymain_run_stdin</code> 中调用 <code>PyRun_AnyFileExFlags</code> 时其 flags 前的参数也是 0，我不知道为什么还保留 pymain_run_repl 的原因是什么，是为了向后兼容吗？欢迎和我交流你的想法～。</p>
+<h2 id="参考资料">参考资料</h2>
+<ol>
+<li>Guido van Rossum <a href="https://paper.dropbox.com/doc/Yet-another-guided-tour-of-CPython-XY7KgFGn88zMNivGJ4Jzv">Yet another guided tour of CPython</a></li>
+<li>Louie Lu <a href="https://hackmd.io/@klouielu/ByMHBMjFe?type=view">A guide from parser to objects, observed using GDB</a></li>
+<li>Anthony Shaw <a href="https://realpython.com/cpython-source-code-guide/#establishing-runtime-configuration">Your Guide to the CPython Source Code</a></li>
+<li><a href="https://devguide.python.org/internals/exploring/">Python devguide</a></li>
+<li><a href="https://devguide.python.org/internals/compiler/">Python&rsquo;s Compiler design</a></li>
+<li><a href="https://peps.python.org/pep-0432/">PEP 432</a></li>
+<li><a href="https://peps.python.org/pep-0587/">PEP 587</a></li>
+</ol>
+    
+  </article>
+  <div class="paginator">
+    
+    <a class="link" href="https://forceoflife.cn/post/bldbjszb/">← prev</a>
+    
+    
+    <a class="link" href="https://forceoflife.cn/post/wangshi-pingshu/wangshi-pingshu/">next →</a>
+    
+  </div>
+  <div class="comment">
+    
+    <div id="disqus_thread"></div>
+<script>
+    window.disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "codearts" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    
+    
+    
+    
+  </div>
+  
+</main>
+
+    <footer id="footer">
+  <div>
+    <span>© 2023</span> - <span>2024</span>
+  </div>
+
+  <div>
+    <span>Powered by </span>
+    <a class="link" href="https://gohugo.io/">Hugo</a>
+    <span> 🍦 Theme </span>
+    <a class="link" href="https://github.com/queensferryme/hugo-theme-texify">TeXify</a>
+  </div>
+
+  <div class="footnote">
+    <span>Follow me on <a class=link href=https://github.com/queensferryme>GitHub</a>,
+<a class=link href=https://twitter.com/queensferryme>Twitter</a> or
+<a class=link href=/index.xml>RSS</a> |
+<a class=link href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh target=_blank rel=noopener>CC BY-NC-SA 4.0</a>
+</span>
+  </div>
+</footer>
+
+  </div>
+
+  
+  
+
+  
+  
+
+  
+  
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'G-TZC1QJP9DV', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+</body>
+
+</html>
