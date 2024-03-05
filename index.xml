@@ -8,7 +8,343 @@
     <language>zh</language>
     <managingEditor>Zhixiao-Zhang@outlook.com (Patrick)</managingEditor>
     <webMaster>Zhixiao-Zhang@outlook.com (Patrick)</webMaster>
-    <lastBuildDate>Mon, 25 Dec 2023 23:52:00 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 05 Mar 2024 23:16:20 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Data Flow Analysis</title>
+      <link>https://forceoflife.cn/post/data-flow-analysis/data-flow-analysis/</link>
+      <pubDate>Tue, 05 Mar 2024 23:16:20 +0800</pubDate>
+      <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
+      <guid>https://forceoflife.cn/post/data-flow-analysis/data-flow-analysis/</guid>
+      
+      <description>&lt;p&gt;这篇文章是我在看 &lt;em&gt;Engineering A Compiler&lt;/em&gt; (EAC，橡书) 中第 9 章数据流分析的笔记，里面标有 Confused 的地方是我困惑的内容，包括过程间常量传播 (Jump Function)、加速DOM计算，之后如果搞懂了会写文章来补充。&lt;/p&gt;
+&lt;h2 id=&#34;introdution&#34;&gt;Introdution&lt;/h2&gt;
+&lt;p&gt;Requirements for optimization:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;find the points which can be improved&lt;/li&gt;
+&lt;li&gt;the transformation is safe&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;iterative-data-flow-analysis&#34;&gt;Iterative Data-Flow Analysis&lt;/h2&gt;
+&lt;p&gt;For a forward data-flow problem, the algorithm should use an RPO computed on the CFG. By contrast, the algorithm should use an RPO computed on the reverse CFG to solve a backward data-flow problem.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Reverse CFG: the CFG with its edges reversed. Normally, the compiler need to add a unique exit node so that the reverse CFG has a unique entry node.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Reverse Postorder (RPO): Label the nodes in the graph with their visitation order in a reverse postorder traversal which visits as many of a node’s predecessors as possible before visiting the node itself. &lt;strong&gt;A node’s RPO number is simple $|N| + 1$ minus its postorder number, where &lt;em&gt;N&lt;/em&gt; is the set of nodes in the graph.&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;dominance&#34;&gt;Dominance&lt;/h3&gt;
+&lt;p&gt;Definition: node a dominates node b, if and only if a lies on every path from the entry of CFG to b.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The dominance calculation is a forward data-flow problem, and relies only on the structure of the graph.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;$D_{OM} (b_i)$: a set which contains the names of all nodes that dominate $b_i$.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Using the following equation to compute these sets:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;$D_{OM} (n) = {n} \cup \left( \mathop{\bigcap}\limits_{m\in preds(n)} D_{OM} (m) \right)$&lt;/p&gt;
+&lt;p&gt;with the initial conditions that $D_{OM} (n_0) = {n_0}$, and $\forall n ≠ n_0$, $D_{OM} (n) = N$, where N is the set of all nodes in the CFG.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Three-step to solve the equation:&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;build a CFG&lt;/li&gt;
+&lt;li&gt;gather initial information for each block&lt;/li&gt;
+&lt;li&gt;solve the equations to produce the $D_{OM}$ sets for each block&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/Iterative-Dominance-Framework.png&#34; alt=&#34;Untitled&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;live-variable-analysis&#34;&gt;Live-Variable Analysis&lt;/h3&gt;
+&lt;p&gt;Type: a backward global data-flow problem&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The result of this analysis can be used for register allocation and construction of some variants of SSA form.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Equation:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;$L_{IVE}O_{UT}(n) = \mathop{\bigcup}\limits_{m \in succ(n)}(UEV_{AR}(m) \cup (L_{IVE}O_{UT}(m) \cap \overline{V_{AR}K_{ILL}(m)}))$&lt;/p&gt;
+&lt;p&gt;and the initial condition that $L_{IVE}O_{UT}(n) = \emptyset$, $\forall n$.&lt;/p&gt;
+&lt;p&gt;Three-step to compute the set:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Perform control-flow analysis to build a CFG.&lt;/li&gt;
+&lt;li&gt;Compute the values of the initial sets.&lt;/li&gt;
+&lt;li&gt;Apply the iterative algorithm.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;Using an RPO computed on the reversed CFG to solve this problem.&lt;/strong&gt;&lt;/p&gt;
+&lt;h3 id=&#34;limitations&#34;&gt;Limitations&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;The algorithm which computes the sets $L_{IVE}O_{UT}$, it implicitly assumes that execution can reach all of those successors. However, one or more of them may not be reachable.&lt;/li&gt;
+&lt;li&gt;Arrays and pointers, which force the analyzer to assume that every variable has been modified. We can solve this problem by guarateening the type safety or analysing the pointer variables.&lt;/li&gt;
+&lt;li&gt;Procedure calls. We also have to assume that the callee modifies all the variable which is accessible to both caller and callee and the call-by-reference parameters.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;available-expressions&#34;&gt;Available Expressions&lt;/h3&gt;
+&lt;p&gt;Definition: An expression e is available at point p in a procedure if and only if on every path from the procedure’s entry to p, e is evaluated and none of its constituent subexpressions is redefined between that evaluation and p.&lt;/p&gt;
+&lt;p&gt;Type: a forward data-flow problem.&lt;/p&gt;
+&lt;p&gt;The equation to compute the $A_{VAIL}I_N(n)$:&lt;/p&gt;
+&lt;p&gt;$A_{VAIL}I_N(n) = \mathop{\bigcap}\limits_{m \in preds(n)}(DEE_{XPR}(m) \cup (A_{VAIL}I_{N}(m) \cap \overline{E_{XPR}K_{ILL}(m)}))$&lt;/p&gt;
+&lt;p&gt;, the initial condition that $A_{VAIL}I_N(n_0) = \emptyset$, $A_{VAIL}I_N(n) = {\  all \  expressions \ }, \forall n ≠ n0$.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;$DEE_{XPR}(n)$: a set of downward exposed expressions in n. An expression $e \in DEE_{XPR}(n)$ if and only if block n evaluates $e$ and none of $e$’s operands is defined between the last evaluation of $e$ in $n$ and the end of $n$.&lt;/li&gt;
+&lt;li&gt;$E_{XPR}K_{ILL}(n)$: this set contains all those expressions that are “killed” by  a definition in $n$. An expression is killed if and only if one or more of its operands are redefined in the block.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;An expression $e$ is available on entry to n if and only if it is available on exit from &lt;strong&gt;each&lt;/strong&gt; of $n$’s predecessors in the CFG.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The $A_{VAIL}I_N(n)$ can be used to perform &lt;em&gt;global common subexpression elimination&lt;/em&gt; and lazy code motion.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;reaching-defnitions&#34;&gt;Reaching Defnitions&lt;/h3&gt;
+&lt;p&gt;Purpose: to find the set of definitions that reach a block.&lt;/p&gt;
+&lt;p&gt;Domain of $R_{EACHES}$ is the set of definitions in procedure.&lt;/p&gt;
+&lt;p&gt;A definition d of some variable v reaches operation i if and only if i reads the value of v and there exists a path form d to i that doesn’t define v.&lt;/p&gt;
+&lt;p&gt;The compiler annotates each node n in the CFG with a set $R_{EACHES}(n)$, computed as a forward data-flow problem:&lt;/p&gt;
+&lt;p&gt;$R_{EACHES}(n) = \emptyset$, $\forall n$&lt;/p&gt;
+&lt;p&gt;$R_{EACHES}(n) = \mathop{\bigcup}\limits_{m \in preds(n)} ( DED_{EF}(m) \cup (R_{EACHES}(m) \cap \overline{D_{EF}K_{ILL}(m)}))$&lt;/p&gt;
+&lt;p&gt;$DED_{EF}(m)$ is the set of downward-exposed definitions in m: those definitions in m for which the defined name is not subsequently redefined in m.&lt;/p&gt;
+&lt;p&gt;$D_{EF}K_{ILL}(m)$ contains all the definition points that are obscured by a definition of the same name in m. Thus $\overline{D_{EF}K_{ILL}(m)}$ consists of the definition points that are not obsucred in m.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Computing $DED_{EF}$ and $D_{EF}K_{ILL}$ requires a mapping from names to definiton points. It’s more complex to gather the initial information than it is for live variables.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;anticipable-expressions&#34;&gt;Anticipable Expressions&lt;/h3&gt;
+&lt;p&gt;Definition:&lt;/p&gt;
+&lt;p&gt;An expression $e$ is considered &lt;em&gt;anticipable&lt;/em&gt; on exit from block b if and only if&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;every path that leaves b evaluates and subsequently use $e$, and&lt;/li&gt;
+&lt;li&gt;evaluating $e$ at the end of $b$ would produce the same result as the first evaluation of $e$ along each of those paths. (this property corresponds to the term “anticipable”)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Domainof the problem: the set of expressions.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Equation:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;$A_{NT}O_{UT}(n_f) = \emptyset$&lt;/p&gt;
+&lt;p&gt;$A_{NT}O_{UT}(n) = {\ all \  expressions \ }, \forall n ≠ n_f$&lt;/p&gt;
+&lt;p&gt;$A_{NT}O_{UT}(n) = \mathop{\bigcap}\limits_{m \in succ(n)}(UEE_{XPR}(m) \cup (A_{NT}O_{UT}(m) \cap \overline{E_{XPR}K_{ILL}(m)}))$&lt;/p&gt;
+&lt;p&gt;$UEE_{XPR}(m)$ is the set of upward-exposed expressions—those used in $m$ before they are killed.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The results of anticipability analysis are used in code motion both in lazy code motion and code hoisting.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;interprocedural-summary-problems-confused&#34;&gt;Interprocedural Summary Problems (Confused)&lt;/h3&gt;
+&lt;p&gt;Problem: In the absence of specific information about the call, the compiler must make worst-case assumptions that account for all the possible actions of the callee, or any procedures that it, in turn, calls.&lt;/p&gt;
+&lt;p&gt;To limit such impact, the classic summary problems compute the set of variables that might be modified as a result of the call and that might be used as a result of the call.&lt;/p&gt;
+&lt;p&gt;The &lt;em&gt;intreprocedural may modify problem&lt;/em&gt; annotates each call site with a set of names that the callee, and procedures it calls, might modify.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The result of this analysis can be used for global constant propagation.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Equation:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;$M_{AY}M_{OD}(p) = L_{OCAL}M_{OD}(p) \cup \left( \mathop{\bigcup}\limits_{e = (p,q)} ubind_e(M_{AY}M_{OD}(q))\right)$&lt;/p&gt;
+&lt;p&gt;For a call-graph edge $e = (p,q)$, $unbind_e(x)$ maps each name in x from the name space of q to the name space of p, using the bindings at the specific call site that coreesponds to $e$.&lt;/p&gt;
+&lt;p&gt;$L_{OCAL}M_{OD}(p)$ contains all the names modified locally in p that are visible outside p.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;It’s computed as the set of names defined in p minus any names that are stricly local to p.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The compiler can also compute information on what variables might be referenced as a result of executing a procedural call, which is called the &lt;em&gt;interprocedural may reference problem&lt;/em&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;static-single-assignment-form&#34;&gt;Static Single-Assignment Form&lt;/h2&gt;
+&lt;p&gt;Purpose: to limit the number of analyses.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Solution: building a variant form that encodes both data flow and control flow directly in the IR.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;$\phi$-function: this function combines the values from distinct edges. When control enters a block, all the $\phi$-functions in the block execute, &lt;strong&gt;concurrently&lt;/strong&gt;. They evaluate to the argument that corresponds to the edge along which control entered the block.&lt;/p&gt;
+&lt;p&gt;Two rules hold after the transformation to SSA:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;each definition in the procedure has a unique name, and&lt;/li&gt;
+&lt;li&gt;each use refers to a single definition.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Steps to transform a procedure into SSA form:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Insert the appropriate $\phi$-functions for each variable into the code;&lt;/li&gt;
+&lt;li&gt;Rename variables with subscripts to make the two rules hold.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;Maximal SSA form&lt;/strong&gt;: a naive algorithm to convert IR to SSA, which creates many extraneous $\phi$-funtions.&lt;/p&gt;
+&lt;h3 id=&#34;dominator-trees&#34;&gt;Dominator Trees&lt;/h3&gt;
+&lt;p&gt;Strictly dominate set: $D_{OM}(n)-n$&lt;/p&gt;
+&lt;p&gt;Immediate dominator: the node in strictly dominate set that is closest to n, denoted $ID_{OM}(n)$.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The entry node has no immediate dominator.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Dominator tree: it contains all node of a flow graph, and there is an edge from m to n if m is $ID_{OM}(n)$.&lt;/p&gt;
+&lt;p&gt;The dominator tree contains both the $ID_{OM}$ information and the $D_{OM}$ sets for each node. Each node lies on the path from the root of dominator tree to n, inclusive of both the root and n.&lt;/p&gt;
+&lt;h3 id=&#34;dominance-frontiers&#34;&gt;Dominance Frontiers&lt;/h3&gt;
+&lt;p&gt;A definition in node n forces a corresponding $\phi$-function at any join point m where&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;n dominates a predecessor of m ($q \in preds(m)$ and $n \in D_{OM}(q)$), and&lt;/li&gt;
+&lt;li&gt;n doesn’t strictly dominate m.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Dominance frontier: the collection of nodes &lt;em&gt;m&lt;/em&gt; that have above property with respect to n, denoted $DF(n)$.&lt;/p&gt;
+&lt;p&gt;The algorithm to compute dominance frontiers is based on three observations as following:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Node in a  DF set must be join points in the graph.&lt;/li&gt;
+&lt;li&gt;For a join point j, each predecessor k of j must have $j \in DF(k)$.&lt;/li&gt;
+&lt;li&gt;If $j \in DF(k)$ for some predecessor k, then j must also be in DF(l) for each $l \in D_{OM}(k)$, unless $l \in D_{OM}(j)$.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/static/2024/data-flow-analysis/images/DF.png&#34; alt=&#34;DF set&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;placing-phi-functions&#34;&gt;Placing $\phi$-Functions&lt;/h3&gt;
+&lt;p&gt;To improve the naive algorithm, the basic idea is that a definition of x in block b forces a $\phi$-function at every node in DF(b). But we can continue to improve it, because a variable that is only &lt;strong&gt;live&lt;/strong&gt; within a single block can never have a live $\phi$-function.&lt;/p&gt;
+&lt;p&gt;Globals set: a set of names which are live across multiple blocks.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;In each block, it looks for names with upward-exposed uses — the $UEV_{AR}$ set from the live-variables calculation.&lt;/li&gt;
+&lt;li&gt;With the globals set, the compiler can insert $\phi$-functions for those names within it and ignore any name that is not in it.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Blocks set: a list of blocks for each name that contain a definition of that name.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;These block lists serve as an initial worklist for the $\phi$-insertion algorithm.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Algorithm to find the sets:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/Globals-Blocks.png&#34; alt=&#34;Globals and blocks&#34;&gt;&lt;/p&gt;
+&lt;p&gt;and to rewrite the code:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/Insertion.png&#34; alt=&#34;Untitled&#34;&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Since all the $\phi$-functions in a block execute concurrently, the order of their insertion is insignificant.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;However, the distinction between local names and global names is not sufficient to avoid all dead $\phi$-functions. To further eliminate the extraneous insertions, the compiler can construct $L_{IVE}O_{UT}$ sets and add a test based on liveness to the inner loop of the insertion algorithm. The SSA form generated by that modification is called pruned SSA form.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;There are two ways to improve the efficiency:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;The algorithm should avoid placing any block on the worklist more than once per global name, which can be solved by keeping a checklist of blocks that have already been processed. For implementation, it can use a sparse set to save the space.&lt;/li&gt;
+&lt;li&gt;The compiler can maintain a checklist of blocks (a single sparse set, which reinitialized along with WorkList) that already contain $\phi$-functions for a given blocks.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;renaming&#34;&gt;Renaming&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/Renaming.png&#34; alt=&#34;Renaming&#34;&gt;&lt;/p&gt;
+&lt;p&gt;This algorithm renames both definitions and uses in a preorder walk over the procedure’s dominator tree. It rewrites the operands with current SSA names, then it creates a new SSA name for the result of the operation. After rewriting the operands and definition, the algorithm rewrites the appropriate $\phi$-function parameters in each CFG successor of the block, using the current SSA names.&lt;/p&gt;
+&lt;p&gt;Finally, it recurs on any children of the block in the dominator tree.&lt;/p&gt;
+&lt;p&gt;Moreover, the algorithm maintains a stack which holds the subscript of the name’s current SSA name.&lt;/p&gt;
+&lt;p&gt;It also maintain a counter to ensure that each definition receives a unique SSA name.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The following things makes me confused.&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The compiler must assign an ordinal parameter slot in those $\phi$-functions for b. When we draw the SSA form, we always assume a left-to-right order that matches the left-to-right order in which the edges are drawn.
+Internally, the compiler can number the edges and parameter slots in any consistent fashion that produces the desired result. This requires cooperation between the code that builds the ssa form and the code that builds the cfg. (For example, if the CFG implementation uses a list of edges leaving each block, the order of that list can determine the mapping.)&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;We can use a method to limit the max size of stack to the depth of the dominator tree.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;em&gt;NewName&lt;/em&gt; may overwrite the same stack slot multiple times within a single block. But it requires another mechanism for determining which stacks to pop on exit from a block.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;NewName&lt;/em&gt; can thread together the stack entries for a block. Rename can use the thread to pop the appropriate stacks.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;translation-out-of-ssa-form&#34;&gt;Translation Out of SSA Form&lt;/h3&gt;
+&lt;p&gt;Reason: modern processors do not implement $\phi$-functions. The compiler would produce incorrect code when it simply drops the subscripts, reverts to base names, and deletes the $\phi$-functions if the code has been rearranged.&lt;/p&gt;
+&lt;p&gt;The compiler can keep the SSA name space instact and replace each $\phi$-function with a set of copy operations—one along each incoming edge.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Critical Edge: In a CFG, an edge whose source has multiple successors and whose sink has multiple predecessors is called acritical edge.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;If a block has multiple successors, the compiler cann’t simply insert copies directly into it. To remedy this problem, the compiler can split the edge, insert a new block between the nodes, and place the copies in that new block.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The Lost-Copy Problem&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;The lost-copy problem arises from the combination of copy folding and critical edges that cann’t be split.&lt;/p&gt;
+&lt;p&gt;For example:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/out-of-ssa-wrong.png&#34; alt=&#34;out-of-ssa-wrong&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Panel a assigns z the second to last value of i; the code in panel c assigns $z_0$ the last value of i. With the critical edge split, as in panel d, copy insertion produces the correct behavior. However, it adds a jump to every iteration of the loop.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/split-critical.png&#34; alt=&#34;split&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The compiler can avoid this problem by checking the liveness of the target name for each copy that it tries to insert during out-of-SSA translation. When it discovers a copy target(in this example is $i_1$) that is live, it must preserve the living value in a tempory name and rewrite subsequent uses to refer to the tempoary name.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;This step can be done with an algorithm modelled on the renaming step.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/correct-insertion.png&#34; alt=&#34;correct&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The swap problem&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Reason: all $\phi$-functions in a block execute concurrently, but the assignments execute serially.&lt;/p&gt;
+&lt;p&gt;For example:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/naive-insertion.png&#34; alt=&#34;naive-problem&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The straightford fix for this problem is to adopt a two-stage copy protocol.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The first stage copies each of the $\phi$-function arguments to its own temporary name, simulating the behavior of the original $\phi$-functions.&lt;/li&gt;
+&lt;li&gt;The second stage then copies those values to the $\phi$-function targets.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;For the example, it would require four assignments: $s = y_1$, $t = x_1$, $x_1 = s$, $y_1 = t$.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Unfortunately, this solution doubles the number of copy operations required to translate out of SSA form.&lt;/p&gt;
+&lt;p&gt;In fact, this problem can arise without a cycle of copies. All it takes is a set of $\phi$-functions that have, as inputs, variables defined as outputs of other $\phi$-functions in the same block. Though it can be fixed easily by carefully arranging the order of inserted copies.&lt;/p&gt;
+&lt;h3 id=&#34;using-ssa-form-simply-sparse-constant-propagation-algorithm&#34;&gt;Using SSA Form (Simply Sparse Constant Propagation Algorithm)&lt;/h3&gt;
+&lt;p&gt;semilattice: A semilattice consists of a set $L$ of values and a meet operator, $\wedge$. The meet operator must be idempotent, commutative and associative; it imposes an order on the elements of $L$ as follows:&lt;/p&gt;
+&lt;p&gt;$a ≥ b$ if and only if $a \wedge b = b$ and&lt;/p&gt;
+&lt;p&gt;$a &amp;gt; b$ if and only if $a &amp;gt; b$ and $a ≠b$&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;bottom element: $\bot$, with the properties that $\forall a \in L, a \wedge \bot = \bot, and \ \forall \ a \in L, a ≥ L$&lt;/li&gt;
+&lt;li&gt;top element: $\top$, with the properties that $\forall a \in L, a \wedge \top = a, and \ \forall \ a \in L, T ≥ a$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The semilattice for a single SSA name:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/Semilattice.png&#34; alt=&#34;Semilattice&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Simply Sparse Constant Propagation Algorithm:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/SSCP.png&#34; alt=&#34;SSCP&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Initialization phase:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;If n is defined by a $\phi$-function, SSCP sets &lt;em&gt;Value(n)&lt;/em&gt; to $\top$. (Optimistic)&lt;/li&gt;
+&lt;li&gt;If n is a known constant $c_i$, SSCP sets &lt;em&gt;Value(n)&lt;/em&gt; to $c_i$.&lt;/li&gt;
+&lt;li&gt;If n’s value cannot be known, SSCP sets &lt;em&gt;Value(n)&lt;/em&gt; to $\bot$.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Propagation phase:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;For a $\phi$-function, the result is simply the meet of the lattice values of all the $\phi$-function’s arguments.&lt;/li&gt;
+&lt;li&gt;For other kinds of operations, the compiler must apply operator-specific knowledge.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Because a SSA name can have one of three initial values, so each of them appears on the worklist at most twice.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Optimistic algorithm: algorithm that begin with the value $\top$ rather than $\bot$.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;In opposition to above, algorithm that begin with the value $\bot$ is ‘pessimistic’.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;interprocedural-analysis&#34;&gt;Interprocedural Analysis&lt;/h2&gt;
+&lt;p&gt;The inefficiencies introduced by procedure calls appear in two distinct form:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;loss of knowledge in single-procedure analysis and optimization that arise from the presence of a call site in the region being anaylzed and transformed, and&lt;/li&gt;
+&lt;li&gt;specific overhead introduced to maintain the abstractions inherent in the procedure call.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;call-graph-construction&#34;&gt;Call-Graph Construction&lt;/h3&gt;
+&lt;p&gt;Normally, the call-graph construction’s limiting factor is just the cost of scanning procedures to find the call sites. However, some programming language features may make the construction harder.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;procedure-valued variables: the compiler must analyze the code to estimate the set of potential callees at each call site that invokes a procedure-valued variable. If it just use a simple analog of global constant propagation, it will build extraneous edge. To build the precise call graph, it must track sets of parameters that are passed together, along the same path. The algorithm could then consider each set independently to derive the precise graph.&lt;/li&gt;
+&lt;li&gt;contextually-resolved names:
+&lt;ul&gt;
+&lt;li&gt;inheritance hierarchy in oriented-object;&lt;/li&gt;
+&lt;li&gt;a language that allows the program to import either executable code or new class at runtime.
+&lt;ul&gt;
+&lt;li&gt;To solve this problem, the compiler must construct a conservative call graph that reflects the complete set of potential callees at each call site.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;control-flow graph that has multiple entry and/or exit.
+&lt;ul&gt;
+&lt;li&gt;$M_{AY}M_{OD}$ analysis.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;interprocedural-constant-propagation&#34;&gt;Interprocedural Constant Propagation&lt;/h3&gt;
+&lt;p&gt;Goal: Discovering situations where a procedure always receives a known constant value or where a procedure always returns a known constant value.&lt;/p&gt;
+&lt;p&gt;Three problems of interprocedural constant propagation:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;discovering an initial set of constants;
+&lt;ul&gt;
+&lt;li&gt;simple method: Recognize literal constant values used as parameters.&lt;/li&gt;
+&lt;li&gt;more effect and expensive way: Use a full-fledged global constant propation step.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;propagating known constant values around the call graph;
+&lt;ul&gt;
+&lt;li&gt;This portion of the analysis resembles the iterative data-flow algorithms.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;modelling transmission of values through procedures.
+&lt;ul&gt;
+&lt;li&gt;The compiler builds a small model for each actual parameter, call &lt;em&gt;jump function&lt;/em&gt;. Each jump function, ${J_s}^x$relies on the values of some subset of the formal parameters to the procedure p that contains s, denoted $Support({J_s}^x)$.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Algorithm:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/IPO-CP.png&#34; alt=&#34;IPO-CP&#34;&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Similar to the above propagation algoritm, the worklist should be a sparse set or something like it.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Jump Function Implementation (Confused)&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;The implementation of jump functions is abundant, but all of them must hold following principles:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;If the analyzer determines that parameter x at call site s is a known constant c, then ${J_s}^x = c$, and $Support({J_s}^x) = \emptyset$.&lt;/li&gt;
+&lt;li&gt;If $y \in Support({J_s}^x)$ and $Value(y) = \top$, then ${J_s}^x = \top$.&lt;/li&gt;
+&lt;li&gt;If the analyzer determines that the value of ${J_s}^x$ cannot be determinded, then ${J_s}^x = \bot$.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;Two aspects to extend the algorithm&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;We can also construct &lt;em&gt;return jump functions&lt;/em&gt; to model the values returned from callee to caller. The algorithm can treat return jump functions in the same way that it handled ordinary jump functions. And the programmer need to avoid creating cycles of return jump functions that diverge (e.g. for a tail-recursive procedure).&lt;/li&gt;
+&lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Return jump functions are particularly important for routines that initialize values such as setting initial values for an object or class in Java.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ol&gt;
+&lt;li&gt;To extend the algorithm to cover a larger class of variables, the compiler can simply extend the vector of jump functions.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;advanced-topic&#34;&gt;Advanced Topic&lt;/h2&gt;
+&lt;h3 id=&#34;speeding-up-the-iterative-domiance-framework-confused&#34;&gt;Speeding up the Iterative Domiance Framework (Confused)&lt;/h3&gt;
+&lt;p&gt;We can use the $ID_{OM}$ sets as a proxy for the $D_{OM}$ sets, provided we can provide efficient methods to initialize the sets and to intersect them. We can use a two-pointer algorithm to identify the common suffix.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/Advanced-Topic.png&#34; alt=&#34;Advanced-Topic&#34;&gt;&lt;/p&gt;
+&lt;p&gt;This improved algorithm efficient, it halts in two passes on any reducible graph, in more than two passes on any irreducible graph.&lt;/p&gt;</description>
+      
+    </item>
+    
     <item>
       <title>往事——评书</title>
       <link>https://forceoflife.cn/post/wangshi-pingshu/wangshi-pingshu/</link>
@@ -656,38 +992,6 @@
 &lt;h2 id=&#34;使用体验&#34;&gt;使用体验&lt;/h2&gt;
 &lt;p&gt;刚换了没几天，所以没有什么深度的感受。最大的感觉就是掌控感变强了，之前由于对 nodejs 的不熟悉，导致改代码都不知道怎么改，而 hugo 似乎是使用了纯粹的 html + css + js，使得修改代码变得简单了。不过要吐槽的是，这个主题的代码质量实在不敢恭维，我几乎不敢相信这是一份开源出来的代码而不是为了赶时间外包的产物，不过我对 web 并不熟悉，也不敢随意修改，只能慢慢实践。&lt;/p&gt;
 &lt;p&gt;总的来说，hugo 目前给我的体验还是很好的，配置上也比 hexo 要方便许多，整体看起来也更清爽，没有令我如鲠在喉的&lt;code&gt;node_modules&lt;/code&gt; 和 &lt;code&gt;package.json&lt;/code&gt;，之后要做的就是好好产出内容了。&lt;/p&gt;</description>
-      
-    </item>
-    
-    <item>
-      <title>围炉夜话（3）——我在怀念什么？</title>
-      <link>https://forceoflife.cn/post/%E5%9B%B4%E7%82%89%E5%A4%9C%E8%AF%9D3/</link>
-      <pubDate>Thu, 03 Aug 2023 00:22:41 +0800</pubDate>
-      <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
-      <guid>https://forceoflife.cn/post/%E5%9B%B4%E7%82%89%E5%A4%9C%E8%AF%9D3/</guid>
-      
-      <description>&lt;p&gt;&lt;img src=&#34;https://cdn.jsdelivr.net/gh/zzxdyf1314/mycloudimg@master/C2EC9D52-9863-4245-A535-C46F44C82328.jpeg&#34; alt=&#34;屹立多年的信号站&#34;&gt;&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;年年岁岁花相似，岁岁年年人不同。 ——《代悲白头翁》 刘希夷 唐&lt;/p&gt;
-&lt;p&gt;谁道人生无再少？门前流水尚能西！休将白发唱黄鸡。 ——《浣溪沙·游蕲水清泉寺》 苏轼 宋&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;上周三，在和 docker 斗争了一下午未果后，我觉得应该出去走一走了。自我放假回家以来，虽然时常出去散步，但大都是为了饭后消食或锻炼身体而已，路线也总是那么一条——从家里走到包钢一中，再绕一圈到吾悦广场去，最后回家。这条路线是很不错的，长短合适，路途上也有一些值得看的东西，但于我而言却始终少些感觉。这种感觉是难以名状的，每个人的“感觉”更不尽相同，而我的感觉来自回忆。&lt;/p&gt;
-&lt;p&gt;为了寻找感觉，为了重逢记忆，我在吃下一颗抗过敏药后走出了家门。起初我仍旧是沿那条“老路线“走，当我走到包钢一中时，我并没有如往常一样改向南行，而是转向北，朝着记忆中熟悉的地方，向着儿时的我，缓缓走去……&lt;/p&gt;
-&lt;p&gt;我首先经过的是一个不知名的广场，它和我上一个家只隔一条马路，小时候妈妈和姥姥会带我去那里玩；再长大些，我有了朋友，有了电视、电脑，有了功课，便很少去了。如今再次踏足这里，站在广场中央，扫视着周围那或熟悉或陌生的建筑与设施，仿佛还置身于十余年之前的这里。那时这里很新，广场周边也没有这么多的植被，只是一大片的水泥地，边缘每隔一段距离修建了一个树坛，后来，这里多了一些健身器材，儿时的我把这些当作上好的玩具，总是争抢着要玩一个我现在也不知道是做什么的仪器。&lt;/p&gt;
-&lt;img src=&#34;https://cdn.jsdelivr.net/gh/zzxdyf1314/mycloudimg@master/ECD5390B-7E88-41CE-BBAB-F149D38E1C46_1_105_c.jpeg&#34; alt=&#34;儿时广场的健身器材&#34; style=&#34;zoom:75%;&#34; /&gt;
-&lt;p&gt;这里陪伴我直到小学三年级的暑假，那时我在这里练习自行车，从最开始还有两个辅助轮的玩具车，慢慢骑上了我妈的女式车，最后即使骑我父亲的 26 车也完全没问题了。中间经历了怎么样的波折，发生了哪些故事，而今的我已经不记得了，唯一确定的是，自我学会骑自行车起，应该就很少来这里了。&lt;/p&gt;
-&lt;p&gt;广场旁有一个酒店，大约也是在小学时修建的，当时也算一个比较有档次的地方了，家里亲戚的儿子圆锁时曾到这里吃过酒席。现今在看，当年崭新的装潢如今早已斑驳，曾经新潮的装修也随着彩板的老化与脱落而变得陈旧，泛黄的玻璃向路人诉说着它这些年的经历。&lt;/p&gt;
-&lt;img src=&#34;https://cdn.jsdelivr.net/gh/zzxdyf1314/mycloudimg@master/27CEC0B3-D9F9-4CB9-A095-926F25AB5E7A_1_105_c.jpeg&#34; alt=&#34;兰亭酒店&#34; style=&#34;zoom:75%;&#34; /&gt;
-&lt;p&gt;继续走，到了一处喷泉，印象里它应该好多年没有被使用过了。不过毕竟我已有 10 年上下没有来过了，中途是否还开启过就不得而知了，只是记忆中很早就不再喷了。在我还没上小学时，夏天的夜晚爸妈会带我来这里看喷泉，彼时我为那高高喷起、五彩斑斓的水柱所吸引，却被父母提醒说那里有电，不要靠太近。这段记忆确乎有些久远了，久远到我已记不得当时究竟与谁同行了；而我记住的，只是那时伴着水汽吹来的风，点缀着星星铺展的夜，和那段溢满童真的少年锦时。&lt;/p&gt;
-&lt;p&gt;再往南走一些，透过高楼大厦与树叶之间的空隙看到的，是我的母校——包钢一中。这个角度的她，不是那个高中时每天要待十多小时的水泥建筑，而是那个小时候坐在父亲自行车后座上经过这里时一眼千年的佳人。那时道路两侧的树还没有这么高，那时周围还大多是沙地，那时父亲额头鬓角还未见斑白，那时……&lt;/p&gt;
-&lt;img src=&#34;https://cdn.jsdelivr.net/gh/zzxdyf1314/mycloudimg@master/E205E542-43CF-4289-B3AB-C575DC3A6840_1_105_c.jpeg&#34; alt=&#34;E205E542-43CF-4289-B3AB-C575DC3A6840_1_105_c&#34; style=&#34;zoom:75%;&#34; /&gt;
-&lt;p&gt;之后便转头向我幼时住的小区走去，穿过一条向内的马路，便可看到小区的大门，门前在修路，我只得绕到路口过去。小区门口的底店很多都换了招牌，即使留下的也大多缩减店面或是增加业务，三年疫情改变了许多人的生活。从侧门进入小区，首先引起我注意的，就是路边的矮丛与灌木，较之我还在时茂密了不少，看来旧小区改造的步伐已经迈到了这里。虽然可以看出外墙保温几经重做，但房子总体的建筑风格仍保留了下来，旧友楼下停着的他那辆破自行车，初中我在搬走前存车的车棚，小时候最喜欢玩的秋千，楼前宽阔的停车坪与夹道，一切如故，却又历久弥新。&lt;/p&gt;
-&lt;img src=&#34;https://cdn.jsdelivr.net/gh/zzxdyf1314/mycloudimg@master/7CC9625D-61E9-43DF-811A-FB5950B1EF2E_1_105_c.jpeg&#34; alt=&#34;7CC9625D-61E9-43DF-811A-FB5950B1EF2E_1_105_c&#34; style=&#34;zoom:75%;&#34; /&gt;
-&lt;p&gt;从小区中出来时天已渐黑，我也到了回家的时候。浸润在往日时光中的我有些低沉，兀自在思考一个问题——为什么我的感觉总在回忆与怀念中出现，抑或者，我在怀念什么？我总是在怀念，怀念课堂，怀念朋友，怀念故地，怀念记忆，甚至怀念一些比我年龄更长的东西。我在看老照片，听老故事时总是不自觉地代入自己，怀念那些年代，那些我并未经历的时光。是它们比如今更好吗？显然不是，中国近几十年来经济的增长速度与目共睹，我们的生活质量也显著提高；是那时的人更好吗？也不是，那时的人们连经济基础都没有保障，更遑论上层建筑了，许多人为了多挣钱不惜游走在黑白之间；是那时的生活承载着我的回忆吗？可很多时候我都没有在那里生活过……&lt;/p&gt;
-&lt;p&gt;那是什么，是什么让我不断地怀念，究竟是什么？几天后，当我和父亲走在察素齐的街道上时，我找到了答案。在公布答案之前，先来想想我们现在的一天是怎么过的？早上起床，最快的速度梳洗打扮，吃过早饭赶去上课或上班，中午草草吃过饭又要继续上课、上班，晚上回去已然很晚了。到家一壁拆中午取的快递，一壁打开手机刷着购物网站或是社交软件。突然，几个朋友相约出去吃夜宵，你欣然应允，感到饭店后几个人扫码点单，一壁聊天吹牛一壁吃着菜，吃完后随机一个人在手机上结账，并发了一个群收款，回去时已经接近 12 点，简单洗漱完毕躺在床上，刷了一会儿手机定好闹钟沉沉睡去。这怎么了？&lt;/p&gt;
-&lt;p&gt;这似乎没有什么问题，真的吗？随着科技的发展，生产力的解放，我们的生活也更加高效，得以把大部分时间都用在社会主义现代化建设上。空余时间在手机上轻松一点，需要的东西第二天就能送货到家，再也不需要赶去商场超市，甚至拿着票据去供销社或国营商场争抢那一两个名额；走入饭店，扫码点餐，没有了和服务员扯皮，没有了当着朋友翻菜单的尴尬；手机支付，实时到账，无须赶去银行，明码标价也无须讨价还价或是零钱不够，群收款也避免了挨个要账到窘迫。我们的生活高效而规律，每天几乎都在坐着同样的事情，就像工厂机器上的一个零件般尽职尽责，为社会主义现代化建设添砖加瓦。难道真的没少些什么吗？&lt;/p&gt;
-&lt;p&gt;曾记得，爸妈带我去 106 买玩具时的激动与喜悦；曾记得，在服务员的推荐下点了一桌满意而经济的饭菜；曾记得，聚餐后大家争抢结账的场面以及大方抹零的小贩，这一幕幕，一桩桩，一件件，逐渐从我们的生活里悄无声息地退出，不带走一片云彩。可这些东西少了又怎样？我们似乎从来不觉得这有什么，我们乐于更高效地生活，这样我们可以做更多想做的事，赚更多的钱。似乎改变一点没什么影响，再多一些呢，再多一些呢？&lt;/p&gt;
-&lt;p&gt;很难说这样的改变究竟是好是坏，生活方式与观念的改变是潜移默化的，只是当我完成一天的“任务”躺在床上时，也许会怀念那些没有“机器”、不缺“零件”的日子……&lt;/p&gt;</description>
       
     </item>
     

@@ -25,6 +25,30 @@
 
   
   
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.3/dist/katex.min.css"
+  integrity="sha384-KiWOvVjnN8qwAZbuQyWDIbfCLFhLXNETzBQjA/92pIowpC0d2O3nppDGQVgwd2nB" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.3/dist/katex.min.js"
+  integrity="sha384-0fdwu/T/EQMsQlrHCCHoH10pkPLlKA1jL5dFyUOvB3lfeT2540/2g6YgSi2BL14p" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.3/dist/contrib/auto-render.min.js"
+  integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    renderMathInElement(document.body, {
+      delimiters: [
+        { left: '$$', right: '$$', display: true },
+        { left: '\\[', right: '\\]', display: true },
+        { left: '$', right: '$', display: false },
+        { left: '\\(', right: '\\)', display: false }
+      ],
+      ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'option'],
+      throwOnError: false
+    });
+  });
+</script>
+
+
+  
 
   
   <meta property="og:title" content="为生活" />
@@ -90,6 +114,28 @@
     
 <main id="main" class="index">
   
+  
+  <div class="post">
+    <h2>
+      <a href="https://forceoflife.cn/post/data-flow-analysis/data-flow-analysis/">Data Flow Analysis</a>
+      <time>2024-03-05</time>
+    </h2>
+    
+    <div>
+      <b>Keywords: </b>
+      
+      <a class="link" href='https://forceoflife.cn/tags/%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90'>#数据流分析</a>
+      
+      <a class="link" href='https://forceoflife.cn/tags/%E4%BC%98%E5%8C%96'>#优化</a>
+      
+    </div>
+    
+    <div class="content">
+      
+      <p>这篇文章是我在看 <em>Engineering A Compiler</em> (EAC，橡书) 中第 9 章数据流分析的笔记，里面标有 Confused 的地方是我困惑的内容，包括过程间常量传播 (Jump Function)、加速DOM计算，之后如果搞懂了会写文章来补充。</p>
+      
+    </div>
+  </div>
   
   <div class="post">
     <h2>
@@ -167,26 +213,6 @@
       <b>Keywords: </b>
       
       <a class="link" href='https://forceoflife.cn/tags/%E7%94%9F%E6%B4%BB'>#生活</a>
-      
-    </div>
-    
-    <div class="content">
-      
-      
-      
-    </div>
-  </div>
-  
-  <div class="post">
-    <h2>
-      <a href="https://forceoflife.cn/post/dairy1015/">日记一则</a>
-      <time>2023-10-15</time>
-    </h2>
-    
-    <div>
-      <b>Keywords: </b>
-      
-      <a class="link" href='https://forceoflife.cn/tags/%E8%BE%A9%E8%AE%BA'>#辩论</a>
       
     </div>
     
