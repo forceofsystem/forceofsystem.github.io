@@ -8,7 +8,385 @@
     <language>zh</language>
     <managingEditor>Zhixiao-Zhang@outlook.com (Patrick)</managingEditor>
     <webMaster>Zhixiao-Zhang@outlook.com (Patrick)</webMaster>
-    <lastBuildDate>Tue, 05 Mar 2024 23:16:20 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 14 Mar 2024 02:43:34 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Scalar</title>
+      <link>https://forceoflife.cn/post/scalar-optimization/scalar/</link>
+      <pubDate>Thu, 14 Mar 2024 02:43:34 +0800</pubDate>
+      <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
+      <guid>https://forceoflife.cn/post/scalar-optimization/scalar/</guid>
+      
+      <description>&lt;p&gt;This blog is a note of reading chapter 10 of EAC (Scalar Optimization), which contains not only the content in the book but my understanding. Ultimately, I have finished the reading of the whole book in two months, and will continue to read the dragon book and &lt;em&gt;Advanced Compiler Design and Implementation&lt;/em&gt;. I will also write some notes about those books.&lt;/p&gt;
+&lt;h2 id=&#34;overview&#34;&gt;Overview&lt;/h2&gt;
+&lt;p&gt;Scalar optimization: opimization of code along a single thread of control.&lt;/p&gt;
+&lt;p&gt;Goals of optimizer:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Rewriting the code into a more efficient or more effective form.&lt;/li&gt;
+&lt;li&gt;Producing highly efficient code on a much larger set of inputs.&lt;/li&gt;
+&lt;li&gt;Robust&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;There are two machanisms to achieve these goals:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;It eliminates unnescessarys overhead introduced by programming language abstractions, and&lt;/li&gt;
+&lt;li&gt;it matches the needs of the resulting program to the available hardware and software resources of the target machine.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Machine independent: A transformation that improves code on most target machines is considered machine independent.
+Machine dependent: A transformation that relies on knowledge of the target processor is considered machine dependent.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Most optimizers are built as a series of passes.&lt;/strong&gt; Each pass takes code in IR form as its input, and produces a rewritten version of the IR code as its output. This structure creates a natural way for the compiler to provide different levels of optimization; each level specifies a set of passes to run.&lt;/p&gt;
+&lt;p&gt;We concern, in general, five specific effects of the transformation:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Eliminate useless and unreachable code&lt;/li&gt;
+&lt;li&gt;Move code&lt;/li&gt;
+&lt;li&gt;Specialize a computation&lt;/li&gt;
+&lt;li&gt;Eliminate a redundant computation&lt;/li&gt;
+&lt;li&gt;Enable other transformation&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;death-code-elimination&#34;&gt;Death Code Elimination&lt;/h2&gt;
+&lt;p&gt;Useless code (death code): An operationis useless if no operation uses its result, or if all uses of the result are, themselves dead.&lt;/p&gt;
+&lt;p&gt;Unreachable code: An operation is unreachable if no valid control-flow path contains the operation.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The source of these code: macro expansion or naive translation in the front end.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;These code arises in most programs as the direct result of optimization in the compiler.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Branch, or conditionnal branch, is different to jump, or unconditional jump.&lt;/strong&gt;&lt;/p&gt;
+&lt;h3 id=&#34;eliminating-useless-code&#34;&gt;Eliminating Useless Code&lt;/h3&gt;
+&lt;p&gt;Critical operation: an operation is &lt;em&gt;&lt;strong&gt;critical&lt;/strong&gt;&lt;/em&gt; if:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;it sets return values for the procedure;&lt;/li&gt;
+&lt;li&gt;it’s an input/output statement, or&lt;/li&gt;
+&lt;li&gt;it affects the value in a storage location that may be accessible from outside the current procedure (like pointers).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The algorithm for eliminating useless code performs two pass over the code, like the mark-sweep gc.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;first pass:
+&lt;ul&gt;
+&lt;li&gt;Clear all the mark fields and mark critical operations as “useful”&lt;/li&gt;
+&lt;li&gt;Trace the operands of useful operations back to their definitions and marks them as “useful”&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;second pass: walk the code and remove any operation not marked.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;The algorithm assumes that the code is in SSA form.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/two-stage.png&#34; alt=&#34;two-stage&#34;&gt;&lt;/p&gt;
+&lt;p&gt;For control-flow operations, the treatment of the algorithm is more complex than normal operations.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Postdominance: In a CFG, &lt;em&gt;j&lt;/em&gt; postdominates &lt;em&gt;i&lt;/em&gt; if and only if every path from i to the exit node passes through j.
+Reverse dominance frontier: dominance frontiers computed on the reverse CFG, denoted $RDF(j)$.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Control-dependence: in a CFG, node j is control-dependent on node i if and only if&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;There exists a nonnull path from i to j such that j postdominates every node on the path &lt;strong&gt;after i&lt;/strong&gt;.&lt;/li&gt;
+&lt;li&gt;j &lt;strong&gt;doesn’t strictly&lt;/strong&gt; postdominate i.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;In other words, two or more edges leaves block i. One or more edges leads to j and one or more edges do not.
+Actually, I think this explanation is easier to understand than the former, but, it’s not a formal definition, hhh.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;When &lt;em&gt;Mark&lt;/em&gt; marks an operation in block b as useful, it visits every block in b’s $RDF$ and marks their block-ending branches as useful. (the last part of &lt;em&gt;Mark&lt;/em&gt; routine)&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Sweep&lt;/em&gt; replaces any unmarked branch with a jump to its first postdominator that contains a marked operation. If the branch is unmarked, then its successors, down to its immediate postdominator, contain no useful operations. (Otherwise, when those operations were marked, the branch would have been marked.)&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;To find the nearest useful postdominator, the algorithm can walk up the postdominator tree until it finds a block that con- tains a useful operation.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;eliminating-useless-control-flow&#34;&gt;Eliminating Useless Control Flow&lt;/h3&gt;
+&lt;p&gt;If the compiler includes optimizations that can produce useless control flow as a side effect, then it should include a pass that simplifies the cfg by eliminating useless control flow.&lt;/p&gt;
+&lt;p&gt;The &lt;em&gt;clean&lt;/em&gt; algorithm uses four transformations, which are applyed in the following order:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Fold a Redundant Branch&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/fold-redundant-branch.png&#34; alt=&#34;fold-redundant&#34;&gt;&lt;/p&gt;
+&lt;ol start=&#34;2&#34;&gt;
+&lt;li&gt;Remove an Empty Block&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/remove-empty-block.png&#34; alt=&#34;remove-empty-block&#34;&gt;&lt;/p&gt;
+&lt;ol start=&#34;3&#34;&gt;
+&lt;li&gt;Combine Blocks&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/combine-blocks.png&#34; alt=&#34;combine-blocks&#34;&gt;&lt;/p&gt;
+&lt;ol start=&#34;4&#34;&gt;
+&lt;li&gt;Hoist a Branch: If &lt;em&gt;clean&lt;/em&gt; finds a block $B_i$ that ends with a jump to an empty block $B_j$ and $B_j$ ends with a branch. Clean can replace the block-ending jump in $B_i$ with a copy of the branch from $B_j$.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;$B_i$ cann’t be empty, and&lt;/li&gt;
+&lt;li&gt;$B_i$ cann’t be $B_j$’s sole prodecessor.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/hoist-branch.png&#34; alt=&#34;hoist-branch&#34;&gt;&lt;/p&gt;
+&lt;p&gt;A systematic C&lt;em&gt;lean&lt;/em&gt; implementation traverses the graph in postorder, so that $B_i$’s successors are simplified before $B_i$ unless the successor lies along a back edge with respect to the postorder number- ing. This method reduces the number of times that the implementation must move some edges.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/dce.png&#34; alt=&#34;DCE&#34;&gt;&lt;/p&gt;
+&lt;p&gt;If the CFG contains back edges, then a pass of &lt;em&gt;Clean&lt;/em&gt; may create unprocessed successors along the back edges. For this reason, &lt;em&gt;Clean&lt;/em&gt; repeats the transformation sequence iteratively until the CFG stops changing.&lt;/p&gt;
+&lt;p&gt;With the &lt;em&gt;Dead&lt;/em&gt; routine’s help, &lt;em&gt;Clean&lt;/em&gt; can elinimate an empty loop which can’t be done by itself instead of using a specific transformation to handle it.&lt;/p&gt;
+&lt;h3 id=&#34;eliminating-unreachable-code&#34;&gt;Eliminating Unreachable Code&lt;/h3&gt;
+&lt;p&gt;A block can be unreachable for two distinct reasons:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;there may be no path through the CFG that leads to the block, or&lt;/li&gt;
+&lt;li&gt;the paths that reach the block may not be executable.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;The former case is easy to handle with the same “mark-sweep” algorithm. However, the latter case requires the compiler to reason about the values of expressions that control branches.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;If the source language allows arithmetic on code pointers or labels (such as C’s pointers), the compiler must preserve all blocks. Otherwise, it can limit the preserved set to blocks whose labels are referenced.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;code-motion&#34;&gt;Code Motion&lt;/h2&gt;
+&lt;h3 id=&#34;lazy-code-motion&#34;&gt;Lazy Code Motion&lt;/h3&gt;
+&lt;p&gt;LCM performs loop-invariant code motion. It uses data-flow analysis to discover both operations that are candidates for code motion and locations where it can place those operations.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The algorithm operates on the IR form of the program and its CFG, rather than on SSA form.&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Redundant: an expression $e$ is redundant at p if it has already been evaluated on every path that leads to p.
+Partially redundant: an expression $e$ is partially redundant at p if it occurrs on some, but not all, paths that reach p.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;LCM combines code motion with elimination of both redundant and partially redundant computations. For the partially redundant expressions, LCM inserts an edge on the path where p doesn’t occur to make the computation fully redundant.&lt;/p&gt;
+&lt;h4 id=&#34;code-shape&#34;&gt;&lt;strong&gt;Code Shape&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;LCM moves expression evaluations, not assignments.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Program variables are set by register-to- register copy operations. Variables have lower subscripts than any expression, and that in any operation other than a copy, the defined register’s subscript must be larger than the subscripts of the operation’s arguments.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;available-expressions&#34;&gt;&lt;strong&gt;Available Expressions&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;LCM needs availability at the end of the block, so it computes $A_{VAIL}O_{UT}$ rather than $A_{VAIL}I_N$.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;An expression $e$ is available on exit from block $b$ if, along every path from $n_0$ to $b$, $e$ has been evaluated and none of its arguments has been subsequently defined.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;LCM computes $A_{VAIL}O_{UT}$ as follows:&lt;/p&gt;
+&lt;p&gt;$A_{VAIL}O_{UT}(n_0) = \empty$&lt;/p&gt;
+&lt;p&gt;$A_{VAIL}O_{UT}(n) = {\ all\ expressions\ }$, $\forall n ≠ n_0$&lt;/p&gt;
+&lt;p&gt;and then iteratively evaluates the following equation until it reaches a fixed point:&lt;/p&gt;
+&lt;p&gt;$A_{VAIL}O_{UT}(n) = \mathop{\bigcap}\limits_{m \in preds(n)}(DEE_{XPR}(m) \cup (A_{VAIL}O_{UT}(m) \cap \overline{E_{XPR}K_{ILL}(m)}))$&lt;/p&gt;
+&lt;p&gt;If an expression $e \in A_{VAIL}O_{UT}(b)$, the compiler could place an evaluation $e$ at the end of block $b$ and obtain the result produced by its most recent evaluation on any control-flow path from $n_0$ to b.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;In this light, $A_{VAIL}O_{UT}$ sets tell the compiler how far forward in the CFG it can move the evaluation of $e$, ignoring any uses of $e$.&lt;/strong&gt;&lt;/p&gt;
+&lt;h4 id=&#34;anticipable-expressions&#34;&gt;&lt;strong&gt;Anticipable Expressions&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;Definition: an expression is anticipable at point $p$ if and only if it is computed on every path that leaves p and produces the same value at each of these compuations.&lt;/p&gt;
+&lt;p&gt;The initial condition of the sets is:&lt;/p&gt;
+&lt;p&gt;$A_{NT}O_{UT}(n_f) = \empty$&lt;/p&gt;
+&lt;p&gt;$A_{NT}O_{UT}(n) = {\ all\ expressions\ }$, $\forall n ≠ n_f$&lt;/p&gt;
+&lt;p&gt;Next, it solve the follow fixed-point problems:&lt;/p&gt;
+&lt;p&gt;$A_{NT}I_{N}(m) = \mathop{\bigcap}\limits_{m \in succ(n)}(UEE_{XPR}(m) \cup (A_{NT}O_{UT}(m) \cap \overline{E_{XPR}K_{ILL}(m)}))$&lt;/p&gt;
+&lt;p&gt;$A_{NT}O_{UT}(n) = \mathop{\bigcap}\limits_{m \in succ(n)} A_{NT}I_N(m)$, $n ≠ n_f$&lt;/p&gt;
+&lt;p&gt;$A_{NT}O_{UT}$ provides information about the safety of hoisting an evaluation to either the start or the end of the current block. If $x \in A_{NT}O_{UT}(b)$, then the compiler can place an evaluation of $x$ at the end of b, with two guarantees:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;The evaluation at the end of b will produce the same value as the next evaluation of $x$ along any execution path in the procedure.&lt;/li&gt;
+&lt;li&gt;Along any execution path leading out of $b$, the program will evaluate $x$ before redefining any of its arguments.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4 id=&#34;earliest-placement&#34;&gt;&lt;strong&gt;Earliest Placement&lt;/strong&gt;&lt;/h4&gt;
+&lt;blockquote&gt;
+&lt;p&gt;To simplify the placement equations, LCM assumes that it will place the evaluation on a CFG edge rather than at the start or end of a specific block.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Computing an edge placement lets the compiler defer the decision to place the evaluation &lt;strong&gt;at the end of the edge’s source&lt;/strong&gt;, &lt;strong&gt;at the start of its sink&lt;/strong&gt;, or &lt;strong&gt;in a new block in the middle of the edge&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;$E_{ARLIEST}$ set: for a CFG edge &amp;lt;i, j&amp;gt;, an expression $e$ is in $E_{ARLIEST}(i, j)$ if and only if the compiler can legally move $e$ to &amp;lt;i, j&amp;gt;, and cannot move it to any earlier edge in the CFG.&lt;/p&gt;
+&lt;p&gt;The $E_{ARLIEST}$ equation encodes this condition as the intersection of three terms:&lt;/p&gt;
+&lt;p&gt;$E_{ARLIEST}(i, j) = A_{NT}I_N(j) \cap \overline{A_{VAIL}O_{UT}(i)} \cap (E_{XPR}K_{ILL}(i) \cup \overline{A_{NT}O_{UT}(i)})$&lt;/p&gt;
+&lt;p&gt;These terms define an earliest placement for $e$ as follows:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;$e \in A_{NT}I_{N}(j)$ means that the compiler can safely move $e$ to the head of $j$.&lt;/li&gt;
+&lt;li&gt;$e \notin A_{VAIL}O_{UT}(i)$ shows that no prior computation of $e$ is available on exit from $i$.&lt;/li&gt;
+&lt;li&gt;If $e \in E_{XPR}K_{ILL}(i)$, the compiler cann’t move $e$ through block $i$ because of a definition in $i$. If $e \notin A_{NT}O_{UT}(i)$, the compiler cann’t move $e$ into $i$ because $e \notin A_{NT}I_{N}(k)$ for some edge &amp;lt;i, k&amp;gt;. If either is true, then $e$ can move no further than &amp;lt;i, j&amp;gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4 id=&#34;later-placement&#34;&gt;Later Placement&lt;/h4&gt;
+&lt;p&gt;This problem determines when an earliest placement can be defered to a later point in the CFG while achieving the same effect. It’s formulated as a forward data-flow problem on the CFG with a set $L_{ATER}I_N(n)$ associated with each node and another set $L_{ATER}(i, j)$ associated with each edge &amp;lt;i, j&amp;gt;.&lt;/p&gt;
+&lt;p&gt;LCM initializes the $L_{ATER}I_N$ sets as follows:&lt;/p&gt;
+&lt;p&gt;$L_{ATER}I_N(n_0) = \empty$&lt;/p&gt;
+&lt;p&gt;$L_{ATER}I_N(n) = {\ all\ expressions\ }$, $\forall n ≠ n_0$&lt;/p&gt;
+&lt;p&gt;Next, it iteratively computes $L_{ATER}I_N$ and $L_{ATER}$ sets for each block.&lt;/p&gt;
+&lt;p&gt;$L_{ATER}I_N(j) = \mathop{\bigcap}\limits_{m \in preds(j)} L_{ATER}(i, j), j \not= n_0$&lt;/p&gt;
+&lt;p&gt;$L_{ATER}(i, j) = E_{ARLIEST}(i, j) \cup (L_{ATER}I_N(i) \cap \overline{UEE_{XPR}(i)})$&lt;/p&gt;
+&lt;p&gt;An expression $e \in L_{ATER}I_N(k)$ if and only if:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;every path that reaches k includes an edge &amp;lt;p, q&amp;gt; such that $e]in E_{ARLIEST}(p, q)$, and&lt;/li&gt;
+&lt;li&gt;the path from q to k
+&lt;ul&gt;
+&lt;li&gt;neither redefines $e’s$ operands&lt;/li&gt;
+&lt;li&gt;nor contains an evaluation of $e$ that an earlier placement of $e$ would anticipate.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The first condition is that the flow can reach here through the &amp;lt;p, q&amp;gt; where the evaluation can be placed. The second one ensures that the evaluation can produce a correct value and it’s not too late, because if there is an evaluation of $e$ located at the predecessors of $k$, it’s redundant to place another one subsequently.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;The $E_{ARLIEST}$ term in the equation for $L_{ATER}$ ensures that $L_{ATER}(i,j)$ includes $E_{ARLIEST}(i, j)$. The rest of that equation puts $e$ into $L_{ATER}(i,j)$ if $e$ can be moved forward from $i$ ($e \in L_{ATER}I_N(i)$) and a placement at the entry to i does not anticipate a use in i ($e \notin UEE_{XPR}(i)$).&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The former indicates that it’s not too late to put the evaluation into here, the latter implies that the placement is premature because no reference depends on it.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Given $L_{ATER}I_N$ and $L_{ATER}$ sets, $e \in L_{ATER}I_N(i)$ implies that the compiler can move the evaluation of $e$ forward through $i$ without losing any benefit; and $e \in L_{ATER}(i, j)$ implies that the compiler can move an evaluation of $e$ in $i$ into $j$.&lt;/strong&gt;&lt;/p&gt;
+&lt;h4 id=&#34;rewriting-the-code&#34;&gt;Rewriting the Code&lt;/h4&gt;
+&lt;p&gt;LCM computes two additional sets, $I_{NSERT}$ and $D_{ELETE}$ to drive the rewriting process.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The $I_{NSERT}$ set specifies, for each edge, the computations that LCM should insert on that edge. The equation is $I_{NSERT}(i, j) = L_{ATER(i,j)} \cup \overline{L_{ATER}I_N(j)}$.
+&lt;ul&gt;
+&lt;li&gt;If $i$ has only one successor, LCM can insert the computations at the end of $i$.&lt;/li&gt;
+&lt;li&gt;If $j$ has only one predecessor, it can insert the computations at the entry of $j$.&lt;/li&gt;
+&lt;li&gt;If neither condition applies, the edge &amp;lt;i, j&amp;gt; is a &lt;strong&gt;critical edge&lt;/strong&gt;, so it should be split by inserting a block in the middle of the edge to evaluate the expressions in $I_{NSERT}(i,j)$.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;The $D_{ELETE}$ set specifies, for a block, which computations LCM should delete from the block. The equation is $D_{ELETE}(i) = UEE_{XPR}(i) \cup \overline{L_{ATER}I_N(i)}$.
+&lt;ul&gt;
+&lt;li&gt;$D_{ELETE}(n_0)$ is empty, since no block precedes $n_0$.&lt;/li&gt;
+&lt;li&gt;If $e \in D_ELETE(i)$, then the first computation of $e$ in $i$ is redundant after all the insertions have been made. Any subsequent evaluation of $e$ in $i$ that has upward-exposed uses—that is, the operands are not defined between the start of $i$ and the evaluation—can also be deleted, the compiler even doesn’t need to rewrite subsequent references.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Recall that LCM doesn’t care about variables, if a register to register copy is unnecessary, subsequent copy coalescing, either in the register allocator or as a standalone pass, should discover that fact and eliminate the copy operation.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;code-hoisting&#34;&gt;Code Hoisting&lt;/h3&gt;
+&lt;p&gt;Code hoisting provides one direct way of reducing the size of the compiled code. It uses the results of anticipability in a particular simple way.&lt;/p&gt;
+&lt;p&gt;If an expression $e \in A_{NT}O_{UT}(b)$, for some block b, that means that $e$ is evaluated along every path that leaves $b$ and evaluating $e$ at the end of $b$ would make the first evaluation along each path redundant. To reduce code size, the compiler can insert an evaluation of $e$ on each path leaving $b$ with a reference to the previously computed value.&lt;/p&gt;
+&lt;p&gt;A simple approach has the compiler visit each block $b$ and insert an evaluation of $e$ at the end of $b$, for every expression $e \in A_{NT}O_{UT}(b)$. Subsequent application of LCM or SVN will then remove the newly redundant expressions.&lt;/p&gt;
+&lt;h2 id=&#34;specialization&#34;&gt;Specialization&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Major techniques that perform specialization appear in other sections, such as constant propagation, interprocedural constant propagation, operator strength reduction, peephole optimization, and value numbering.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;tail-call-optimization&#34;&gt;Tail-Call Optimization&lt;/h3&gt;
+&lt;p&gt;Tail call: the last action that a procedure takes is a call.&lt;/p&gt;
+&lt;p&gt;The compiler can specialize tail calls to their contexts in ways that eliminate much of the overhead from the procedure linkage. Supposed that o calls $p$ and $p$ calls $q$, if the call from $p$ to $q$ is a tail call, then no useful computation occurs between the postreturn sequence and the epilogue sequence in $p$. Hence, any code that preserves and restores $p$’s state, beyond what is needed for the return from $p$ to $o$.&lt;/p&gt;
+&lt;p&gt;At the call from $p$ to $q$, the minimal precall sequence must evaluate the actual parameters at the call from $p$ to $q$ and adjust the access links or the display if necessary. It need not preserve any caller-saves registers, because they cannot be live. It need not allocate a new AR, because $q$ can use $p$’s AR.&lt;/p&gt;
+&lt;p&gt;The tail recursion is a special case of tail call, in which the entire precall sequence devolves to argument evaluation and a branch back to the top of the routine. An eventual return out of the recursion requires &lt;strong&gt;one branch&lt;/strong&gt;, rather than one branch per recursive invocation.&lt;/p&gt;
+&lt;h3 id=&#34;leaf-call-optimization&#34;&gt;Leaf-Call Optimization&lt;/h3&gt;
+&lt;p&gt;Definition: a procedure that makes no calls.&lt;/p&gt;
+&lt;p&gt;During translation of a leaf procedure, the compiler can avoid inserting operations whose sole purpose is to set up for sequent calls such as saving return address from a register into a slot in the AR. In a leaf procedure, the register allocator should try to use caller-saves register before callee-saves registers, which can even keep untouched.&lt;/p&gt;
+&lt;p&gt;In addition, the compiler can avoid the runtime overhead of activation-record allocation for leaf procedures.&lt;/p&gt;
+&lt;h3 id=&#34;parameter-promotion&#34;&gt;Parameter Promotion&lt;/h3&gt;
+&lt;p&gt;Promotion: the compiler proves that an ambiguous value has just one corresponding memory location through detailed analysis of pointer values or array subscript values, or special case analysis. In these cases, it can rewrite the code to move that value into a scalar local variable, where the register allocator can keep it in a register.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;To apply this transformation to a procedure p, the optimizer must identify all of the call sites that can invoke p.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;redundancy-elimination&#34;&gt;Redundancy Elimination&lt;/h2&gt;
+&lt;p&gt;We’ve learnt three effective techniques for this topic: LVN, SVN, LCM. All three methods differ in the scope of their approach to discovering identical values.&lt;/p&gt;
+&lt;h3 id=&#34;value-identity-and-name-identity&#34;&gt;Value Identity and Name Identity&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;Value Identity&lt;/strong&gt;: LVM introduced a simple mechanism under SSA form to prove that two expressions had the same value. It assumes that two expressions produce the same value if they have the same operator and their operands have the same value numbers.&lt;/p&gt;
+&lt;p&gt;With this rules, LVN can prove that 2 + a has the same value as a + 2 or as 2 + b when a and b have the same value number. However, it can’t prove that a + a and 2 * a has the same value because they have different operators. Similarly, it can’t prove the a + 0 and a has the same value unless we extended it with algebraic identities.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Name Identity&lt;/strong&gt;: LCM relies on names to prove that two values have the same number. If LCM sees a + b and a + c, it assumes that they have different values because b and c have different names. We can improve the effectiveness of LCM by encoding value identity into the name space of the code before applying LCM. The distinction between LCM and LVN (or SVN) is clear. Therefore, by encoding value identity into the namespace, the compiler can leverage the strengths of both approaches.&lt;/p&gt;
+&lt;h3 id=&#34;dominator-based-value-numbering-dvnt&#34;&gt;Dominator-based Value Numbering (DVNT)&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/DVNT1.png&#34; alt=&#34;DVNT1&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Recall that at the SVN algorithm, we assumes that the block $B_4$ begins with no prior context. However, though $B_4$ can’t rely on values computed in either $B_2$ or $B_3$, it can rely on values computed in $B_0$ and $B_1$, since they occur on every path that reaches $B_4$.&lt;/p&gt;
+&lt;p&gt;Fortunately, the SSA name space encodes precisely this distinction. In SSA, a name that is used in some block $B_i$ can only enter $B_i$ in one of two ways. Either the name is defined by a $\phi$-function at the top of $B_i$, or it is defined in some block that dominates $B_i$. Thus, an assignment to x in either $B_2$ or $B_3$ creates a new name for x and forces the insertion of a $\phi$-function for x at the head of $B_4$. Thus, SSA form encodes the presence or absence of an intervening assignment in $B_2$ or $B_3$ directly into the names used in the expression.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;We can use dominance information to locate the most recent predecessor which the algorithm can use.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimzation/DVNT.png&#34; alt=&#34;DVNT&#34;&gt;&lt;/p&gt;
+&lt;h4 id=&#34;process-the-phi-functions-in-b&#34;&gt;Process the $\phi$-Functions in B&lt;/h4&gt;
+&lt;p&gt;If a $\phi$-function $p$ is meaningless, DVNT sets its value number to the value number for one of its arguments and deletes $p$. If $p$ is redundant, DVNT assigns $p$ the same value number as the $\phi$-function that it duplicates, then DVNT deletes $p$.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;meaningless: all its arguments have the same value number.
+redundant: it produces the same value number as another $\phi$-function.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Otherwise, the $\phi$-function computes a new value.&lt;/p&gt;
+&lt;h4 id=&#34;process-the-assignments-in-b&#34;&gt;Process the Assignments in B&lt;/h4&gt;
+&lt;p&gt;DVNT iterates over the assignments in B and process them in a manner analogous to LVN and SVN. When the algorithm encounters a statement $x ← y\ op\ z$, it can simply replace $y$ with $VN[y]$ because the name in $VN[y]$ holds the same value as y.&lt;/p&gt;
+&lt;h4 id=&#34;propagate-information-to-bs-successors&#34;&gt;Propagate Information to B’s Successors&lt;/h4&gt;
+&lt;p&gt;Once DVNT has processed all the $\phi$-functions and assignments in $B$, it visits each of B’s CFG successors $s$ and updates $\phi$ function arguments that correspond to values flowing across the edge $(B,s)$. It records the current value number for the argument in the $\phi$-function by overwriting the argument’s SSA name.&lt;/p&gt;
+&lt;p&gt;Next, the algorithm recurs on $B$’s children in the dominator tree (follow a preorder walk). Finally, it deallocates the hash table scope that is used for $B$.&lt;/p&gt;
+&lt;h2 id=&#34;enabling-other-transformations&#34;&gt;Enabling Other Transformations&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Both loop unrolling and inline substitution obtain most of their benefits by creating context for other optimization.
+The tree-height balancing algorithm doesn’t eliminate any operations, but it creates a code shape that can produce better results from instruction scheduling.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;superblock-cloning&#34;&gt;Superblock Cloning&lt;/h3&gt;
+&lt;p&gt;In superblock cloning, the optimizer starts with a loop head—the entry to a loop—and clones each path until it reaches a backward branch.&lt;/p&gt;
+&lt;p&gt;Superblock cloning can improve the results of optimization in three principal ways.&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;It creates longer blocks.&lt;/li&gt;
+&lt;li&gt;It eliminates branches.&lt;/li&gt;
+&lt;li&gt;It creates points where optimization can occur such as specialization and redundancy elimination.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;However, cloning has costs, too. It will lead to larger code, which may run more slowly if its size causes additional instruction cache misses.&lt;/p&gt;
+&lt;h3 id=&#34;procedure-cloning&#34;&gt;Procedure Cloning&lt;/h3&gt;
+&lt;p&gt;The idea is analogous to the block cloning that occurs in superblock cloning. The compiler creates multiple copies of the callee and assigns some of the calls to each instance of the clone&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/original.png&#34; alt=&#34;original&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/after-cloning.png&#34; alt=&#34;after-cloning&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;loop-unswitching&#34;&gt;Loop Unswitching&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/unswitch.png&#34; alt=&#34;unswitch&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Unswitching is an enabling transformation, it can lead to better scheduling, better register allocation, and fast execution.&lt;/p&gt;
+&lt;h3 id=&#34;renaming&#34;&gt;Renaming&lt;/h3&gt;
+&lt;p&gt;Renaming is a fertile ground for future work.&lt;/p&gt;
+&lt;h2 id=&#34;sparse-conditional-constant-propagation-sccp&#34;&gt;Sparse Conditional Constant Propagation (SCCP)&lt;/h2&gt;
+&lt;p&gt;SSCP assigns a lattice value to the operand used by a conditional branch. If the value is neither $\top$ nor $\bot$, then the operand must have a known value and the compiler can rewrite the branch with a jump to one of its two targets, simplifying the CFG. Since this removes an edge from the CFG, it may make the block that was the branch target unreachable. SSCP has no mechanism to take advantage of this knowledge.&lt;/p&gt;
+&lt;p&gt;In concept, SCCP operates in a straightforward way. It initializes the data structures. It iterates over two graphs, the CFG and the SSA graph. It propagates reachability information on the CFG and value information on the SSA graph. It halts when the value information reaches a fixed point. Combining these two kinds of information, SCCP can discover both unreachable code and constant values.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;To simplify the explanation of SCCP, we assume that each block in the CFG represents just one statement, plus some optional $\phi$-functions.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/SCCP1.png&#34; alt=&#34;SCCP1&#34;&gt;&lt;/p&gt;
+&lt;p&gt;After the initialization phase, the algorithm repeatedly picks an edge from one of the two worklists and process that edge.&lt;/p&gt;
+&lt;p&gt;For a CFG edge (m, n), SCCP determines if the edge is marked as executed.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;If (m, n) is so marked, SCCP take no further action for (m, n).&lt;/li&gt;
+&lt;li&gt;If (m, n) is marked as unexecuted, then SCCP marks it as executed and evaluates all of the $\phi$-functions at the start of block $n$.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Next, SCCP determines if block $n$ has been previously entered along another edge. If it has not, then SCCP evaluates the assignment or conditional branch in $n$. This processing may add edges to either worklist.&lt;/p&gt;
+&lt;p&gt;For an SSA edge, the algorithm first checks if the destination block is reachable. If the block is reachable, SCCP calls one of &lt;em&gt;EvaluatePhi,&lt;/em&gt; EvaluateAssign, or &lt;em&gt;EvaluateConditional&lt;/em&gt;, based on the kind of operation that uses the SSA name.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/SCCP2.png&#34; alt=&#34;SCCP2&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/SCCP3.png&#34; alt=&#34;SCCP3&#34;&gt;&lt;/p&gt;
+&lt;p&gt;After the propagation step, a final pass is required to replace operations that have operands with &lt;em&gt;Value&lt;/em&gt; tags other than $\bot$. The algorithm cannot rewrite the code until the propagation completes.&lt;/p&gt;
+&lt;h3 id=&#34;subtleties-in-evaluating-and-rewriting-operations&#34;&gt;Subtleties in Evaluating and Rewriting Operations&lt;/h3&gt;
+&lt;p&gt;If the algorithm encounters a multiply operation with operands $\top$ and $\bot$, it might conclude that the operation produces $\bot$. Doing so, however, is premature. Subsequent analysis might lower the $\top$ to the constant 0, so that the multiply produces a value of 0. If SCCP uses the rule $\top \times \bot \rightarrow \bot$, it would increase the running time of SCCP, since the multiply’s value might follow the sequence $\top$, $\bot$, 0. Moreover, it might incorrectly drive other values to $\bot$ and cause SCCP to miss opportunities for improvement.&lt;/p&gt;
+&lt;p&gt;To address this, SCCP should use three rules for multiplies that involve $\bot$, as follows: $\top \times \bot \rightarrow \top$, $\alpha \times \bot \rightarrow \bot$ for $\alpha ≠ T$ and $\alpha ≠ 0$, and $0 \times \bot \rightarrow 0$. This same effect occurs for any operation for which the value of one argument can completely determine the result.&lt;/p&gt;
+&lt;h3 id=&#34;effectiveness&#34;&gt;Effectiveness&lt;/h3&gt;
+&lt;p&gt;sccp can find constants that the sscp algorithm cannot. Similarly, it can discover unreachable code that no combination of the algorithms can discover.&lt;/p&gt;
+&lt;h2 id=&#34;strength-reduction&#34;&gt;Strength Reduction&lt;/h2&gt;
+&lt;h3 id=&#34;background&#34;&gt;Background&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Region Constant: a value that doesn’t vary in a loop.
+Induction Variable: a value that varies systematically from iteration.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Strength reduction looks for contexts in which &lt;strong&gt;an operation&lt;/strong&gt;, such as a multiply, executes inside a loop and its operands are region constant and induction variable. When it finds this situation, it creates a new induction variable that computes the same sequence of values as the original multiplication in a more effcient way.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Candidate Operation: an operation can be reduced with strength reduction.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;We assume that candidate Operation only has five forms as following:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;$x \leftarrow c \times i$&lt;/li&gt;
+&lt;li&gt;$x \leftarrow i \times c$&lt;/li&gt;
+&lt;li&gt;$x \leftarrow c + i$&lt;/li&gt;
+&lt;li&gt;$x \leftarrow i + c$&lt;/li&gt;
+&lt;li&gt;$x \leftarrow i - c$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;where $c$ is a region constant and $i$ is an induction variable.&lt;/p&gt;
+&lt;p&gt;A region constant can either be a literal constant, or a loop-invariant value. With the code in SSA form, we can determine the region constant whether its definition dominate the entry to the loop that defines the induction variable.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Performing LCM and constant propagation before strength reduction may expose more region constants.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;To make the algorithm effective, we are supposed to give a restricted definition to induction variable: an induction variable is a strongly connected component (SCC) of the SSA graph in which each operation that updates its value is one of&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;an induction variable plus a region constant;&lt;/li&gt;
+&lt;li&gt;an induction variable minus a region constant;&lt;/li&gt;
+&lt;li&gt;a $\phi$-function, or&lt;/li&gt;
+&lt;li&gt;a register-to-register copy from another induction variable.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The SSA graph: In SSA form, each name has a unique definition, so that a name specifies a particular operation in the code that computed its value. We draw SSA graphs with edges that run from a use to its corresponding definition, and the compiler needs to traverse the edges in both directions.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Consider an operation $o$ of the form $x \leftarrow i \times c$, where $i$ is an induction variable. To test whether $c$ has this property, OSR must relate the SCC for $i$ in the SSA graph back to a loop in the CFG.&lt;/p&gt;
+&lt;p&gt;OSR considers the node with the lowest reverse postorder to be the header of the SCC and records that fact in the header field of each node of the SCC.&lt;/p&gt;
+&lt;p&gt;In SSA form, the induction variable’s header is the $\phi$-function at the start of the outermost loop in which it varies. In an operation $x \leftarrow i \times c$, where $i$ is an induction variable, $c$ is a region constant if the CFG block that contains its definition dominates the CFG block that contains $i$’s header. To perform this test, the SSA construction must produce a map from each SSA node to the CFG block where it originated.&lt;/p&gt;
+&lt;h3 id=&#34;the-algorithm&#34;&gt;The Algorithm&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Tarjan’s Strongly Connected Region Finder:
+This is an method to compute the strongly connected component propsed by &lt;a href=&#34;https://en.wikipedia.org/wiki/Robert_Tarjan&#34;&gt;Robert Tarjan&lt;/a&gt;. You can find more information of this &lt;a href=&#34;%5Bhttps://en.wikipedia.org/wiki/Tarjan&#39;s_strongly_connected_components_algorithm%5D(https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm)&#34;&gt;algorithm&lt;/a&gt;. If you feel confused about this method at first like me, you may get further understanding from this video: &lt;a href=&#34;%5Bhttps://www.youtube.com/watch?v=wUgWX0nc4NY%5D(https://www.youtube.com/watch?v=wUgWX0nc4NY)&#34;&gt;Tarjan’s Strongly Connected Components&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;OSR uses Tarjan’s rtrongly connected region finder to drive the entire process.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/OSR1.png&#34; alt=&#34;OSR1&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;rewriting-the-code-1&#34;&gt;Rewriting the Code&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/OSR2.png&#34; alt=&#34;OSR2&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Replace&lt;/em&gt; calls &lt;em&gt;Reduce&lt;/em&gt; to rewrite the operation represented by n. Next, it replaces $n$ with a copy operation from the result produced by &lt;em&gt;Replace&lt;/em&gt;. It sets $n$’s header field, and returns.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Reduce&lt;/em&gt; and &lt;em&gt;Apply&lt;/em&gt; use a hash table to avoid inserting duplicate operations.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Reduce: first, it calls &lt;em&gt;Clone&lt;/em&gt; to copy the definition for &lt;em&gt;iv&lt;/em&gt;, the induction variable in the operation being reduced. Next, it recurs on the operands of this new operands. An operand defined outside the scc must be either the initial value of &lt;em&gt;iv&lt;/em&gt; or a value by which &lt;em&gt;iv&lt;/em&gt; is incremented. The initial value must be a $\phi$-function argument from outside the SCC. Reduce calls Apply on each such argument.&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;Apply&lt;/em&gt; takes an opcode and two operands, locates an appropriate point in the code, and inserts that opeartion. It returns the new SSA name for the result of that operation. Normally, &lt;em&gt;Apply&lt;/em&gt; gets a new name, inserts the operation, and returns the result. It locates an appropriate block for the new operation using dominance information. The new operation must go into a block dominated by the blocks that define its operands. If one operand is a constant, &lt;em&gt;Apply&lt;/em&gt; can duplicate the constant in the block that defines the other operand. Otherwise, both operands must have definitions that dominate the header block, and one must dominate the other.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;linear-function-test-replacement-lftr&#34;&gt;Linear-Function Test Replacement (LFTR)&lt;/h3&gt;
+&lt;p&gt;Strength reduction often eliminates all uses of an induction variable, except for an end-of-loop test.&lt;/p&gt;
+&lt;p&gt;If the compiler can remove this last use, it can eliminate the original induction variable as dead code.&lt;/p&gt;
+&lt;p&gt;To perform LFTR, the compiler must&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;locate comparisons that rely on otherwise unneeded induction variables,&lt;/li&gt;
+&lt;li&gt;locate an appropriate new induction variable that the comparison could use&lt;/li&gt;
+&lt;li&gt;compute the correct region constant for the rewritten test, and&lt;/li&gt;
+&lt;li&gt;rewrite tht code.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Having lftr cooperate with OSR can simplify all of these tasks to produce a fast, effective transformation.&lt;/p&gt;
+&lt;p&gt;The operations that lftr targets compare the value of an induction vari- able against a region constant. After OSR finishes its work, lftr should revisit each of these comparisons.&lt;/p&gt;
+&lt;p&gt;To facilitate this process, Reduce can record the arithmetic relationship it uses to derive each new induction variable. It can insert a special LFTR edge from each node in the original induction variable to the corresponding node in its reduced counterpart and label it with the operation and region constant of the candidate operation responsible for creating that induction variable.&lt;/p&gt;
+&lt;p&gt;When LFTR finds a comparison that should be replaced, it can follow the edges from its induction-variable argument to the final induction variable that resulted from a chain of one or more reductions. The comparison should use this induction variable with an appropriate new region constant.&lt;/p&gt;</description>
+      
+    </item>
+    
     <item>
       <title>Data Flow Analysis</title>
       <link>https://forceoflife.cn/post/data-flow-analysis/data-flow-analysis/</link>
@@ -966,32 +1344,6 @@ Internally, the compiler can number the edges and parameter slots in any consist
 &lt;p&gt;我是 2021 年完成高考的大学本科生，就读于四川大学软件学院软件工程专业。&lt;/p&gt;
 &lt;p&gt;（未完待续……）&lt;/p&gt;
 </description>
-      
-    </item>
-    
-    <item>
-      <title>从hexo到hugo</title>
-      <link>https://forceoflife.cn/post/%E4%BB%8Ehexo%E8%BF%81%E7%A7%BB%E5%88%B0hugo/</link>
-      <pubDate>Sat, 09 Sep 2023 16:30:25 +0800</pubDate>
-      <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
-      <guid>https://forceoflife.cn/post/%E4%BB%8Ehexo%E8%BF%81%E7%A7%BB%E5%88%B0hugo/</guid>
-      
-      <description>&lt;p&gt;没错，我从 hexo 迁移到了 hugo。这已经是我用过的第三个博客软件了，不出意外的话，短期内应该不会再更换了。&lt;/p&gt;
-&lt;h2 id=&#34;更换理由&#34;&gt;更换理由&lt;/h2&gt;
-&lt;p&gt;我的第一个博客软件是 &lt;code&gt;wordpress&lt;/code&gt;，是在看 &lt;code&gt;TheCW&lt;/code&gt; 的视频里知道的。当时正在上大一下的我还不懂什么是动态生成和静态生成，只知道 Wordpress 是一个被广泛使用的软件。当时用的还是 apache 服务器，而不是现在非常火的 nginx，就连安装也是通过宝塔一键完成的，基本谈不上任何技术含量。印象里并没有用那个软件发过一篇博客，只是配置了主题之后就搁置了。回想起来，动态生成的博客对于新手来说确实麻烦，当时只能在网页里写作，布局也没有配置文件，只能在网页里选择，或许当时放弃了也是一个值得庆幸的事。&lt;/p&gt;
-&lt;p&gt;之后开始使用 hexo，不过这次并没有放在自己的服务器上。理由有几个，其一，服务器我只买了一年，后面续费的价格不低，我不一定会续费；其二，当时用 nginx 跑着自己的图书下载站和云笔记 docker，我对 nginx 并不熟悉；其三，如果部署到服务器，写博客就只能远程上去写，虽然也可以用 git、scp，但是仍然很麻烦……所以，最后选择了 GitHub pages，一直用到了现在。&lt;/p&gt;
-&lt;p&gt;hexo 还是陪伴了我一段时间的，自打我用了 hexo，之前微信公众号的使用频率就降低了。我并不会把每一篇博文都转载到公众号去，只有当写了比较满意的文章才会发过去，毕竟公众号是真的会有人看，哈哈哈。我并没有像很多博客主一样对主题进行再加工，只是选择了一个比较火的 &lt;a href=&#34;https://ppoffice.github.io/hexo-theme-icarus/&#34;&gt;icarus&lt;/a&gt; 主题，对里面的控件位置进行了修改，加了评论和 Google Search 的支持。我在上面写了不少博文，其中有几篇我还是比较满意的，但 hexo 的一些问题也给我造成了许多困扰。&lt;/p&gt;
-&lt;h3 id=&#34;nodejs&#34;&gt;NodeJS&lt;/h3&gt;
-&lt;p&gt;hexo 是基于 nodejs 的，这对我非常不友好。我对于 web 领域一窍不通，平日几乎不会主动学习这方面的知识。所以对于诸如 &lt;code&gt;node_modules&lt;/code&gt;、&lt;code&gt;package.json &lt;/code&gt;等，我可谓是又想动又不敢动。而且，也不知道是不是因为 nodejs，每次更新博客要等很久才能生成，经常已经刷新到不耐烦了，新的内容才部署上去。&lt;/p&gt;
-&lt;p&gt;其次，由于我对 nodejs 的不熟悉，导致我无法对主题进行改动，有些在本地实现的效果，一部署上去就失效了，令人费解。而且 hexo 用的 js 并不是标准的 js，而是一个修改过的框架，使得本就对前端知之甚少的我更加无所适从。&lt;/p&gt;
-&lt;h2 id=&#34;hugo&#34;&gt;Hugo&lt;/h2&gt;
-&lt;p&gt;其实我知道 hugo 和 hexo 的时间是差不多的，在我刚使用 hexo 时，就看到一位比较著名的知乎答主，&lt;a href=&#34;https://www.zhihu.com/people/skywind3000&#34;&gt;韦易笑&lt;/a&gt;的博客使用了 hugo。那时我并不知道 hexo 和 hugo 有甚区别，甚至觉得 hexo 是更先进的（并不是说 hugo 就更先进，只是那时无知），加之彼时还并未感受到 hexo 的问题，所以就选择了 hexo。&lt;/p&gt;
-&lt;p&gt;前几天，当我为了 icarus 的几个效果而熬到很晚时，我便有了换一个软件的想法，第一时间就想到了 hugo。惭愧地说，促使我换到 hugo 的一大原因是我找到了我很喜欢的一个主题：&lt;a href=&#34;https://themes.gohugo.io/themes/hugo-octopress/#mainsections&#34;&gt;hugo-octopress&lt;/a&gt;，这个主题非常符合我的想法。其实之前在 hexo 也有一个我喜欢的主题：&lt;a href=&#34;https://jysperm.me/&#34;&gt;王子亭的博客 (jysperm.me)&lt;/a&gt;，但是我一直部署失败，不知为何。&lt;/p&gt;
-&lt;p&gt;现在大部分博客主题都不符合我的审美，我个人审美非常复杂，经常出现矛盾的地方。我很喜欢上世纪 70-90 年代的那种简单甚至简陋的样子（简约这个词太现代而精致了，并不符合那个年代的风格），现在的绝大多数主题都是非常现代化的布局，颜色设计、对比度、模糊、毛玻璃等特效非常绚丽，但我却喜欢不起来；那些所谓复古的主题也不过是披着复古衣服的现代产品罢了。&lt;/p&gt;
-&lt;p&gt;再加上有看到，hugo 基于 go 使得它有更快的生成速度，配置相对更明确等优点，我便下定决心迁移。实话说迁移也费了一番功夫，中文网的教程虽多，但不是过时，就是语焉不详。我查了一段时间才知道，如果要部署到 github pages，是要用两个仓库，一个存放根目录，一个存放 public，而不能像 hexo 一样用一个 git 插件就解决问题，不过用 git 手工生成倒是更符合我的习惯。最后花了大约半天的时间，搞定了所有的内容，成功部署了上去，并且重新解析了我的域名到这个新的博客。&lt;/p&gt;
-&lt;h2 id=&#34;使用体验&#34;&gt;使用体验&lt;/h2&gt;
-&lt;p&gt;刚换了没几天，所以没有什么深度的感受。最大的感觉就是掌控感变强了，之前由于对 nodejs 的不熟悉，导致改代码都不知道怎么改，而 hugo 似乎是使用了纯粹的 html + css + js，使得修改代码变得简单了。不过要吐槽的是，这个主题的代码质量实在不敢恭维，我几乎不敢相信这是一份开源出来的代码而不是为了赶时间外包的产物，不过我对 web 并不熟悉，也不敢随意修改，只能慢慢实践。&lt;/p&gt;
-&lt;p&gt;总的来说，hugo 目前给我的体验还是很好的，配置上也比 hexo 要方便许多，整体看起来也更清爽，没有令我如鲠在喉的&lt;code&gt;node_modules&lt;/code&gt; 和 &lt;code&gt;package.json&lt;/code&gt;，之后要做的就是好好产出内容了。&lt;/p&gt;</description>
       
     </item>
     
