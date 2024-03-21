@@ -305,7 +305,7 @@ Partially redundant: an expression $e$ is partially redundant at p if it occurrs
 &lt;p&gt;Recall that at the SVN algorithm, we assumes that the block $B_4$ begins with no prior context. However, though $B_4$ can’t rely on values computed in either $B_2$ or $B_3$, it can rely on values computed in $B_0$ and $B_1$, since they occur on every path that reaches $B_4$.&lt;/p&gt;
 &lt;p&gt;Fortunately, the SSA name space encodes precisely this distinction. In SSA, a name that is used in some block $B_i$ can only enter $B_i$ in one of two ways. Either the name is defined by a $\phi$-function at the top of $B_i$, or it is defined in some block that dominates $B_i$. Thus, an assignment to x in either $B_2$ or $B_3$ creates a new name for x and forces the insertion of a $\phi$-function for x at the head of $B_4$. Thus, SSA form encodes the presence or absence of an intervening assignment in $B_2$ or $B_3$ directly into the names used in the expression.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;We can use dominance information to locate the most recent predecessor which the algorithm can use.&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimzation/DVNT.png&#34; alt=&#34;DVNT&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/DVNT.png&#34; alt=&#34;DVNT&#34;&gt;&lt;/p&gt;
 &lt;h4 id=&#34;process-the-phi-functions-in-b&#34;&gt;Process the $\phi$-Functions in B&lt;/h4&gt;
 &lt;p&gt;If a $\phi$-function $p$ is meaningless, DVNT sets its value number to the value number for one of its arguments and deletes $p$. If $p$ is redundant, DVNT assigns $p$ the same value number as the $\phi$-function that it duplicates, then DVNT deletes $p$.&lt;/p&gt;
 &lt;blockquote&gt;
