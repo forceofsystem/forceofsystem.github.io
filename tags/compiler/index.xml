@@ -1,0 +1,1169 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Compiler on 为生活</title>
+    <link>https://forceoflife.cn/tags/compiler/</link>
+    <description>Recent content in Compiler on 为生活</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh</language>
+    <managingEditor>Zhixiao-Zhang@outlook.com (Patrick)</managingEditor>
+    <webMaster>Zhixiao-Zhang@outlook.com (Patrick)</webMaster>
+    <lastBuildDate>Thu, 14 Mar 2024 02:43:34 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/tags/compiler/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Scalar Optimization</title>
+      <link>https://forceoflife.cn/post/scalar/</link>
+      <pubDate>Thu, 14 Mar 2024 02:43:34 +0800</pubDate>
+      <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
+      <guid>https://forceoflife.cn/post/scalar/</guid>
+      
+      <description>&lt;p&gt;This blog is a note of reading chapter 10 of EAC (Scalar Optimization), which contains not only the content in the book but my understanding. Ultimately, I have finished the reading of the whole book in two months, and will continue to read the dragon book and &lt;em&gt;Advanced Compiler Design and Implementation&lt;/em&gt;. I will also write some notes about those books.&lt;/p&gt;
+&lt;h2 id=&#34;overview&#34;&gt;Overview&lt;/h2&gt;
+&lt;p&gt;Scalar optimization: opimization of code along a single thread of control.&lt;/p&gt;
+&lt;p&gt;Goals of optimizer:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Rewriting the code into a more efficient or more effective form.&lt;/li&gt;
+&lt;li&gt;Producing highly efficient code on a much larger set of inputs.&lt;/li&gt;
+&lt;li&gt;Robust&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;There are two machanisms to achieve these goals:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;It eliminates unnescessarys overhead introduced by programming language abstractions, and&lt;/li&gt;
+&lt;li&gt;it matches the needs of the resulting program to the available hardware and software resources of the target machine.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Machine independent: A transformation that improves code on most target machines is considered machine independent.
+Machine dependent: A transformation that relies on knowledge of the target processor is considered machine dependent.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Most optimizers are built as a series of passes.&lt;/strong&gt; Each pass takes code in IR form as its input, and produces a rewritten version of the IR code as its output. This structure creates a natural way for the compiler to provide different levels of optimization; each level specifies a set of passes to run.&lt;/p&gt;
+&lt;p&gt;We concern, in general, five specific effects of the transformation:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Eliminate useless and unreachable code&lt;/li&gt;
+&lt;li&gt;Move code&lt;/li&gt;
+&lt;li&gt;Specialize a computation&lt;/li&gt;
+&lt;li&gt;Eliminate a redundant computation&lt;/li&gt;
+&lt;li&gt;Enable other transformation&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;death-code-elimination&#34;&gt;Death Code Elimination&lt;/h2&gt;
+&lt;p&gt;Useless code (death code): An operationis useless if no operation uses its result, or if all uses of the result are, themselves dead.&lt;/p&gt;
+&lt;p&gt;Unreachable code: An operation is unreachable if no valid control-flow path contains the operation.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The source of these code: macro expansion or naive translation in the front end.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;These code arises in most programs as the direct result of optimization in the compiler.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Branch, or conditionnal branch, is different to jump, or unconditional jump.&lt;/strong&gt;&lt;/p&gt;
+&lt;h3 id=&#34;eliminating-useless-code&#34;&gt;Eliminating Useless Code&lt;/h3&gt;
+&lt;p&gt;Critical operation: an operation is &lt;em&gt;&lt;strong&gt;critical&lt;/strong&gt;&lt;/em&gt; if:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;it sets return values for the procedure;&lt;/li&gt;
+&lt;li&gt;it’s an input/output statement, or&lt;/li&gt;
+&lt;li&gt;it affects the value in a storage location that may be accessible from outside the current procedure (like pointers).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The algorithm for eliminating useless code performs two pass over the code, like the mark-sweep gc.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;first pass:
+&lt;ul&gt;
+&lt;li&gt;Clear all the mark fields and mark critical operations as “useful”&lt;/li&gt;
+&lt;li&gt;Trace the operands of useful operations back to their definitions and marks them as “useful”&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;second pass: walk the code and remove any operation not marked.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;The algorithm assumes that the code is in SSA form.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/two-stage.png&#34; alt=&#34;two-stage&#34;&gt;&lt;/p&gt;
+&lt;p&gt;For control-flow operations, the treatment of the algorithm is more complex than normal operations.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Postdominance: In a CFG, &lt;em&gt;j&lt;/em&gt; postdominates &lt;em&gt;i&lt;/em&gt; if and only if every path from i to the exit node passes through j.
+Reverse dominance frontier: dominance frontiers computed on the reverse CFG, denoted $RDF(j)$.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Control-dependence: in a CFG, node j is control-dependent on node i if and only if&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;There exists a nonnull path from i to j such that j postdominates every node on the path &lt;strong&gt;after i&lt;/strong&gt;.&lt;/li&gt;
+&lt;li&gt;j &lt;strong&gt;doesn’t strictly&lt;/strong&gt; postdominate i.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;In other words, two or more edges leaves block i. One or more edges leads to j and one or more edges do not.
+Actually, I think this explanation is easier to understand than the former, but, it’s not a formal definition, hhh.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;When &lt;em&gt;Mark&lt;/em&gt; marks an operation in block b as useful, it visits every block in b’s $RDF$ and marks their block-ending branches as useful. (the last part of &lt;em&gt;Mark&lt;/em&gt; routine)&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Sweep&lt;/em&gt; replaces any unmarked branch with a jump to its first postdominator that contains a marked operation. If the branch is unmarked, then its successors, down to its immediate postdominator, contain no useful operations. (Otherwise, when those operations were marked, the branch would have been marked.)&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;To find the nearest useful postdominator, the algorithm can walk up the postdominator tree until it finds a block that con- tains a useful operation.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;eliminating-useless-control-flow&#34;&gt;Eliminating Useless Control Flow&lt;/h3&gt;
+&lt;p&gt;If the compiler includes optimizations that can produce useless control flow as a side effect, then it should include a pass that simplifies the cfg by eliminating useless control flow.&lt;/p&gt;
+&lt;p&gt;The &lt;em&gt;clean&lt;/em&gt; algorithm uses four transformations, which are applyed in the following order:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Fold a Redundant Branch&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/fold-redundant-branch.png&#34; alt=&#34;fold-redundant&#34;&gt;&lt;/p&gt;
+&lt;ol start=&#34;2&#34;&gt;
+&lt;li&gt;Remove an Empty Block&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/remove-empty-block.png&#34; alt=&#34;remove-empty-block&#34;&gt;&lt;/p&gt;
+&lt;ol start=&#34;3&#34;&gt;
+&lt;li&gt;Combine Blocks&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/combine-blocks.png&#34; alt=&#34;combine-blocks&#34;&gt;&lt;/p&gt;
+&lt;ol start=&#34;4&#34;&gt;
+&lt;li&gt;Hoist a Branch: If &lt;em&gt;clean&lt;/em&gt; finds a block $B_i$ that ends with a jump to an empty block $B_j$ and $B_j$ ends with a branch. Clean can replace the block-ending jump in $B_i$ with a copy of the branch from $B_j$.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;$B_i$ cann’t be empty, and&lt;/li&gt;
+&lt;li&gt;$B_i$ cann’t be $B_j$’s sole prodecessor.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/hoist-branch.png&#34; alt=&#34;hoist-branch&#34;&gt;&lt;/p&gt;
+&lt;p&gt;A systematic C&lt;em&gt;lean&lt;/em&gt; implementation traverses the graph in postorder, so that $B_i$’s successors are simplified before $B_i$ unless the successor lies along a back edge with respect to the postorder number- ing. This method reduces the number of times that the implementation must move some edges.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/dce.png&#34; alt=&#34;DCE&#34;&gt;&lt;/p&gt;
+&lt;p&gt;If the CFG contains back edges, then a pass of &lt;em&gt;Clean&lt;/em&gt; may create unprocessed successors along the back edges. For this reason, &lt;em&gt;Clean&lt;/em&gt; repeats the transformation sequence iteratively until the CFG stops changing.&lt;/p&gt;
+&lt;p&gt;With the &lt;em&gt;Dead&lt;/em&gt; routine’s help, &lt;em&gt;Clean&lt;/em&gt; can elinimate an empty loop which can’t be done by itself instead of using a specific transformation to handle it.&lt;/p&gt;
+&lt;h3 id=&#34;eliminating-unreachable-code&#34;&gt;Eliminating Unreachable Code&lt;/h3&gt;
+&lt;p&gt;A block can be unreachable for two distinct reasons:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;there may be no path through the CFG that leads to the block, or&lt;/li&gt;
+&lt;li&gt;the paths that reach the block may not be executable.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;The former case is easy to handle with the same “mark-sweep” algorithm. However, the latter case requires the compiler to reason about the values of expressions that control branches.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;If the source language allows arithmetic on code pointers or labels (such as C’s pointers), the compiler must preserve all blocks. Otherwise, it can limit the preserved set to blocks whose labels are referenced.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;code-motion&#34;&gt;Code Motion&lt;/h2&gt;
+&lt;h3 id=&#34;lazy-code-motion&#34;&gt;Lazy Code Motion&lt;/h3&gt;
+&lt;p&gt;LCM performs loop-invariant code motion. It uses data-flow analysis to discover both operations that are candidates for code motion and locations where it can place those operations.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The algorithm operates on the IR form of the program and its CFG, rather than on SSA form.&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Redundant: an expression $e$ is redundant at p if it has already been evaluated on every path that leads to p.
+Partially redundant: an expression $e$ is partially redundant at p if it occurrs on some, but not all, paths that reach p.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;LCM combines code motion with elimination of both redundant and partially redundant computations. For the partially redundant expressions, LCM inserts an edge on the path where p doesn’t occur to make the computation fully redundant.&lt;/p&gt;
+&lt;h4 id=&#34;code-shape&#34;&gt;&lt;strong&gt;Code Shape&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;LCM moves expression evaluations, not assignments.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Program variables are set by register-to- register copy operations. Variables have lower subscripts than any expression, and that in any operation other than a copy, the defined register’s subscript must be larger than the subscripts of the operation’s arguments.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;available-expressions&#34;&gt;&lt;strong&gt;Available Expressions&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;LCM needs availability at the end of the block, so it computes $A_{VAIL}O_{UT}$ rather than $A_{VAIL}I_N$.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;An expression $e$ is available on exit from block $b$ if, along every path from $n_0$ to $b$, $e$ has been evaluated and none of its arguments has been subsequently defined.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;LCM computes $A_{VAIL}O_{UT}$ as follows:&lt;/p&gt;
+&lt;p&gt;$A_{VAIL}O_{UT}(n_0) = \empty$&lt;/p&gt;
+&lt;p&gt;$A_{VAIL}O_{UT}(n) = {\ all\ expressions\ }$, $\forall n ≠ n_0$&lt;/p&gt;
+&lt;p&gt;and then iteratively evaluates the following equation until it reaches a fixed point:&lt;/p&gt;
+&lt;p&gt;$A_{VAIL}O_{UT}(n) = \mathop{\bigcap}\limits_{m \in preds(n)}(DEE_{XPR}(m) \cup (A_{VAIL}O_{UT}(m) \cap \overline{E_{XPR}K_{ILL}(m)}))$&lt;/p&gt;
+&lt;p&gt;If an expression $e \in A_{VAIL}O_{UT}(b)$, the compiler could place an evaluation $e$ at the end of block $b$ and obtain the result produced by its most recent evaluation on any control-flow path from $n_0$ to b.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;In this light, $A_{VAIL}O_{UT}$ sets tell the compiler how far forward in the CFG it can move the evaluation of $e$, ignoring any uses of $e$.&lt;/strong&gt;&lt;/p&gt;
+&lt;h4 id=&#34;anticipable-expressions&#34;&gt;&lt;strong&gt;Anticipable Expressions&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;Definition: an expression is anticipable at point $p$ if and only if it is computed on every path that leaves p and produces the same value at each of these compuations.&lt;/p&gt;
+&lt;p&gt;The initial condition of the sets is:&lt;/p&gt;
+&lt;p&gt;$A_{NT}O_{UT}(n_f) = \empty$&lt;/p&gt;
+&lt;p&gt;$A_{NT}O_{UT}(n) = {\ all\ expressions\ }$, $\forall n ≠ n_f$&lt;/p&gt;
+&lt;p&gt;Next, it solve the follow fixed-point problems:&lt;/p&gt;
+&lt;p&gt;$A_{NT}I_{N}(m) = \mathop{\bigcap}\limits_{m \in succ(n)}(UEE_{XPR}(m) \cup (A_{NT}O_{UT}(m) \cap \overline{E_{XPR}K_{ILL}(m)}))$&lt;/p&gt;
+&lt;p&gt;$A_{NT}O_{UT}(n) = \mathop{\bigcap}\limits_{m \in succ(n)} A_{NT}I_N(m)$, $n ≠ n_f$&lt;/p&gt;
+&lt;p&gt;$A_{NT}O_{UT}$ provides information about the safety of hoisting an evaluation to either the start or the end of the current block. If $x \in A_{NT}O_{UT}(b)$, then the compiler can place an evaluation of $x$ at the end of b, with two guarantees:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;The evaluation at the end of b will produce the same value as the next evaluation of $x$ along any execution path in the procedure.&lt;/li&gt;
+&lt;li&gt;Along any execution path leading out of $b$, the program will evaluate $x$ before redefining any of its arguments.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4 id=&#34;earliest-placement&#34;&gt;&lt;strong&gt;Earliest Placement&lt;/strong&gt;&lt;/h4&gt;
+&lt;blockquote&gt;
+&lt;p&gt;To simplify the placement equations, LCM assumes that it will place the evaluation on a CFG edge rather than at the start or end of a specific block.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Computing an edge placement lets the compiler defer the decision to place the evaluation &lt;strong&gt;at the end of the edge’s source&lt;/strong&gt;, &lt;strong&gt;at the start of its sink&lt;/strong&gt;, or &lt;strong&gt;in a new block in the middle of the edge&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;$E_{ARLIEST}$ set: for a CFG edge &amp;lt;i, j&amp;gt;, an expression $e$ is in $E_{ARLIEST}(i, j)$ if and only if the compiler can legally move $e$ to &amp;lt;i, j&amp;gt;, and cannot move it to any earlier edge in the CFG.&lt;/p&gt;
+&lt;p&gt;The $E_{ARLIEST}$ equation encodes this condition as the intersection of three terms:&lt;/p&gt;
+&lt;p&gt;$E_{ARLIEST}(i, j) = A_{NT}I_N(j) \cap \overline{A_{VAIL}O_{UT}(i)} \cap (E_{XPR}K_{ILL}(i) \cup \overline{A_{NT}O_{UT}(i)})$&lt;/p&gt;
+&lt;p&gt;These terms define an earliest placement for $e$ as follows:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;$e \in A_{NT}I_{N}(j)$ means that the compiler can safely move $e$ to the head of $j$.&lt;/li&gt;
+&lt;li&gt;$e \notin A_{VAIL}O_{UT}(i)$ shows that no prior computation of $e$ is available on exit from $i$.&lt;/li&gt;
+&lt;li&gt;If $e \in E_{XPR}K_{ILL}(i)$, the compiler cann’t move $e$ through block $i$ because of a definition in $i$. If $e \notin A_{NT}O_{UT}(i)$, the compiler cann’t move $e$ into $i$ because $e \notin A_{NT}I_{N}(k)$ for some edge &amp;lt;i, k&amp;gt;. If either is true, then $e$ can move no further than &amp;lt;i, j&amp;gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4 id=&#34;later-placement&#34;&gt;Later Placement&lt;/h4&gt;
+&lt;p&gt;This problem determines when an earliest placement can be defered to a later point in the CFG while achieving the same effect. It’s formulated as a forward data-flow problem on the CFG with a set $L_{ATER}I_N(n)$ associated with each node and another set $L_{ATER}(i, j)$ associated with each edge &amp;lt;i, j&amp;gt;.&lt;/p&gt;
+&lt;p&gt;LCM initializes the $L_{ATER}I_N$ sets as follows:&lt;/p&gt;
+&lt;p&gt;$L_{ATER}I_N(n_0) = \empty$&lt;/p&gt;
+&lt;p&gt;$L_{ATER}I_N(n) = {\ all\ expressions\ }$, $\forall n ≠ n_0$&lt;/p&gt;
+&lt;p&gt;Next, it iteratively computes $L_{ATER}I_N$ and $L_{ATER}$ sets for each block.&lt;/p&gt;
+&lt;p&gt;$L_{ATER}I_N(j) = \mathop{\bigcap}\limits_{m \in preds(j)} L_{ATER}(i, j), j \not= n_0$&lt;/p&gt;
+&lt;p&gt;$L_{ATER}(i, j) = E_{ARLIEST}(i, j) \cup (L_{ATER}I_N(i) \cap \overline{UEE_{XPR}(i)})$&lt;/p&gt;
+&lt;p&gt;An expression $e \in L_{ATER}I_N(k)$ if and only if:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;every path that reaches k includes an edge &amp;lt;p, q&amp;gt; such that $e]in E_{ARLIEST}(p, q)$, and&lt;/li&gt;
+&lt;li&gt;the path from q to k
+&lt;ul&gt;
+&lt;li&gt;neither redefines $e’s$ operands&lt;/li&gt;
+&lt;li&gt;nor contains an evaluation of $e$ that an earlier placement of $e$ would anticipate.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The first condition is that the flow can reach here through the &amp;lt;p, q&amp;gt; where the evaluation can be placed. The second one ensures that the evaluation can produce a correct value and it’s not too late, because if there is an evaluation of $e$ located at the predecessors of $k$, it’s redundant to place another one subsequently.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;The $E_{ARLIEST}$ term in the equation for $L_{ATER}$ ensures that $L_{ATER}(i,j)$ includes $E_{ARLIEST}(i, j)$. The rest of that equation puts $e$ into $L_{ATER}(i,j)$ if $e$ can be moved forward from $i$ ($e \in L_{ATER}I_N(i)$) and a placement at the entry to i does not anticipate a use in i ($e \notin UEE_{XPR}(i)$).&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The former indicates that it’s not too late to put the evaluation into here, the latter implies that the placement is premature because no reference depends on it.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Given $L_{ATER}I_N$ and $L_{ATER}$ sets, $e \in L_{ATER}I_N(i)$ implies that the compiler can move the evaluation of $e$ forward through $i$ without losing any benefit; and $e \in L_{ATER}(i, j)$ implies that the compiler can move an evaluation of $e$ in $i$ into $j$.&lt;/strong&gt;&lt;/p&gt;
+&lt;h4 id=&#34;rewriting-the-code&#34;&gt;Rewriting the Code&lt;/h4&gt;
+&lt;p&gt;LCM computes two additional sets, $I_{NSERT}$ and $D_{ELETE}$ to drive the rewriting process.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The $I_{NSERT}$ set specifies, for each edge, the computations that LCM should insert on that edge. The equation is $I_{NSERT}(i, j) = L_{ATER(i,j)} \cup \overline{L_{ATER}I_N(j)}$.
+&lt;ul&gt;
+&lt;li&gt;If $i$ has only one successor, LCM can insert the computations at the end of $i$.&lt;/li&gt;
+&lt;li&gt;If $j$ has only one predecessor, it can insert the computations at the entry of $j$.&lt;/li&gt;
+&lt;li&gt;If neither condition applies, the edge &amp;lt;i, j&amp;gt; is a &lt;strong&gt;critical edge&lt;/strong&gt;, so it should be split by inserting a block in the middle of the edge to evaluate the expressions in $I_{NSERT}(i,j)$.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;The $D_{ELETE}$ set specifies, for a block, which computations LCM should delete from the block. The equation is $D_{ELETE}(i) = UEE_{XPR}(i) \cup \overline{L_{ATER}I_N(i)}$.
+&lt;ul&gt;
+&lt;li&gt;$D_{ELETE}(n_0)$ is empty, since no block precedes $n_0$.&lt;/li&gt;
+&lt;li&gt;If $e \in D_ELETE(i)$, then the first computation of $e$ in $i$ is redundant after all the insertions have been made. Any subsequent evaluation of $e$ in $i$ that has upward-exposed uses—that is, the operands are not defined between the start of $i$ and the evaluation—can also be deleted, the compiler even doesn’t need to rewrite subsequent references.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Recall that LCM doesn’t care about variables, if a register to register copy is unnecessary, subsequent copy coalescing, either in the register allocator or as a standalone pass, should discover that fact and eliminate the copy operation.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;code-hoisting&#34;&gt;Code Hoisting&lt;/h3&gt;
+&lt;p&gt;Code hoisting provides one direct way of reducing the size of the compiled code. It uses the results of anticipability in a particular simple way.&lt;/p&gt;
+&lt;p&gt;If an expression $e \in A_{NT}O_{UT}(b)$, for some block b, that means that $e$ is evaluated along every path that leaves $b$ and evaluating $e$ at the end of $b$ would make the first evaluation along each path redundant. To reduce code size, the compiler can insert an evaluation of $e$ on each path leaving $b$ with a reference to the previously computed value.&lt;/p&gt;
+&lt;p&gt;A simple approach has the compiler visit each block $b$ and insert an evaluation of $e$ at the end of $b$, for every expression $e \in A_{NT}O_{UT}(b)$. Subsequent application of LCM or SVN will then remove the newly redundant expressions.&lt;/p&gt;
+&lt;h2 id=&#34;specialization&#34;&gt;Specialization&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Major techniques that perform specialization appear in other sections, such as constant propagation, interprocedural constant propagation, operator strength reduction, peephole optimization, and value numbering.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;tail-call-optimization&#34;&gt;Tail-Call Optimization&lt;/h3&gt;
+&lt;p&gt;Tail call: the last action that a procedure takes is a call.&lt;/p&gt;
+&lt;p&gt;The compiler can specialize tail calls to their contexts in ways that eliminate much of the overhead from the procedure linkage. Supposed that o calls $p$ and $p$ calls $q$, if the call from $p$ to $q$ is a tail call, then no useful computation occurs between the postreturn sequence and the epilogue sequence in $p$. Hence, any code that preserves and restores $p$’s state, beyond what is needed for the return from $p$ to $o$.&lt;/p&gt;
+&lt;p&gt;At the call from $p$ to $q$, the minimal precall sequence must evaluate the actual parameters at the call from $p$ to $q$ and adjust the access links or the display if necessary. It need not preserve any caller-saves registers, because they cannot be live. It need not allocate a new AR, because $q$ can use $p$’s AR.&lt;/p&gt;
+&lt;p&gt;The tail recursion is a special case of tail call, in which the entire precall sequence devolves to argument evaluation and a branch back to the top of the routine. An eventual return out of the recursion requires &lt;strong&gt;one branch&lt;/strong&gt;, rather than one branch per recursive invocation.&lt;/p&gt;
+&lt;h3 id=&#34;leaf-call-optimization&#34;&gt;Leaf-Call Optimization&lt;/h3&gt;
+&lt;p&gt;Definition: a procedure that makes no calls.&lt;/p&gt;
+&lt;p&gt;During translation of a leaf procedure, the compiler can avoid inserting operations whose sole purpose is to set up for sequent calls such as saving return address from a register into a slot in the AR. In a leaf procedure, the register allocator should try to use caller-saves register before callee-saves registers, which can even keep untouched.&lt;/p&gt;
+&lt;p&gt;In addition, the compiler can avoid the runtime overhead of activation-record allocation for leaf procedures.&lt;/p&gt;
+&lt;h3 id=&#34;parameter-promotion&#34;&gt;Parameter Promotion&lt;/h3&gt;
+&lt;p&gt;Promotion: the compiler proves that an ambiguous value has just one corresponding memory location through detailed analysis of pointer values or array subscript values, or special case analysis. In these cases, it can rewrite the code to move that value into a scalar local variable, where the register allocator can keep it in a register.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;To apply this transformation to a procedure p, the optimizer must identify all of the call sites that can invoke p.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;redundancy-elimination&#34;&gt;Redundancy Elimination&lt;/h2&gt;
+&lt;p&gt;We’ve learnt three effective techniques for this topic: LVN, SVN, LCM. All three methods differ in the scope of their approach to discovering identical values.&lt;/p&gt;
+&lt;h3 id=&#34;value-identity-and-name-identity&#34;&gt;Value Identity and Name Identity&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;Value Identity&lt;/strong&gt;: LVM introduced a simple mechanism under SSA form to prove that two expressions had the same value. It assumes that two expressions produce the same value if they have the same operator and their operands have the same value numbers.&lt;/p&gt;
+&lt;p&gt;With this rules, LVN can prove that 2 + a has the same value as a + 2 or as 2 + b when a and b have the same value number. However, it can’t prove that a + a and 2 * a has the same value because they have different operators. Similarly, it can’t prove the a + 0 and a has the same value unless we extended it with algebraic identities.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Name Identity&lt;/strong&gt;: LCM relies on names to prove that two values have the same number. If LCM sees a + b and a + c, it assumes that they have different values because b and c have different names. We can improve the effectiveness of LCM by encoding value identity into the name space of the code before applying LCM. The distinction between LCM and LVN (or SVN) is clear. Therefore, by encoding value identity into the namespace, the compiler can leverage the strengths of both approaches.&lt;/p&gt;
+&lt;h3 id=&#34;dominator-based-value-numbering-dvnt&#34;&gt;Dominator-based Value Numbering (DVNT)&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/DVNT1.png&#34; alt=&#34;DVNT1&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Recall that at the SVN algorithm, we assumes that the block $B_4$ begins with no prior context. However, though $B_4$ can’t rely on values computed in either $B_2$ or $B_3$, it can rely on values computed in $B_0$ and $B_1$, since they occur on every path that reaches $B_4$.&lt;/p&gt;
+&lt;p&gt;Fortunately, the SSA name space encodes precisely this distinction. In SSA, a name that is used in some block $B_i$ can only enter $B_i$ in one of two ways. Either the name is defined by a $\phi$-function at the top of $B_i$, or it is defined in some block that dominates $B_i$. Thus, an assignment to x in either $B_2$ or $B_3$ creates a new name for x and forces the insertion of a $\phi$-function for x at the head of $B_4$. Thus, SSA form encodes the presence or absence of an intervening assignment in $B_2$ or $B_3$ directly into the names used in the expression.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;We can use dominance information to locate the most recent predecessor which the algorithm can use.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimzation/DVNT.png&#34; alt=&#34;DVNT&#34;&gt;&lt;/p&gt;
+&lt;h4 id=&#34;process-the-phi-functions-in-b&#34;&gt;Process the $\phi$-Functions in B&lt;/h4&gt;
+&lt;p&gt;If a $\phi$-function $p$ is meaningless, DVNT sets its value number to the value number for one of its arguments and deletes $p$. If $p$ is redundant, DVNT assigns $p$ the same value number as the $\phi$-function that it duplicates, then DVNT deletes $p$.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;meaningless: all its arguments have the same value number.
+redundant: it produces the same value number as another $\phi$-function.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Otherwise, the $\phi$-function computes a new value.&lt;/p&gt;
+&lt;h4 id=&#34;process-the-assignments-in-b&#34;&gt;Process the Assignments in B&lt;/h4&gt;
+&lt;p&gt;DVNT iterates over the assignments in B and process them in a manner analogous to LVN and SVN. When the algorithm encounters a statement $x ← y\ op\ z$, it can simply replace $y$ with $VN[y]$ because the name in $VN[y]$ holds the same value as y.&lt;/p&gt;
+&lt;h4 id=&#34;propagate-information-to-bs-successors&#34;&gt;Propagate Information to B’s Successors&lt;/h4&gt;
+&lt;p&gt;Once DVNT has processed all the $\phi$-functions and assignments in $B$, it visits each of B’s CFG successors $s$ and updates $\phi$ function arguments that correspond to values flowing across the edge $(B,s)$. It records the current value number for the argument in the $\phi$-function by overwriting the argument’s SSA name.&lt;/p&gt;
+&lt;p&gt;Next, the algorithm recurs on $B$’s children in the dominator tree (follow a preorder walk). Finally, it deallocates the hash table scope that is used for $B$.&lt;/p&gt;
+&lt;h2 id=&#34;enabling-other-transformations&#34;&gt;Enabling Other Transformations&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Both loop unrolling and inline substitution obtain most of their benefits by creating context for other optimization.
+The tree-height balancing algorithm doesn’t eliminate any operations, but it creates a code shape that can produce better results from instruction scheduling.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;superblock-cloning&#34;&gt;Superblock Cloning&lt;/h3&gt;
+&lt;p&gt;In superblock cloning, the optimizer starts with a loop head—the entry to a loop—and clones each path until it reaches a backward branch.&lt;/p&gt;
+&lt;p&gt;Superblock cloning can improve the results of optimization in three principal ways.&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;It creates longer blocks.&lt;/li&gt;
+&lt;li&gt;It eliminates branches.&lt;/li&gt;
+&lt;li&gt;It creates points where optimization can occur such as specialization and redundancy elimination.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;However, cloning has costs, too. It will lead to larger code, which may run more slowly if its size causes additional instruction cache misses.&lt;/p&gt;
+&lt;h3 id=&#34;procedure-cloning&#34;&gt;Procedure Cloning&lt;/h3&gt;
+&lt;p&gt;The idea is analogous to the block cloning that occurs in superblock cloning. The compiler creates multiple copies of the callee and assigns some of the calls to each instance of the clone&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/original.png&#34; alt=&#34;original&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/after-cloning.png&#34; alt=&#34;after-cloning&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;loop-unswitching&#34;&gt;Loop Unswitching&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/unswitch.png&#34; alt=&#34;unswitch&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Unswitching is an enabling transformation, it can lead to better scheduling, better register allocation, and fast execution.&lt;/p&gt;
+&lt;h3 id=&#34;renaming&#34;&gt;Renaming&lt;/h3&gt;
+&lt;p&gt;Renaming is a fertile ground for future work.&lt;/p&gt;
+&lt;h2 id=&#34;sparse-conditional-constant-propagation-sccp&#34;&gt;Sparse Conditional Constant Propagation (SCCP)&lt;/h2&gt;
+&lt;p&gt;SSCP assigns a lattice value to the operand used by a conditional branch. If the value is neither $\top$ nor $\bot$, then the operand must have a known value and the compiler can rewrite the branch with a jump to one of its two targets, simplifying the CFG. Since this removes an edge from the CFG, it may make the block that was the branch target unreachable. SSCP has no mechanism to take advantage of this knowledge.&lt;/p&gt;
+&lt;p&gt;In concept, SCCP operates in a straightforward way. It initializes the data structures. It iterates over two graphs, the CFG and the SSA graph. It propagates reachability information on the CFG and value information on the SSA graph. It halts when the value information reaches a fixed point. Combining these two kinds of information, SCCP can discover both unreachable code and constant values.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;To simplify the explanation of SCCP, we assume that each block in the CFG represents just one statement, plus some optional $\phi$-functions.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/SCCP1.png&#34; alt=&#34;SCCP1&#34;&gt;&lt;/p&gt;
+&lt;p&gt;After the initialization phase, the algorithm repeatedly picks an edge from one of the two worklists and process that edge.&lt;/p&gt;
+&lt;p&gt;For a CFG edge (m, n), SCCP determines if the edge is marked as executed.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;If (m, n) is so marked, SCCP take no further action for (m, n).&lt;/li&gt;
+&lt;li&gt;If (m, n) is marked as unexecuted, then SCCP marks it as executed and evaluates all of the $\phi$-functions at the start of block $n$.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Next, SCCP determines if block $n$ has been previously entered along another edge. If it has not, then SCCP evaluates the assignment or conditional branch in $n$. This processing may add edges to either worklist.&lt;/p&gt;
+&lt;p&gt;For an SSA edge, the algorithm first checks if the destination block is reachable. If the block is reachable, SCCP calls one of &lt;em&gt;EvaluatePhi,&lt;/em&gt; EvaluateAssign, or &lt;em&gt;EvaluateConditional&lt;/em&gt;, based on the kind of operation that uses the SSA name.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/SCCP2.png&#34; alt=&#34;SCCP2&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/SCCP3.png&#34; alt=&#34;SCCP3&#34;&gt;&lt;/p&gt;
+&lt;p&gt;After the propagation step, a final pass is required to replace operations that have operands with &lt;em&gt;Value&lt;/em&gt; tags other than $\bot$. The algorithm cannot rewrite the code until the propagation completes.&lt;/p&gt;
+&lt;h3 id=&#34;subtleties-in-evaluating-and-rewriting-operations&#34;&gt;Subtleties in Evaluating and Rewriting Operations&lt;/h3&gt;
+&lt;p&gt;If the algorithm encounters a multiply operation with operands $\top$ and $\bot$, it might conclude that the operation produces $\bot$. Doing so, however, is premature. Subsequent analysis might lower the $\top$ to the constant 0, so that the multiply produces a value of 0. If SCCP uses the rule $\top \times \bot \rightarrow \bot$, it would increase the running time of SCCP, since the multiply’s value might follow the sequence $\top$, $\bot$, 0. Moreover, it might incorrectly drive other values to $\bot$ and cause SCCP to miss opportunities for improvement.&lt;/p&gt;
+&lt;p&gt;To address this, SCCP should use three rules for multiplies that involve $\bot$, as follows: $\top \times \bot \rightarrow \top$, $\alpha \times \bot \rightarrow \bot$ for $\alpha ≠ T$ and $\alpha ≠ 0$, and $0 \times \bot \rightarrow 0$. This same effect occurs for any operation for which the value of one argument can completely determine the result.&lt;/p&gt;
+&lt;h3 id=&#34;effectiveness&#34;&gt;Effectiveness&lt;/h3&gt;
+&lt;p&gt;sccp can find constants that the sscp algorithm cannot. Similarly, it can discover unreachable code that no combination of the algorithms can discover.&lt;/p&gt;
+&lt;h2 id=&#34;strength-reduction&#34;&gt;Strength Reduction&lt;/h2&gt;
+&lt;h3 id=&#34;background&#34;&gt;Background&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Region Constant: a value that doesn’t vary in a loop.
+Induction Variable: a value that varies systematically from iteration.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Strength reduction looks for contexts in which &lt;strong&gt;an operation&lt;/strong&gt;, such as a multiply, executes inside a loop and its operands are region constant and induction variable. When it finds this situation, it creates a new induction variable that computes the same sequence of values as the original multiplication in a more effcient way.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Candidate Operation: an operation can be reduced with strength reduction.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;We assume that candidate Operation only has five forms as following:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;$x \leftarrow c \times i$&lt;/li&gt;
+&lt;li&gt;$x \leftarrow i \times c$&lt;/li&gt;
+&lt;li&gt;$x \leftarrow c + i$&lt;/li&gt;
+&lt;li&gt;$x \leftarrow i + c$&lt;/li&gt;
+&lt;li&gt;$x \leftarrow i - c$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;where $c$ is a region constant and $i$ is an induction variable.&lt;/p&gt;
+&lt;p&gt;A region constant can either be a literal constant, or a loop-invariant value. With the code in SSA form, we can determine the region constant whether its definition dominate the entry to the loop that defines the induction variable.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Performing LCM and constant propagation before strength reduction may expose more region constants.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;To make the algorithm effective, we are supposed to give a restricted definition to induction variable: an induction variable is a strongly connected component (SCC) of the SSA graph in which each operation that updates its value is one of&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;an induction variable plus a region constant;&lt;/li&gt;
+&lt;li&gt;an induction variable minus a region constant;&lt;/li&gt;
+&lt;li&gt;a $\phi$-function, or&lt;/li&gt;
+&lt;li&gt;a register-to-register copy from another induction variable.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The SSA graph: In SSA form, each name has a unique definition, so that a name specifies a particular operation in the code that computed its value. We draw SSA graphs with edges that run from a use to its corresponding definition, and the compiler needs to traverse the edges in both directions.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Consider an operation $o$ of the form $x \leftarrow i \times c$, where $i$ is an induction variable. To test whether $c$ has this property, OSR must relate the SCC for $i$ in the SSA graph back to a loop in the CFG.&lt;/p&gt;
+&lt;p&gt;OSR considers the node with the lowest reverse postorder to be the header of the SCC and records that fact in the header field of each node of the SCC.&lt;/p&gt;
+&lt;p&gt;In SSA form, the induction variable’s header is the $\phi$-function at the start of the outermost loop in which it varies. In an operation $x \leftarrow i \times c$, where $i$ is an induction variable, $c$ is a region constant if the CFG block that contains its definition dominates the CFG block that contains $i$’s header. To perform this test, the SSA construction must produce a map from each SSA node to the CFG block where it originated.&lt;/p&gt;
+&lt;h3 id=&#34;the-algorithm&#34;&gt;The Algorithm&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Tarjan’s Strongly Connected Region Finder:
+This is an method to compute the strongly connected component propsed by &lt;a href=&#34;https://en.wikipedia.org/wiki/Robert_Tarjan&#34;&gt;Robert Tarjan&lt;/a&gt;. You can find more information of this &lt;a href=&#34;%5Bhttps://en.wikipedia.org/wiki/Tarjan&#39;s_strongly_connected_components_algorithm%5D(https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm)&#34;&gt;algorithm&lt;/a&gt;. If you feel confused about this method at first like me, you may get further understanding from this video: &lt;a href=&#34;%5Bhttps://www.youtube.com/watch?v=wUgWX0nc4NY%5D(https://www.youtube.com/watch?v=wUgWX0nc4NY)&#34;&gt;Tarjan’s Strongly Connected Components&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;OSR uses Tarjan’s rtrongly connected region finder to drive the entire process.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/OSR1.png&#34; alt=&#34;OSR1&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;rewriting-the-code-1&#34;&gt;Rewriting the Code&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/OSR2.png&#34; alt=&#34;OSR2&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Replace&lt;/em&gt; calls &lt;em&gt;Reduce&lt;/em&gt; to rewrite the operation represented by n. Next, it replaces $n$ with a copy operation from the result produced by &lt;em&gt;Replace&lt;/em&gt;. It sets $n$’s header field, and returns.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Reduce&lt;/em&gt; and &lt;em&gt;Apply&lt;/em&gt; use a hash table to avoid inserting duplicate operations.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Reduce: first, it calls &lt;em&gt;Clone&lt;/em&gt; to copy the definition for &lt;em&gt;iv&lt;/em&gt;, the induction variable in the operation being reduced. Next, it recurs on the operands of this new operands. An operand defined outside the scc must be either the initial value of &lt;em&gt;iv&lt;/em&gt; or a value by which &lt;em&gt;iv&lt;/em&gt; is incremented. The initial value must be a $\phi$-function argument from outside the SCC. Reduce calls Apply on each such argument.&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;Apply&lt;/em&gt; takes an opcode and two operands, locates an appropriate point in the code, and inserts that opeartion. It returns the new SSA name for the result of that operation. Normally, &lt;em&gt;Apply&lt;/em&gt; gets a new name, inserts the operation, and returns the result. It locates an appropriate block for the new operation using dominance information. The new operation must go into a block dominated by the blocks that define its operands. If one operand is a constant, &lt;em&gt;Apply&lt;/em&gt; can duplicate the constant in the block that defines the other operand. Otherwise, both operands must have definitions that dominate the header block, and one must dominate the other.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;linear-function-test-replacement-lftr&#34;&gt;Linear-Function Test Replacement (LFTR)&lt;/h3&gt;
+&lt;p&gt;Strength reduction often eliminates all uses of an induction variable, except for an end-of-loop test.&lt;/p&gt;
+&lt;p&gt;If the compiler can remove this last use, it can eliminate the original induction variable as dead code.&lt;/p&gt;
+&lt;p&gt;To perform LFTR, the compiler must&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;locate comparisons that rely on otherwise unneeded induction variables,&lt;/li&gt;
+&lt;li&gt;locate an appropriate new induction variable that the comparison could use&lt;/li&gt;
+&lt;li&gt;compute the correct region constant for the rewritten test, and&lt;/li&gt;
+&lt;li&gt;rewrite tht code.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Having lftr cooperate with OSR can simplify all of these tasks to produce a fast, effective transformation.&lt;/p&gt;
+&lt;p&gt;The operations that lftr targets compare the value of an induction vari- able against a region constant. After OSR finishes its work, lftr should revisit each of these comparisons.&lt;/p&gt;
+&lt;p&gt;To facilitate this process, Reduce can record the arithmetic relationship it uses to derive each new induction variable. It can insert a special LFTR edge from each node in the original induction variable to the corresponding node in its reduced counterpart and label it with the operation and region constant of the candidate operation responsible for creating that induction variable.&lt;/p&gt;
+&lt;p&gt;When LFTR finds a comparison that should be replaced, it can follow the edges from its induction-variable argument to the final induction variable that resulted from a chain of one or more reductions. The comparison should use this induction variable with an appropriate new region constant.&lt;/p&gt;</description>
+      
+    </item>
+    
+    <item>
+      <title>Data Flow Analysis</title>
+      <link>https://forceoflife.cn/post/data-flow-analysis/</link>
+      <pubDate>Tue, 05 Mar 2024 23:16:20 +0800</pubDate>
+      <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
+      <guid>https://forceoflife.cn/post/data-flow-analysis/</guid>
+      
+      <description>&lt;p&gt;这篇文章是我在看 &lt;em&gt;Engineering A Compiler&lt;/em&gt; (EAC，橡书) 中第 9 章数据流分析的笔记，里面标有 Confused 的地方是我困惑的内容，包括过程间常量传播 (Jump Function)、加速DOM计算，之后如果搞懂了会写文章来补充。&lt;/p&gt;
+&lt;h2 id=&#34;introdution&#34;&gt;Introdution&lt;/h2&gt;
+&lt;p&gt;Requirements for optimization:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;find the points which can be improved&lt;/li&gt;
+&lt;li&gt;the transformation is safe&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;iterative-data-flow-analysis&#34;&gt;Iterative Data-Flow Analysis&lt;/h2&gt;
+&lt;p&gt;For a forward data-flow problem, the algorithm should use an RPO computed on the CFG. By contrast, the algorithm should use an RPO computed on the reverse CFG to solve a backward data-flow problem.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Reverse CFG: the CFG with its edges reversed. Normally, the compiler need to add a unique exit node so that the reverse CFG has a unique entry node.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Reverse Postorder (RPO): Label the nodes in the graph with their visitation order in a reverse postorder traversal which visits as many of a node’s predecessors as possible before visiting the node itself. &lt;strong&gt;A node’s RPO number is simple $|N| + 1$ minus its postorder number, where &lt;em&gt;N&lt;/em&gt; is the set of nodes in the graph.&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;dominance&#34;&gt;Dominance&lt;/h3&gt;
+&lt;p&gt;Definition: node a dominates node b, if and only if a lies on every path from the entry of CFG to b.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The dominance calculation is a forward data-flow problem, and relies only on the structure of the graph.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;$D_{OM} (b_i)$: a set which contains the names of all nodes that dominate $b_i$.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Using the following equation to compute these sets:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;$D_{OM} (n) = {n} \cup \left( \mathop{\bigcap}\limits_{m\in preds(n)} D_{OM} (m) \right)$&lt;/p&gt;
+&lt;p&gt;with the initial conditions that $D_{OM} (n_0) = {n_0}$, and $\forall n ≠ n_0$, $D_{OM} (n) = N$, where N is the set of all nodes in the CFG.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Three-step to solve the equation:&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;build a CFG&lt;/li&gt;
+&lt;li&gt;gather initial information for each block&lt;/li&gt;
+&lt;li&gt;solve the equations to produce the $D_{OM}$ sets for each block&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/Iterative-Dominance-Framework.png&#34; alt=&#34;Untitled&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;live-variable-analysis&#34;&gt;Live-Variable Analysis&lt;/h3&gt;
+&lt;p&gt;Type: a backward global data-flow problem&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The result of this analysis can be used for register allocation and construction of some variants of SSA form.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Equation:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;$L_{IVE}O_{UT}(n) = \mathop{\bigcup}\limits_{m \in succ(n)}(UEV_{AR}(m) \cup (L_{IVE}O_{UT}(m) \cap \overline{V_{AR}K_{ILL}(m)}))$&lt;/p&gt;
+&lt;p&gt;and the initial condition that $L_{IVE}O_{UT}(n) = \emptyset$, $\forall n$.&lt;/p&gt;
+&lt;p&gt;Three-step to compute the set:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Perform control-flow analysis to build a CFG.&lt;/li&gt;
+&lt;li&gt;Compute the values of the initial sets.&lt;/li&gt;
+&lt;li&gt;Apply the iterative algorithm.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;Using an RPO computed on the reversed CFG to solve this problem.&lt;/strong&gt;&lt;/p&gt;
+&lt;h3 id=&#34;limitations&#34;&gt;Limitations&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;The algorithm which computes the sets $L_{IVE}O_{UT}$, it implicitly assumes that execution can reach all of those successors. However, one or more of them may not be reachable.&lt;/li&gt;
+&lt;li&gt;Arrays and pointers, which force the analyzer to assume that every variable has been modified. We can solve this problem by guarateening the type safety or analysing the pointer variables.&lt;/li&gt;
+&lt;li&gt;Procedure calls. We also have to assume that the callee modifies all the variable which is accessible to both caller and callee and the call-by-reference parameters.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;available-expressions&#34;&gt;Available Expressions&lt;/h3&gt;
+&lt;p&gt;Definition: An expression e is available at point p in a procedure if and only if on every path from the procedure’s entry to p, e is evaluated and none of its constituent subexpressions is redefined between that evaluation and p.&lt;/p&gt;
+&lt;p&gt;Type: a forward data-flow problem.&lt;/p&gt;
+&lt;p&gt;The equation to compute the $A_{VAIL}I_N(n)$:&lt;/p&gt;
+&lt;p&gt;$A_{VAIL}I_N(n) = \mathop{\bigcap}\limits_{m \in preds(n)}(DEE_{XPR}(m) \cup (A_{VAIL}I_{N}(m) \cap \overline{E_{XPR}K_{ILL}(m)}))$&lt;/p&gt;
+&lt;p&gt;, the initial condition that $A_{VAIL}I_N(n_0) = \emptyset$, $A_{VAIL}I_N(n) = {\  all \  expressions \ }, \forall n ≠ n0$.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;$DEE_{XPR}(n)$: a set of downward exposed expressions in n. An expression $e \in DEE_{XPR}(n)$ if and only if block n evaluates $e$ and none of $e$’s operands is defined between the last evaluation of $e$ in $n$ and the end of $n$.&lt;/li&gt;
+&lt;li&gt;$E_{XPR}K_{ILL}(n)$: this set contains all those expressions that are “killed” by  a definition in $n$. An expression is killed if and only if one or more of its operands are redefined in the block.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;An expression $e$ is available on entry to n if and only if it is available on exit from &lt;strong&gt;each&lt;/strong&gt; of $n$’s predecessors in the CFG.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The $A_{VAIL}I_N(n)$ can be used to perform &lt;em&gt;global common subexpression elimination&lt;/em&gt; and lazy code motion.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;reaching-defnitions&#34;&gt;Reaching Defnitions&lt;/h3&gt;
+&lt;p&gt;Purpose: to find the set of definitions that reach a block.&lt;/p&gt;
+&lt;p&gt;Domain of $R_{EACHES}$ is the set of definitions in procedure.&lt;/p&gt;
+&lt;p&gt;A definition d of some variable v reaches operation i if and only if i reads the value of v and there exists a path form d to i that doesn’t define v.&lt;/p&gt;
+&lt;p&gt;The compiler annotates each node n in the CFG with a set $R_{EACHES}(n)$, computed as a forward data-flow problem:&lt;/p&gt;
+&lt;p&gt;$R_{EACHES}(n) = \emptyset$, $\forall n$&lt;/p&gt;
+&lt;p&gt;$R_{EACHES}(n) = \mathop{\bigcup}\limits_{m \in preds(n)} ( DED_{EF}(m) \cup (R_{EACHES}(m) \cap \overline{D_{EF}K_{ILL}(m)}))$&lt;/p&gt;
+&lt;p&gt;$DED_{EF}(m)$ is the set of downward-exposed definitions in m: those definitions in m for which the defined name is not subsequently redefined in m.&lt;/p&gt;
+&lt;p&gt;$D_{EF}K_{ILL}(m)$ contains all the definition points that are obscured by a definition of the same name in m. Thus $\overline{D_{EF}K_{ILL}(m)}$ consists of the definition points that are not obsucred in m.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Computing $DED_{EF}$ and $D_{EF}K_{ILL}$ requires a mapping from names to definiton points. It’s more complex to gather the initial information than it is for live variables.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;anticipable-expressions&#34;&gt;Anticipable Expressions&lt;/h3&gt;
+&lt;p&gt;Definition:&lt;/p&gt;
+&lt;p&gt;An expression $e$ is considered &lt;em&gt;anticipable&lt;/em&gt; on exit from block b if and only if&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;every path that leaves b evaluates and subsequently use $e$, and&lt;/li&gt;
+&lt;li&gt;evaluating $e$ at the end of $b$ would produce the same result as the first evaluation of $e$ along each of those paths. (this property corresponds to the term “anticipable”)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Domainof the problem: the set of expressions.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Equation:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;$A_{NT}O_{UT}(n_f) = \emptyset$&lt;/p&gt;
+&lt;p&gt;$A_{NT}O_{UT}(n) = {\ all \  expressions \ }, \forall n ≠ n_f$&lt;/p&gt;
+&lt;p&gt;$A_{NT}O_{UT}(n) = \mathop{\bigcap}\limits_{m \in succ(n)}(UEE_{XPR}(m) \cup (A_{NT}O_{UT}(m) \cap \overline{E_{XPR}K_{ILL}(m)}))$&lt;/p&gt;
+&lt;p&gt;$UEE_{XPR}(m)$ is the set of upward-exposed expressions—those used in $m$ before they are killed.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The results of anticipability analysis are used in code motion both in lazy code motion and code hoisting.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;interprocedural-summary-problems-confused&#34;&gt;Interprocedural Summary Problems (Confused)&lt;/h3&gt;
+&lt;p&gt;Problem: In the absence of specific information about the call, the compiler must make worst-case assumptions that account for all the possible actions of the callee, or any procedures that it, in turn, calls.&lt;/p&gt;
+&lt;p&gt;To limit such impact, the classic summary problems compute the set of variables that might be modified as a result of the call and that might be used as a result of the call.&lt;/p&gt;
+&lt;p&gt;The &lt;em&gt;intreprocedural may modify problem&lt;/em&gt; annotates each call site with a set of names that the callee, and procedures it calls, might modify.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The result of this analysis can be used for global constant propagation.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Equation:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;$M_{AY}M_{OD}(p) = L_{OCAL}M_{OD}(p) \cup \left( \mathop{\bigcup}\limits_{e = (p,q)} ubind_e(M_{AY}M_{OD}(q))\right)$&lt;/p&gt;
+&lt;p&gt;For a call-graph edge $e = (p,q)$, $unbind_e(x)$ maps each name in x from the name space of q to the name space of p, using the bindings at the specific call site that coreesponds to $e$.&lt;/p&gt;
+&lt;p&gt;$L_{OCAL}M_{OD}(p)$ contains all the names modified locally in p that are visible outside p.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;It’s computed as the set of names defined in p minus any names that are stricly local to p.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The compiler can also compute information on what variables might be referenced as a result of executing a procedural call, which is called the &lt;em&gt;interprocedural may reference problem&lt;/em&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;static-single-assignment-form&#34;&gt;Static Single-Assignment Form&lt;/h2&gt;
+&lt;p&gt;Purpose: to limit the number of analyses.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Solution: building a variant form that encodes both data flow and control flow directly in the IR.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;$\phi$-function: this function combines the values from distinct edges. When control enters a block, all the $\phi$-functions in the block execute, &lt;strong&gt;concurrently&lt;/strong&gt;. They evaluate to the argument that corresponds to the edge along which control entered the block.&lt;/p&gt;
+&lt;p&gt;Two rules hold after the transformation to SSA:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;each definition in the procedure has a unique name, and&lt;/li&gt;
+&lt;li&gt;each use refers to a single definition.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Steps to transform a procedure into SSA form:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Insert the appropriate $\phi$-functions for each variable into the code;&lt;/li&gt;
+&lt;li&gt;Rename variables with subscripts to make the two rules hold.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;Maximal SSA form&lt;/strong&gt;: a naive algorithm to convert IR to SSA, which creates many extraneous $\phi$-funtions.&lt;/p&gt;
+&lt;h3 id=&#34;dominator-trees&#34;&gt;Dominator Trees&lt;/h3&gt;
+&lt;p&gt;Strictly dominate set: $D_{OM}(n)-n$&lt;/p&gt;
+&lt;p&gt;Immediate dominator: the node in strictly dominate set that is closest to n, denoted $ID_{OM}(n)$.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The entry node has no immediate dominator.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Dominator tree: it contains all node of a flow graph, and there is an edge from m to n if m is $ID_{OM}(n)$.&lt;/p&gt;
+&lt;p&gt;The dominator tree contains both the $ID_{OM}$ information and the $D_{OM}$ sets for each node. Each node lies on the path from the root of dominator tree to n, inclusive of both the root and n.&lt;/p&gt;
+&lt;h3 id=&#34;dominance-frontiers&#34;&gt;Dominance Frontiers&lt;/h3&gt;
+&lt;p&gt;A definition in node n forces a corresponding $\phi$-function at any join point m where&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;n dominates a predecessor of m ($q \in preds(m)$ and $n \in D_{OM}(q)$), and&lt;/li&gt;
+&lt;li&gt;n doesn’t strictly dominate m.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Dominance frontier: the collection of nodes &lt;em&gt;m&lt;/em&gt; that have above property with respect to n, denoted $DF(n)$.&lt;/p&gt;
+&lt;p&gt;The algorithm to compute dominance frontiers is based on three observations as following:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Node in a  DF set must be join points in the graph.&lt;/li&gt;
+&lt;li&gt;For a join point j, each predecessor k of j must have $j \in DF(k)$.&lt;/li&gt;
+&lt;li&gt;If $j \in DF(k)$ for some predecessor k, then j must also be in DF(l) for each $l \in D_{OM}(k)$, unless $l \in D_{OM}(j)$.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/static/2024/data-flow-analysis/images/DF.png&#34; alt=&#34;DF set&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;placing-phi-functions&#34;&gt;Placing $\phi$-Functions&lt;/h3&gt;
+&lt;p&gt;To improve the naive algorithm, the basic idea is that a definition of x in block b forces a $\phi$-function at every node in DF(b). But we can continue to improve it, because a variable that is only &lt;strong&gt;live&lt;/strong&gt; within a single block can never have a live $\phi$-function.&lt;/p&gt;
+&lt;p&gt;Globals set: a set of names which are live across multiple blocks.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;In each block, it looks for names with upward-exposed uses — the $UEV_{AR}$ set from the live-variables calculation.&lt;/li&gt;
+&lt;li&gt;With the globals set, the compiler can insert $\phi$-functions for those names within it and ignore any name that is not in it.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Blocks set: a list of blocks for each name that contain a definition of that name.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;These block lists serve as an initial worklist for the $\phi$-insertion algorithm.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Algorithm to find the sets:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/Globals-Blocks.png&#34; alt=&#34;Globals and blocks&#34;&gt;&lt;/p&gt;
+&lt;p&gt;and to rewrite the code:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/Insertion.png&#34; alt=&#34;Untitled&#34;&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Since all the $\phi$-functions in a block execute concurrently, the order of their insertion is insignificant.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;However, the distinction between local names and global names is not sufficient to avoid all dead $\phi$-functions. To further eliminate the extraneous insertions, the compiler can construct $L_{IVE}O_{UT}$ sets and add a test based on liveness to the inner loop of the insertion algorithm. The SSA form generated by that modification is called pruned SSA form.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;There are two ways to improve the efficiency:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;The algorithm should avoid placing any block on the worklist more than once per global name, which can be solved by keeping a checklist of blocks that have already been processed. For implementation, it can use a sparse set to save the space.&lt;/li&gt;
+&lt;li&gt;The compiler can maintain a checklist of blocks (a single sparse set, which reinitialized along with WorkList) that already contain $\phi$-functions for a given blocks.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;renaming&#34;&gt;Renaming&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/Renaming.png&#34; alt=&#34;Renaming&#34;&gt;&lt;/p&gt;
+&lt;p&gt;This algorithm renames both definitions and uses in a preorder walk over the procedure’s dominator tree. It rewrites the operands with current SSA names, then it creates a new SSA name for the result of the operation. After rewriting the operands and definition, the algorithm rewrites the appropriate $\phi$-function parameters in each CFG successor of the block, using the current SSA names.&lt;/p&gt;
+&lt;p&gt;Finally, it recurs on any children of the block in the dominator tree.&lt;/p&gt;
+&lt;p&gt;Moreover, the algorithm maintains a stack which holds the subscript of the name’s current SSA name.&lt;/p&gt;
+&lt;p&gt;It also maintain a counter to ensure that each definition receives a unique SSA name.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The following things makes me confused.&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The compiler must assign an ordinal parameter slot in those $\phi$-functions for b. When we draw the SSA form, we always assume a left-to-right order that matches the left-to-right order in which the edges are drawn.
+Internally, the compiler can number the edges and parameter slots in any consistent fashion that produces the desired result. This requires cooperation between the code that builds the ssa form and the code that builds the cfg. (For example, if the CFG implementation uses a list of edges leaving each block, the order of that list can determine the mapping.)&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;We can use a method to limit the max size of stack to the depth of the dominator tree.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;em&gt;NewName&lt;/em&gt; may overwrite the same stack slot multiple times within a single block. But it requires another mechanism for determining which stacks to pop on exit from a block.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;NewName&lt;/em&gt; can thread together the stack entries for a block. Rename can use the thread to pop the appropriate stacks.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;translation-out-of-ssa-form&#34;&gt;Translation Out of SSA Form&lt;/h3&gt;
+&lt;p&gt;Reason: modern processors do not implement $\phi$-functions. The compiler would produce incorrect code when it simply drops the subscripts, reverts to base names, and deletes the $\phi$-functions if the code has been rearranged.&lt;/p&gt;
+&lt;p&gt;The compiler can keep the SSA name space instact and replace each $\phi$-function with a set of copy operations—one along each incoming edge.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Critical Edge: In a CFG, an edge whose source has multiple successors and whose sink has multiple predecessors is called acritical edge.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;If a block has multiple successors, the compiler cann’t simply insert copies directly into it. To remedy this problem, the compiler can split the edge, insert a new block between the nodes, and place the copies in that new block.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The Lost-Copy Problem&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;The lost-copy problem arises from the combination of copy folding and critical edges that cann’t be split.&lt;/p&gt;
+&lt;p&gt;For example:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/out-of-ssa-wrong.png&#34; alt=&#34;out-of-ssa-wrong&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Panel a assigns z the second to last value of i; the code in panel c assigns $z_0$ the last value of i. With the critical edge split, as in panel d, copy insertion produces the correct behavior. However, it adds a jump to every iteration of the loop.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/split-critical.png&#34; alt=&#34;split&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The compiler can avoid this problem by checking the liveness of the target name for each copy that it tries to insert during out-of-SSA translation. When it discovers a copy target(in this example is $i_1$) that is live, it must preserve the living value in a tempory name and rewrite subsequent uses to refer to the tempoary name.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;This step can be done with an algorithm modelled on the renaming step.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/correct-insertion.png&#34; alt=&#34;correct&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The swap problem&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Reason: all $\phi$-functions in a block execute concurrently, but the assignments execute serially.&lt;/p&gt;
+&lt;p&gt;For example:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/naive-insertion.png&#34; alt=&#34;naive-problem&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The straightford fix for this problem is to adopt a two-stage copy protocol.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The first stage copies each of the $\phi$-function arguments to its own temporary name, simulating the behavior of the original $\phi$-functions.&lt;/li&gt;
+&lt;li&gt;The second stage then copies those values to the $\phi$-function targets.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;For the example, it would require four assignments: $s = y_1$, $t = x_1$, $x_1 = s$, $y_1 = t$.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Unfortunately, this solution doubles the number of copy operations required to translate out of SSA form.&lt;/p&gt;
+&lt;p&gt;In fact, this problem can arise without a cycle of copies. All it takes is a set of $\phi$-functions that have, as inputs, variables defined as outputs of other $\phi$-functions in the same block. Though it can be fixed easily by carefully arranging the order of inserted copies.&lt;/p&gt;
+&lt;h3 id=&#34;using-ssa-form-simply-sparse-constant-propagation-algorithm&#34;&gt;Using SSA Form (Simply Sparse Constant Propagation Algorithm)&lt;/h3&gt;
+&lt;p&gt;semilattice: A semilattice consists of a set $L$ of values and a meet operator, $\wedge$. The meet operator must be idempotent, commutative and associative; it imposes an order on the elements of $L$ as follows:&lt;/p&gt;
+&lt;p&gt;$a ≥ b$ if and only if $a \wedge b = b$ and&lt;/p&gt;
+&lt;p&gt;$a &amp;gt; b$ if and only if $a &amp;gt; b$ and $a ≠b$&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;bottom element: $\bot$, with the properties that $\forall a \in L, a \wedge \bot = \bot, and \ \forall \ a \in L, a ≥ L$&lt;/li&gt;
+&lt;li&gt;top element: $\top$, with the properties that $\forall a \in L, a \wedge \top = a, and \ \forall \ a \in L, T ≥ a$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The semilattice for a single SSA name:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/Semilattice.png&#34; alt=&#34;Semilattice&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Simply Sparse Constant Propagation Algorithm:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/SSCP.png&#34; alt=&#34;SSCP&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Initialization phase:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;If n is defined by a $\phi$-function, SSCP sets &lt;em&gt;Value(n)&lt;/em&gt; to $\top$. (Optimistic)&lt;/li&gt;
+&lt;li&gt;If n is a known constant $c_i$, SSCP sets &lt;em&gt;Value(n)&lt;/em&gt; to $c_i$.&lt;/li&gt;
+&lt;li&gt;If n’s value cannot be known, SSCP sets &lt;em&gt;Value(n)&lt;/em&gt; to $\bot$.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Propagation phase:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;For a $\phi$-function, the result is simply the meet of the lattice values of all the $\phi$-function’s arguments.&lt;/li&gt;
+&lt;li&gt;For other kinds of operations, the compiler must apply operator-specific knowledge.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Because a SSA name can have one of three initial values, so each of them appears on the worklist at most twice.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Optimistic algorithm: algorithm that begin with the value $\top$ rather than $\bot$.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;In opposition to above, algorithm that begin with the value $\bot$ is ‘pessimistic’.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;interprocedural-analysis&#34;&gt;Interprocedural Analysis&lt;/h2&gt;
+&lt;p&gt;The inefficiencies introduced by procedure calls appear in two distinct form:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;loss of knowledge in single-procedure analysis and optimization that arise from the presence of a call site in the region being anaylzed and transformed, and&lt;/li&gt;
+&lt;li&gt;specific overhead introduced to maintain the abstractions inherent in the procedure call.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;call-graph-construction&#34;&gt;Call-Graph Construction&lt;/h3&gt;
+&lt;p&gt;Normally, the call-graph construction’s limiting factor is just the cost of scanning procedures to find the call sites. However, some programming language features may make the construction harder.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;procedure-valued variables: the compiler must analyze the code to estimate the set of potential callees at each call site that invokes a procedure-valued variable. If it just use a simple analog of global constant propagation, it will build extraneous edge. To build the precise call graph, it must track sets of parameters that are passed together, along the same path. The algorithm could then consider each set independently to derive the precise graph.&lt;/li&gt;
+&lt;li&gt;contextually-resolved names:
+&lt;ul&gt;
+&lt;li&gt;inheritance hierarchy in oriented-object;&lt;/li&gt;
+&lt;li&gt;a language that allows the program to import either executable code or new class at runtime.
+&lt;ul&gt;
+&lt;li&gt;To solve this problem, the compiler must construct a conservative call graph that reflects the complete set of potential callees at each call site.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;control-flow graph that has multiple entry and/or exit.
+&lt;ul&gt;
+&lt;li&gt;$M_{AY}M_{OD}$ analysis.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;interprocedural-constant-propagation&#34;&gt;Interprocedural Constant Propagation&lt;/h3&gt;
+&lt;p&gt;Goal: Discovering situations where a procedure always receives a known constant value or where a procedure always returns a known constant value.&lt;/p&gt;
+&lt;p&gt;Three problems of interprocedural constant propagation:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;discovering an initial set of constants;
+&lt;ul&gt;
+&lt;li&gt;simple method: Recognize literal constant values used as parameters.&lt;/li&gt;
+&lt;li&gt;more effect and expensive way: Use a full-fledged global constant propation step.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;propagating known constant values around the call graph;
+&lt;ul&gt;
+&lt;li&gt;This portion of the analysis resembles the iterative data-flow algorithms.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;modelling transmission of values through procedures.
+&lt;ul&gt;
+&lt;li&gt;The compiler builds a small model for each actual parameter, call &lt;em&gt;jump function&lt;/em&gt;. Each jump function, ${J_s}^x$relies on the values of some subset of the formal parameters to the procedure p that contains s, denoted $Support({J_s}^x)$.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Algorithm:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/IPO-CP.png&#34; alt=&#34;IPO-CP&#34;&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Similar to the above propagation algoritm, the worklist should be a sparse set or something like it.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Jump Function Implementation (Confused)&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;The implementation of jump functions is abundant, but all of them must hold following principles:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;If the analyzer determines that parameter x at call site s is a known constant c, then ${J_s}^x = c$, and $Support({J_s}^x) = \emptyset$.&lt;/li&gt;
+&lt;li&gt;If $y \in Support({J_s}^x)$ and $Value(y) = \top$, then ${J_s}^x = \top$.&lt;/li&gt;
+&lt;li&gt;If the analyzer determines that the value of ${J_s}^x$ cannot be determinded, then ${J_s}^x = \bot$.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;Two aspects to extend the algorithm&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;We can also construct &lt;em&gt;return jump functions&lt;/em&gt; to model the values returned from callee to caller. The algorithm can treat return jump functions in the same way that it handled ordinary jump functions. And the programmer need to avoid creating cycles of return jump functions that diverge (e.g. for a tail-recursive procedure).&lt;/li&gt;
+&lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Return jump functions are particularly important for routines that initialize values such as setting initial values for an object or class in Java.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ol&gt;
+&lt;li&gt;To extend the algorithm to cover a larger class of variables, the compiler can simply extend the vector of jump functions.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;advanced-topic&#34;&gt;Advanced Topic&lt;/h2&gt;
+&lt;h3 id=&#34;speeding-up-the-iterative-domiance-framework-confused&#34;&gt;Speeding up the Iterative Domiance Framework (Confused)&lt;/h3&gt;
+&lt;p&gt;We can use the $ID_{OM}$ sets as a proxy for the $D_{OM}$ sets, provided we can provide efficient methods to initialize the sets and to intersect them. We can use a two-pointer algorithm to identify the common suffix.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/Advanced-Topic.png&#34; alt=&#34;Advanced-Topic&#34;&gt;&lt;/p&gt;
+&lt;p&gt;This improved algorithm efficient, it halts in two passes on any reducible graph, in more than two passes on any irreducible graph.&lt;/p&gt;</description>
+      
+    </item>
+    
+    <item>
+      <title>从零开始学 CPython - 0</title>
+      <link>https://forceoflife.cn/post/python1/</link>
+      <pubDate>Tue, 19 Dec 2023 14:28:43 +0800</pubDate>
+      <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
+      <guid>https://forceoflife.cn/post/python1/</guid>
+      
+      <description>&lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;Python 是时下最流行的编程语言，在 &lt;a href=&#34;https://www.tiobe.com/tiobe-index/&#34;&gt;TIOBE&lt;/a&gt; 排行榜上连续多年位居榜首，作为一名计算机相关专业的学生，掌握 Python 是非常有必要的。可我还不会 CPython，真是闻着伤心见者落泪。于是我痛定思痛，打算新开一个系列，从零开始学习 CPython，努力成为一个会调包的合格大学生（误）。你可能注意到了我说我要从零开始学习 CPython，如果你对 CPython 不够了解的话，&lt;del&gt;CPython 是 Python 的别称，意思是像 C 一样快的 Python。&lt;/del&gt;&lt;/p&gt;
+&lt;p&gt;好吧，玩笑到此就结束了，正式介绍一下，CPython 是 Python 解释器的官方实现，对于大多数人来说，平常写的 Python 代码就是由 CPython 来解释执行的。这个系列是我从零开始阅读 Python 源码，将编译原理、虚拟机等理论知识与工程上具体的实现相结合的尝试。&lt;/p&gt;
+&lt;h2 id=&#34;环境搭建&#34;&gt;环境搭建&lt;/h2&gt;
+&lt;h3 id=&#34;获取-cpython-源码&#34;&gt;获取 CPython 源码&lt;/h3&gt;
+&lt;p&gt;既然是学习 Python 的源码，那么就有必要搭建一个环境来支持我们阅读、运行、修改源代码。在笔者写这篇文章时，Python 已经完全迁移到 Github 上开发了，可以用 git 将 CPython 的源码直接克隆到本地:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;$ git clone https://github.com/python/cpython.git
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;笔者的电脑是一台 M1 芯片的 Macbook Air：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;$ uname -m -s
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Darwin arm64
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;之后可以运行下面的指令来编译 CPython:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;$ ./configure --with-pydebug &lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; make -j
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
+&lt;p&gt;简单解释一下，&lt;code&gt;./configure --with-pydebug&lt;/code&gt; 是执行 &lt;a href=&#34;https://www.gnu.org/software/autoconf/&#34;&gt;GNU Autoconf&lt;/a&gt; 来生成 Makefile。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;编译完成后可以运行一下测试：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;./python.exe -m &lt;span style=&#34;color:#a2f&#34;&gt;test&lt;/span&gt; -j3 
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;你可能会奇怪为什么是 python.exe，这明明不是 Windows 系统。这是因为 Mac 系统是大小写不敏感的，如果不加后缀名的话会与目录中的 Python 目录冲突，加上 .exe 后缀可以避免这种情况。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;$ file python.exe
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;python.exe: Mach-O 64-bit executable arm64
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;到了这里，你就成功拥有了一份完整的 CPython 源码，笔者使用的源码是 3.13.0a2+。如果你在编译中遇到了问题，你可以访问 Python 的&lt;a href=&#34;https://devguide.python.org&#34;&gt;开发者指导&lt;/a&gt;网站来获取不同操作系统的教程。&lt;/p&gt;
+&lt;h3 id=&#34;阅读代码环境搭建&#34;&gt;阅读代码环境搭建&lt;/h3&gt;
+&lt;p&gt;有了源码，接下来是如何阅读源码。对于 CPython 这个体量的项目，一般的工具肯定是不行的。所以，&lt;del&gt;我推荐大家使用 Notepad.exe。&lt;/del&gt;&lt;/p&gt;
+&lt;p&gt;我没有尝试过将 CPython 的代码导入 IDE，但我猜这会吃掉我笔记本的所有内存并占用所有的 CPU 来建立索引。我无意挑起所谓的 &lt;a href=&#34;https://en.wikipedia.org/wiki/Editor_war&#34;&gt;Editor War&lt;/a&gt;，我只是来分享一下我的方案。我使用 Vim + Clangd + Ctags + Ripgrep (rg) 来阅读代码，在 CPython 巨大的代码量下，LSP（Clangd）几乎失灵，我用 Ctags 建立了基本的索引，在无法跳转时，用 rg 搜索对应函数的位置（没有安装 rg 也可以用 grep）。不过有一点我觉得很重要，就是关闭 LSP 的 diagnostics 功能，不然你可能会看到“山河一片红”。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;如果你对我的 Vim 配置感兴趣，欢迎&lt;a href=&#34;https://github.com/forceofsystem/dotvim&#34;&gt;查看&lt;/a&gt;并送我一颗星星，顺带一提，我的配置很简洁而轻量。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;无论如何，不管你选择 Vim、Emacs、Source Insight、VSCode 或是使用其他 IDE，你的目标都是能够方便地查看代码，而不是像以前的我一样为了配置编辑器而配置编辑器～。&lt;/p&gt;
+&lt;h3 id=&#34;调试环境搭建&#34;&gt;调试环境搭建&lt;/h3&gt;
+&lt;p&gt;没错，你还需要一个调试器。当你捋不清函数的调用关系时，你需要打开调试器，查看调用栈来获取更多信息。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;我在撰写本文时大量采用这种方法。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;在 Linux 上，你可以选择 GDB，因为 GDB 没有适配 M1，所以我选择了 LLDB，在 Windows 上，你可以选择 &lt;a href=&#34;https://www.mingw-w6b4.org&#34;&gt;MinGW64&lt;/a&gt; 自带的 GDB。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;我的 LLDB 是通过 &lt;a href=&#34;https://brew.sh&#34;&gt;Homebrew&lt;/a&gt; 安装的，不是 &lt;code&gt;xcode-select --install&lt;/code&gt; 安装的版本。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;python-学习基础&#34;&gt;Python 学习基础&lt;/h2&gt;
+&lt;h3 id=&#34;目录&#34;&gt;目录&lt;/h3&gt;
+&lt;p&gt;在开始阅读源代码之前，我们先来了解一下 CPython 的目录结构。绝大多数 CPython 代码都在下面几个文件夹中：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Include：头文件&lt;/li&gt;
+&lt;li&gt;Objects：各种对象的实现&lt;/li&gt;
+&lt;li&gt;Python：解释器、字节码编译器和其他重要的基础组件&lt;/li&gt;
+&lt;li&gt;Parser：词法分析器、语法分析器以及语法分析生成器&lt;/li&gt;
+&lt;li&gt;Modules：标准库模块以及 main.c&lt;/li&gt;
+&lt;li&gt;Programs：包含了程序的入口函数 main()&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;如果你是在 Linux 或 BSD （不包括 Mac OS X），这就是与你有关的所有目录；而如果你在用 Mac 或者 Windows，还有以下目录：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Mac：专用于 Mac OS X 的代码&lt;/li&gt;
+&lt;li&gt;PC：专用于 Windows 的代码（旧）&lt;/li&gt;
+&lt;li&gt;PCBuild：专用于 Windows 使用的 MSVC 的代码（新）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;在这个系列的博客中，我们只关心公共部分的代码，而不会关注这些特定平台的代码。&lt;/p&gt;
+&lt;h3 id=&#34;命名约定&#34;&gt;命名约定&lt;/h3&gt;
+&lt;p&gt;在阅读之前，我们还需要学习一下 Python 的命名方式，根据 &lt;a href=&#34;https://peps.python.org/pep-0007/#naming-conventions&#34;&gt;PEP 7&lt;/a&gt; 中对于命名约定的说明：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;除 static 函数外，对于所有的 public 函数，使用 &lt;code&gt;Py&lt;/code&gt; 作前缀；对于 global service routines，使用 &lt;code&gt;Py_&lt;/code&gt; 前缀，如 &lt;code&gt;Py_FatalError&lt;/code&gt;；对于特定类型的例程，使用与之相关的较长的前缀，如 &lt;code&gt;PyString_&lt;/code&gt; 之于字符串相关函数。&lt;/li&gt;
+&lt;li&gt;public 函数和变量的命名混合使用大小写和下划线，如：&lt;code&gt;PyObject_GetAttr&lt;/code&gt;，&lt;code&gt;Py_BuildValue&lt;/code&gt;，&lt;code&gt;PyExc_TypeError&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;需要将 internal 的函数可见时，使用 &lt;code&gt;_Py&lt;/code&gt; 前缀，如：&lt;code&gt;_PyObject_Dump&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;对于宏，其前缀是大小写混合，之后的部分全部使用大写，如：&lt;code&gt;PyString_AS_STRING&lt;/code&gt;，&lt;code&gt;Py_PRINT_RAW&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;宏参数应该使用 ALL_CAPS 风格，以便与变量和结构成员进行区分。
+&lt;ul&gt;
+&lt;li&gt;ALL_CAPS 风格：用下划线作分割，全部字母大写。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;学习开始&#34;&gt;学习开始&lt;/h2&gt;
+&lt;h3 id=&#34;学习目标&#34;&gt;学习目标&lt;/h3&gt;
+&lt;p&gt;下面我们就可以开始正式学习 CPython 的代码了，虽然我迫不及待地想看看 Python 是如何进行语法分析（Parse），Python 的虚拟机是如何实现的、采用了什么垃圾回收算法，但是俗话说：“心急吃不了热豆腐”，我们还是从一个简单的目标开始。&lt;/p&gt;
+&lt;p&gt;现在在你的终端运行我们刚编译好的 Python，什么参数也不要加，就像这样：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;$ ./python.exe
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Python 3.13.0a2+ &lt;span style=&#34;color:#666&#34;&gt;(&lt;/span&gt;heads/main:21d52995ea&lt;span style=&#34;color:#666&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;[&lt;/span&gt;Clang 15.0.0 &lt;span style=&#34;color:#666&#34;&gt;(&lt;/span&gt;clang-1500.0.40.1&lt;span style=&#34;color:#666&#34;&gt;)]&lt;/span&gt; on darwin
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Type &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;help&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;copyright&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;credits&amp;#34;&lt;/span&gt; or &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;license&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;for&lt;/span&gt; more information.
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&amp;gt;&amp;gt;&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;现在我们就进入了 Python 的 REPL(Read-Eval-Print-Loop) 模式，作为一个“第一次”使用 Python 的新人，我非常好奇这个 Header 和交互提示符（Prompt）是怎么被打出来的。所以，我决定先探寻一下 Python 是怎么跑起来的，又是怎么打出那个经典的提示符 &lt;code&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/code&gt; 的。&lt;/p&gt;
+&lt;h3 id=&#34;找到入口&#34;&gt;找到入口&lt;/h3&gt;
+&lt;p&gt;就想所有的 C 程序那样，CPython 也有一个入口函数，CPython 的入口函数位于 Programs 的 &lt;code&gt;python.c&lt;/code&gt; 中：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#0b0;font-weight:bold&#34;&gt;int&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;main&lt;/span&gt;(&lt;span style=&#34;color:#0b0;font-weight:bold&#34;&gt;int&lt;/span&gt; argc, &lt;span style=&#34;color:#0b0;font-weight:bold&#34;&gt;char&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;**&lt;/span&gt;argv)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;Py_BytesMain&lt;/span&gt;(argc, argv);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;可以看到这个函数调用了定义在 Modules/main.c 中的 &lt;code&gt;Py_BytesMain&lt;/code&gt; 函数。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;据 Guido 所说，main.c 不在 &lt;code&gt;Python&lt;/code&gt; 目录下而在 &lt;code&gt;Modules&lt;/code&gt; 目录下是由于一些不太重要的历史原因。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;可以看到，在保存了命令行参数后，&lt;code&gt;Py_BytesMain&lt;/code&gt; 函数就调用了 &lt;code&gt;pymain_main&lt;/code&gt; 函数。在这个函数里，首先执行了对解释器的初始化。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;Py_BytesMain&lt;/code&gt; 是对 &lt;code&gt;Py_Main&lt;/code&gt; 的包装，用来防治因为 locale 和编码模式不同而导致的错误。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;初始化解释器&#34;&gt;初始化解释器&lt;/h3&gt;
+&lt;p&gt;在 &lt;code&gt;pymain_main&lt;/code&gt; 中，调用 &lt;code&gt;pymain_init&lt;/code&gt; 来初始化解释器：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    PyStatus status &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;pymain_init&lt;/span&gt;(args);
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;首先来看一下 &lt;code&gt;PyStatus&lt;/code&gt; 这个类型，根据 &lt;a href=&#34;https://peps.python.org/pep-0587/&#34;&gt;PEP587&lt;/a&gt;，其是用来存储初始化函数的状态，成功、错误或是退出，并且还会存储造成错误的函数名。简单看一下 &lt;code&gt;PyStatus&lt;/code&gt; 的字段组成：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;exitcode&lt;/code&gt; (int): Argument passed to exit().&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;err_msg&lt;/code&gt; (const char*): Error message.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;func&lt;/code&gt; (const char *): Name of the function which created an error, can be NULL.&lt;/li&gt;
+&lt;li&gt;private &lt;code&gt;_type&lt;/code&gt; field: for internal usage only.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;进入 &lt;code&gt;pymain_init&lt;/code&gt; 函数，可以看到初始化包括三个部分：运行时、preconfig、config。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;static&lt;/span&gt; PyStatus
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;pymain_init&lt;/span&gt;(&lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;const&lt;/span&gt; _PyArgv &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;args)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    PyStatus status;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    status &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_PyRuntime_Initialize&lt;/span&gt;();
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    PyPreConfig preconfig;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#00a000&#34;&gt;PyPreConfig_InitPythonConfig&lt;/span&gt;(&lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;preconfig);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    status &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_Py_PreInitializeFromPyArgv&lt;/span&gt;(&lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;preconfig, args);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    PyConfig config;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#00a000&#34;&gt;PyConfig_InitPythonConfig&lt;/span&gt;(&lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;config);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (args&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;use_bytes_argv) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        status &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;PyConfig_SetBytesArgv&lt;/span&gt;(&lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;config, args&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;argc, args&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;bytes_argv);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        status &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;PyConfig_SetArgv&lt;/span&gt;(&lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;config, args&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;argc, args&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;wchar_argv);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    status &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;Py_InitializeFromConfig&lt;/span&gt;(&lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;config);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    status &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_PyStatus_OK&lt;/span&gt;();
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
+&lt;p&gt;代码省略了部分错误处理。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这对应着 &lt;a href=&#34;https://peps.python.org/pep-0432/&#34;&gt;PEP432&lt;/a&gt; 中提到的解释器初始化的三个步骤：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Python 核心运行时预初始化（Python core runtime preinitiallization）:
+&lt;ul&gt;
+&lt;li&gt;启动内存管理；&lt;/li&gt;
+&lt;li&gt;决定系统接口使用的编码；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Python 核心运行时初始化（Python core runtime initialization）:
+&lt;ul&gt;
+&lt;li&gt;确保 C API 已经可以使用；&lt;/li&gt;
+&lt;li&gt;确保内置模块与冻结模块（&lt;code&gt;frozen&lt;/code&gt;）是可访问的；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;主解释器配置（Main interpreter configuration）:
+&lt;ul&gt;
+&lt;li&gt;确保外部模块是可访问的；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;在 3.8 之前，初始化过程都是分为 2 步。CPython 的开发者们从 2012 年末到 2020 中期，用了 8 年的时间来重构，以让 Python 的启动过程更容易维护，同时也更容易嵌入到大型应用中。大家可以去阅读 PEP 432 和 PEP 587 来获取更完整的信息。
+在现在的设计中，Python 的初始化过程分为以下四个阶段：&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;未初始化：还未开始初始化过程；&lt;/li&gt;
+&lt;li&gt;预初始化：解释器还不能使用；&lt;/li&gt;
+&lt;li&gt;运行时已初始化：主解释器部分可用，还不能创建子解释器；&lt;/li&gt;
+&lt;li&gt;初始化完成：主解释器完全可用，可以创建子解释器。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;在 Python 3.8 中，为上述步骤都添加了一些数据结构，我们可以在上面的代码中看到。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;PyPreConfig&lt;/code&gt; 结构体用来预初始化 Python 的下述功能：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;设置内存分配器；&lt;/li&gt;
+&lt;li&gt;配置 LC_CTYPE locale；&lt;/li&gt;
+&lt;li&gt;设置 UTF-8 模式；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;在上面的代码中可以看到与预初始化相关的函数：&lt;code&gt;PyPreConfig_InitPythonConfig&lt;/code&gt; 和 &lt;code&gt;Py_PreInitializeFromPyArgv&lt;/code&gt;，前者用来初始化默认配置（preconfiguration），后者则用来预初始化 Python。&lt;/p&gt;
+&lt;p&gt;预初始化结束后，开始初始化。首先初始化默认配置，将命令行参数存储到 &lt;code&gt;config-&amp;gt;argv&lt;/code&gt;，之后调用 &lt;code&gt;Py_InitializeFromConfig&lt;/code&gt; 完成之后的初始化过程。&lt;code&gt;PyConfig&lt;/code&gt; 是一个相当庞大的结构体，其定义有足足 100 行之多。&lt;/p&gt;
+&lt;h3 id=&#34;运行开始&#34;&gt;运行开始&lt;/h3&gt;
+&lt;p&gt;在执行完初始化过程后，&lt;code&gt;pymain_main&lt;/code&gt; 函数调用了 &lt;code&gt;Py_RunMain&lt;/code&gt; 函数，终于要开始正式运行了，初始化过程可真是漫长，呜呼～。进入这个函数，它的代码意外地简单，我还以为会很复杂呢。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#0b0;font-weight:bold&#34;&gt;int&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;Py_RunMain&lt;/span&gt;(&lt;span style=&#34;color:#0b0;font-weight:bold&#34;&gt;void&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#0b0;font-weight:bold&#34;&gt;int&lt;/span&gt; exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;0&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#00a000&#34;&gt;pymain_run_python&lt;/span&gt;(&lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;exitcode);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (&lt;span style=&#34;color:#00a000&#34;&gt;Py_FinalizeEx&lt;/span&gt;() &lt;span style=&#34;color:#666&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;0&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#080;font-style:italic&#34;&gt;/* Value unlikely to be confused with a non-error exit status or
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#080;font-style:italic&#34;&gt;           other special meaning */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;120&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#00a000&#34;&gt;pymain_free&lt;/span&gt;();
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (_PyRuntime.signals.unhandled_keyboard_interrupt) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;exit_sigint&lt;/span&gt;();
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;return&lt;/span&gt; exitcode;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;很容易发现，这个函数是对 &lt;code&gt;pymain_run_python&lt;/code&gt; 的一个包装，要想探究真正的运行过程，我们还需要继续抽丝剥茧地向里探查，&lt;code&gt;pymain_run_python&lt;/code&gt; 启动！&lt;/p&gt;
+&lt;p&gt;一进入这个函数，这个近 100 行的函数体就让我感到头晕。跳过一些获取解释器状态的代码，我们看到这个函数首先加载了 &lt;code&gt;readline&lt;/code&gt; 模块,这个模块可以为我们提供获取输入的能力。&lt;code&gt;pymain_import_readling&lt;/code&gt; 函数是对 &lt;code&gt;PyImport_ImportModule&lt;/code&gt; 的封装，在这个函数里一共引入了两个模块，分别是 &lt;code&gt;readline&lt;/code&gt; 和 &lt;code&gt;rlcompleter&lt;/code&gt;，后者用于提供在交互式环境下的自动补全功能。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#00a000&#34;&gt;pymain_import_readline&lt;/span&gt;(config);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    PyObject &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;mod &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;PyImport_ImportModule&lt;/span&gt;(&lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;readline&amp;#34;&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    ...
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    mod &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;PyImport_ImportModule&lt;/span&gt;(&lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;rlcompleter&amp;#34;&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;让我们越过那些冗长的错误处理（虽然它们是必要的，但是对于梳理代码运行逻辑可真没什么用），我们看到了今天的第一个目标，&lt;code&gt;pymain_header&lt;/code&gt;，没错，这个函数会输出我们在进入 python repl 时显示的那几行关于版本的信息。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#00a000&#34;&gt;fprintf&lt;/span&gt;(stderr, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;Python %s on %s&lt;/span&gt;&lt;span style=&#34;color:#b62;font-weight:bold&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#00a000&#34;&gt;Py_GetVersion&lt;/span&gt;(), &lt;span style=&#34;color:#00a000&#34;&gt;Py_GetPlatform&lt;/span&gt;());
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (config&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;site_import) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#00a000&#34;&gt;fprintf&lt;/span&gt;(stderr, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;%s&lt;/span&gt;&lt;span style=&#34;color:#b62;font-weight:bold&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;&lt;/span&gt;, COPYRIGHT);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
+&lt;p&gt;COPYRIGHT 是一个定义在 main.c 中的宏。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;之后我们就会看到通往下一个阶段的大门，一个 if-else if-else 语句，用来调用不同运行模式下的函数。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (config&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;run_command) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;pymain_run_command&lt;/span&gt;(config&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;run_command);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (config&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;run_module) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;pymain_run_module&lt;/span&gt;(config&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;run_module, &lt;span style=&#34;color:#666&#34;&gt;1&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (main_importer_path &lt;span style=&#34;color:#666&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;pymain_run_module&lt;/span&gt;(&lt;span style=&#34;color:#b44&#34;&gt;L&lt;/span&gt;&lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;__main__&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#666&#34;&gt;0&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (config&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;run_filename &lt;span style=&#34;color:#666&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;pymain_run_file&lt;/span&gt;(config);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;pymain_run_stdin&lt;/span&gt;(config);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;因为我们是在终端运行的，所以会进入到 &lt;code&gt;pymain_run_stdin&lt;/code&gt; 函数中去，跳过对能否交互和错误处理的部分，我们最终会进入到这一行：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#0b0;font-weight:bold&#34;&gt;int&lt;/span&gt; run &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;PyRun_AnyFileExFlags&lt;/span&gt;(stdin, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;&amp;lt;stdin&amp;gt;&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#666&#34;&gt;0&lt;/span&gt;, &lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;cf);
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我们不妨猜测一下，应该马上就要开始运行了。可以看出，这个函数是对标准输入和文件输入做了统一，当处于交互式模式（REPL）、用标准输入传递脚本文件（./python.exe &amp;lt; hello.py）或是正常的运行脚本文件时都可以使用这个函数。在对文件系统的编码进行转换后，这个函数继续调用 &lt;code&gt;_PyRun_AnyFileObject&lt;/code&gt;。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    PyObject &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;filename_obj;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (filename &lt;span style=&#34;color:#666&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        filename_obj &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;PyUnicode_DecodeFSDefault&lt;/span&gt;(filename);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (filename_obj &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#00a000&#34;&gt;PyErr_Print&lt;/span&gt;();
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;1&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        filename_obj &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#0b0;font-weight:bold&#34;&gt;int&lt;/span&gt; res &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_PyRun_AnyFileObject&lt;/span&gt;(fp, filename_obj, closeit, flags);
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在这个函数中，与运行直接相关的代码是下面这个条件语句：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#0b0;font-weight:bold&#34;&gt;int&lt;/span&gt; res;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (&lt;span style=&#34;color:#00a000&#34;&gt;_Py_FdIsInteractive&lt;/span&gt;(fp, filename)) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        res &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_PyRun_InteractiveLoopObject&lt;/span&gt;(fp, filename, flags);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (closeit) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#00a000&#34;&gt;fclose&lt;/span&gt;(fp);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        res &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_PyRun_SimpleFileObject&lt;/span&gt;(fp, filename, closeit, flags);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;对于可交互环境，它会调用 &lt;code&gt;_PyRun_InteracticeLoopObject&lt;/code&gt; 函数，从命名就可以看出，这里面会包括一个循环用于不断进行交互；而如果是执行一个脚本文件，则会调用下面这个函数。因为我们的目标是找到 &lt;code&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/code&gt; 是在哪里输出的，所以我们继续进入上面这个函数。一进入这个函数，我们就看到了我们想要的东西：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    PyObject &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;v &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_PySys_GetAttr&lt;/span&gt;(tstate, &lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;_Py_ID&lt;/span&gt;(ps1));
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (v &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#00a000&#34;&gt;_PySys_SetAttr&lt;/span&gt;(&lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;_Py_ID&lt;/span&gt;(ps1), v &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;PyUnicode_FromString&lt;/span&gt;(&lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;&amp;gt;&amp;gt;&amp;gt; &amp;#34;&lt;/span&gt;));
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#00a000&#34;&gt;Py_XDECREF&lt;/span&gt;(v);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    v &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_PySys_GetAttr&lt;/span&gt;(tstate, &lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;_Py_ID&lt;/span&gt;(ps2));
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (v &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#00a000&#34;&gt;_PySys_SetAttr&lt;/span&gt;(&lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;_Py_ID&lt;/span&gt;(ps2), v &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;PyUnicode_FromString&lt;/span&gt;(&lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;... &amp;#34;&lt;/span&gt;));
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#00a000&#34;&gt;Py_XDECREF&lt;/span&gt;(v);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;是的，我们看到了 &lt;code&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/code&gt;，不过别急，离它被输出到终端模拟器还有好一段距离。这段代码将系统的提示符，&lt;code&gt;sys.ps1&lt;/code&gt; 和 &lt;code&gt;sys.ps2&lt;/code&gt; 分别设置为 &lt;code&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/code&gt; 和 &lt;code&gt;...&lt;/code&gt;。由于对 sys 模块的属性操作非常频繁，所以有专门的辅助函数来完成设置，这两个函数定义在 Python 目录下的 sysmoudle.c 中。再往下看，我们果然看到了一个 do-while 循环，在 Guido 的教程里，我们可以看到最初使用的是 for 循环，不知道为什么改为了 do-while 循环，也许是使从无限循环用 break 跳出，do-while 循环结束的条件更清晰。在这个循环里，很明显我们需要关注下面这个函数：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;     ret &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;PyRun_InteractiveOneObjectEx&lt;/span&gt;(fp, filename, flags);
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;进入这个函数后，我一眼就看到了 &lt;code&gt;pyrun_one_parse_ast&lt;/code&gt; 和 &lt;code&gt;run_mod&lt;/code&gt;，根据我开发解释器的经验，前者是用来进行语法分析，建立 AST （Abstract Syntax Tree，抽象语法树）的，后者则是用来执行字节码的。据此，我对 Python 的编译器架构有了一定的猜测，Python 是用 Parser 来驱动 Lexer，而不是同一级别顺次执行。进入 &lt;code&gt;pyrun_one_parse_ast&lt;/code&gt; 函数，我们又看到了熟悉的 &lt;code&gt;sys.ps1&lt;/code&gt;、&lt;code&gt;sys.ps2&lt;/code&gt;，这个函数先设置了编码和两个提示符，之后作为参数传递给了 &lt;code&gt;_PyParser_InteractiveASTFromFile&lt;/code&gt; 函数，后者作为包装函数又调用了 &lt;code&gt;_PyPegen_run_parser_from_file_pointer&lt;/code&gt;。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;好深的调用关系qwq。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;在这个名字超长的函数里，我注意到了几行关键代码：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;struct&lt;/span&gt; tok_state &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;tok &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_PyTokenizer_FromFile&lt;/span&gt;(fp, enc, ps1, ps2);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    Parser &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;p &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_PyPegen_Parser_New&lt;/span&gt;(tok, start_rule, parser_flags, PY_MINOR_VERSION,
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                                    errcode, arena);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    result &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_PyPegen_run_parser&lt;/span&gt;(p);
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;也就是说，CPython 是由 Parser 驱动 Tokenizer，Tokenizer 驱动 Lexer 的。第一行代码是获取一个 Tokenizer，第二行是创建一个新的 Parser，第三行则是执行这个 parser。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Pegen 是 Parser generator 的缩写，与 Python Parser 的设计有关，之后的文章再写。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;我们现在只想知道 &lt;code&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/code&gt; 是怎么来的，所以直接查看 &lt;code&gt;_PyPegen_run_parser&lt;/code&gt; 的代码，而这个函数是对 &lt;code&gt;_PyPegen_parse&lt;/code&gt; 的包装。在这个函数里，我们又看到了 if-else if-else 的代码结构来区分不同的执行方式：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;start_rule &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; Py_file_input) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        result &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;file_rule&lt;/span&gt;(p);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    } &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;start_rule &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; Py_single_input) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        result &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;interactive_rule&lt;/span&gt;(p);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    } &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;start_rule &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; Py_eval_input) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        result &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;eval_rule&lt;/span&gt;(p);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    } &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;start_rule &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; Py_func_type_input) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        result &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;func_type_rule&lt;/span&gt;(p);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我们是交互模式，所以进入 &lt;code&gt;interactive_rule&lt;/code&gt; 函数，发现里面有一块没有被条件语句或循环语句包围的作用域：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    { &lt;span style=&#34;color:#080;font-style:italic&#34;&gt;// statement_newline
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#080;font-style:italic&#34;&gt;&lt;/span&gt;        &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;error_indicator) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;level&lt;span style=&#34;color:#666&#34;&gt;--&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#00a000&#34;&gt;D&lt;/span&gt;(&lt;span style=&#34;color:#00a000&#34;&gt;fprintf&lt;/span&gt;(stderr, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;%*c&amp;gt; interactive[%d-%d]: %s&lt;/span&gt;&lt;span style=&#34;color:#b62;font-weight:bold&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;&lt;/span&gt;, p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;level, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#39; &amp;#39;&lt;/span&gt;, _mark, p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;mark, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;statement_newline&amp;#34;&lt;/span&gt;));
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        asdl_stmt_seq&lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt; a;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            (a &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;statement_newline_rule&lt;/span&gt;(p))  &lt;span style=&#34;color:#080;font-style:italic&#34;&gt;// statement_newline
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#080;font-style:italic&#34;&gt;&lt;/span&gt;        )
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#00a000&#34;&gt;D&lt;/span&gt;(&lt;span style=&#34;color:#00a000&#34;&gt;fprintf&lt;/span&gt;(stderr, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;%*c+ interactive[%d-%d]: %s succeeded!&lt;/span&gt;&lt;span style=&#34;color:#b62;font-weight:bold&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;&lt;/span&gt;, p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;level, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#39; &amp;#39;&lt;/span&gt;, _mark, p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;mark, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;statement_newline&amp;#34;&lt;/span&gt;));
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            _res &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_PyAST_Interactive&lt;/span&gt; ( a , p &lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt; arena );
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (_res &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;PyErr_Occurred&lt;/span&gt;()) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;error_indicator &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;1&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;level&lt;span style=&#34;color:#666&#34;&gt;--&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;goto&lt;/span&gt; done;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;mark &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; _mark;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#00a000&#34;&gt;D&lt;/span&gt;(&lt;span style=&#34;color:#00a000&#34;&gt;fprintf&lt;/span&gt;(stderr, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;%*c%s interactive[%d-%d]: %s failed!&lt;/span&gt;&lt;span style=&#34;color:#b62;font-weight:bold&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;&lt;/span&gt;, p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;level, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#39; &amp;#39;&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                  p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;error_indicator &lt;span style=&#34;color:#666&#34;&gt;?&lt;/span&gt; &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;ERROR!&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;:&lt;/span&gt; &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;-&amp;#34;&lt;/span&gt;, _mark, p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;mark, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;statement_newline&amp;#34;&lt;/span&gt;));
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;进入-tokenizer&#34;&gt;进入 Tokenizer&lt;/h3&gt;
+&lt;p&gt;根据注释我们可以知道，这个作用域是用来处理新一行的。这里代码有些复杂，&lt;code&gt;D()&lt;/code&gt; 是一个宏，用来在调试模式下输出一些内容，分析一下可以发现，prompt 是在每一行的开头输出的，所以我们的目标应该是 &lt;code&gt;statement_newline_rule&lt;/code&gt; 函数。进入这个函数后，里面的内容印证了我前文中的猜测，Python 的 Tokenizer 是由 Parser 驱动的，理由就是这个函数：&lt;code&gt;_PyPegen_fill_token&lt;/code&gt;。从名字可以看出，这个函数是用来填充 token 来供 Parser 解析的，函数内的前三行代码也反映了这一功能：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;struct&lt;/span&gt; token new_token;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#00a000&#34;&gt;_PyToken_Init&lt;/span&gt;(&lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;new_token);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#0b0;font-weight:bold&#34;&gt;int&lt;/span&gt; type &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_PyTokenizer_Get&lt;/span&gt;(p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;tok, &lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;new_token);
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;新建，初始化，获取一气呵成。因为目前为止还没有看到获取输入的部分，所以我们还没有触及到输出提示符的位置。而根据编译器的性质，直接获取输入的都是 lexer，所以我们需要继续向下。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;代码真的好复杂呜呜。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;进入 &lt;code&gt;_PyTokenizer_Get&lt;/code&gt; 函数，发现其是对 &lt;code&gt;tok_get&lt;/code&gt; 的简单包装。后者对需要获取的 token 类型进行了判断，因为我们什么都没输入，所以不属于 f-string 类型，所以会调用 &lt;code&gt;tok_get_normal_mode&lt;/code&gt; 函数。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (current_tok&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;kind &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; TOK_REGULAR_MODE) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;tok_get_normal_mode&lt;/span&gt;(tok, current_tok, token);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    } &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;tok_get_fstring_mode&lt;/span&gt;(tok, current_tok, token);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
+&lt;p&gt;f-string 是 Python 的一种特性，支持格式化字符串。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-Python&#34; data-lang=&#34;Python&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;name &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;Alice&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;age &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;30&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;formatted_string &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#b44&#34;&gt;f&lt;/span&gt;&lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;My name is &lt;/span&gt;&lt;span style=&#34;color:#b68;font-weight:bold&#34;&gt;{&lt;/span&gt;name&lt;span style=&#34;color:#b68;font-weight:bold&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#b44&#34;&gt; and I am &lt;/span&gt;&lt;span style=&#34;color:#b68;font-weight:bold&#34;&gt;{&lt;/span&gt;age&lt;span style=&#34;color:#b68;font-weight:bold&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#b44&#34;&gt; years old.&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/blockquote&gt;
+&lt;p&gt;在函数中我们看到了一个无限的 for 循环：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;for&lt;/span&gt; (;;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            c &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;tok_nextc&lt;/span&gt;(tok);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (c &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#b44&#34;&gt;&amp;#39; &amp;#39;&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                col&lt;span style=&#34;color:#666&#34;&gt;++&lt;/span&gt;, altcol&lt;span style=&#34;color:#666&#34;&gt;++&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (c &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#b44&#34;&gt;&amp;#39;\t&amp;#39;&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                col &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; (col &lt;span style=&#34;color:#666&#34;&gt;/&lt;/span&gt; tok&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;tabsize &lt;span style=&#34;color:#666&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt; tok&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;tabsize;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                altcol &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; (altcol &lt;span style=&#34;color:#666&#34;&gt;/&lt;/span&gt; ALTTABSIZE &lt;span style=&#34;color:#666&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt; ALTTABSIZE;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (c &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#b44&#34;&gt;&amp;#39;\014&amp;#39;&lt;/span&gt;)  {&lt;span style=&#34;color:#080;font-style:italic&#34;&gt;/* Control-L (formfeed) */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                col &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; altcol &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;0&lt;/span&gt;; &lt;span style=&#34;color:#080;font-style:italic&#34;&gt;/* For Emacs users */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (c &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#b44&#34;&gt;&amp;#39;\\&amp;#39;&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                   &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; ((c &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;tok_continuation_line&lt;/span&gt;(tok)) &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;1&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;MAKE_TOKEN&lt;/span&gt;(ERRORTOKEN);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;break&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        }
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;很明显可以看出，这个循环是获取缩进的，因为 Python 是一个缩进敏感的语言，而 &lt;code&gt;tok_nextc&lt;/code&gt; 则很明显是我们接下来的目标。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;据 Guido 说，他把 Python 设计成这样是为了让程序员们能够好好格式化他们的代码，因为以前的编辑器自动格式化功能总是没办法使人满意。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;里面又是一个无限循环，与上同理，我们的关注目标是：&lt;code&gt;rc = tok-&amp;gt;underflow(tok);&lt;/code&gt;，rc 是我们获取的 token，而赋值右边的这个代码，如果你熟悉 C 语言的话就会认出，&lt;code&gt;tok-&amp;gt;underflow&lt;/code&gt; 是一个函数指针，它以 tok 作为参数调用了某个函数，那它究竟调用了哪个函数？&lt;/p&gt;
+&lt;p&gt;因为 tok 的一个字段是函数指针，所以我们有必要回头关注一下 tok 的初始化过程。在 &lt;code&gt;_PyTokenizer_FromFile&lt;/code&gt; 中，tok-&amp;gt;underflow 被设置为了 &lt;code&gt;&amp;amp;tok_underflow_interactive&lt;/code&gt;。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (ps1 &lt;span style=&#34;color:#666&#34;&gt;||&lt;/span&gt; ps2) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        tok&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;underflow &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;tok_underflow_interactive;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    } &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        tok&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;underflow &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;tok_underflow_file;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
+&lt;p&gt;这并不是一个 C 语言的教程，所以我假定你对函数指针有一定的了解，并简单使用过它。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;也就是说 &lt;code&gt;tok-&amp;gt;underflow(tok)&lt;/code&gt; 会调用 tok_underflow_interactive(tok)，而在这个函数中会调用 PyOS_Readline 函数，经过初始化和获取可读锁后，调用了 PyOS_StdioReadline 函数。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#a0a000&#34;&gt;tok_underflow_interactive&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#0b0;font-weight:bold&#34;&gt;char&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;newtok &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;PyOS_Readline&lt;/span&gt;(tok&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;fp &lt;span style=&#34;color:#666&#34;&gt;?&lt;/span&gt; tok&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;&lt;span style=&#34;color:#a0a000&#34;&gt;fp&lt;/span&gt; : stdin, stdout, tok&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;prompt);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#a0a000&#34;&gt;PyOS_Readline&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (PyOS_ReadlineFunctionPointer &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        PyOS_ReadlineFunctionPointer &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; PyOS_StdioReadline;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    _PyOS_ReadlineTState &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; tstate;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    Py_BEGIN_ALLOW_THREADS
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#00a000&#34;&gt;PyThread_acquire_lock&lt;/span&gt;(_PyOS_ReadlineLock, &lt;span style=&#34;color:#666&#34;&gt;1&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (&lt;span style=&#34;color:#666&#34;&gt;!&lt;/span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;isatty&lt;/span&gt;(&lt;span style=&#34;color:#00a000&#34;&gt;fileno&lt;/span&gt;(sys_stdin)) &lt;span style=&#34;color:#666&#34;&gt;||&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;!&lt;/span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;isatty&lt;/span&gt;(&lt;span style=&#34;color:#00a000&#34;&gt;fileno&lt;/span&gt;(sys_stdout)) &lt;span style=&#34;color:#666&#34;&gt;||&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;!&lt;/span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;_Py_IsMainInterpreter&lt;/span&gt;(tstate&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;interp))
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        rv &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;PyOS_StdioReadline&lt;/span&gt;(sys_stdin, sys_stdout, prompt);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        rv &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; (&lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;PyOS_ReadlineFunctionPointer)(sys_stdin, sys_stdout, prompt);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里你可能会疑惑为什么需要一个条件判断，而且条件判断执行的内容还是一样的。据 Guido 所说，因为 PyOS_ReadlineFunctionPointer 是一个公开的 C api，所以可以编写一个 C 扩展来自定义它，这会方便那些希望 GUI 能够处理 python 输入的开发者来更好地将 python 嵌入到他们自己的程序中。更多信息可以查看 Guido 自己的教程。&lt;/p&gt;
+&lt;p&gt;不论如何，我们都进入到了 PyOS_StdioReadline 函数里，跳过关于 Windows console 的宏，我们就看到了最终的目标：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#00a000&#34;&gt;fflush&lt;/span&gt;(sys_stdout);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (prompt) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#00a000&#34;&gt;fprintf&lt;/span&gt;(stderr, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;%s&amp;#34;&lt;/span&gt;, prompt);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#00a000&#34;&gt;fflush&lt;/span&gt;(stderr);
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;到了这里，你可以长舒一口气了，不过 prompt 是在哪里被设置的呢？我们先追溯这个参数第一次被传入的位置，我们刚刚在寻找 &lt;code&gt;tok-&amp;gt;underflow&lt;/code&gt; 是何时被绑定的时，最终确定是在 &lt;code&gt;_PyTokenizer_FromFile&lt;/code&gt; 函数里，如果你观察仔细的话，你会发现它的上一行就是对提示符的赋值：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  tok&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;prompt &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; ps1;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  tok&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;nextprompt &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; ps2;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;呜呼，所以我们知道了 Python 是如何初始化，REPL 中的 &lt;code&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/code&gt; 是怎么打出来的，多么寻常而又不寻常的一条 &lt;code&gt;fprintf&lt;/code&gt; 语句啊。那么这次的文章就到这里，之后我们可以再来看看 Python 是怎么运行起来的（lexer，tokenizer，parser）。&lt;/p&gt;
+&lt;p&gt;等等，我还有一个疑问，就是在 &lt;code&gt;pymain_run_python&lt;/code&gt; 函数中的 if-else if-else 语句中：它的下面还有一行：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (config&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;run_command) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;pymain_run_command&lt;/span&gt;(config&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;run_command);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (config&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;run_module) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;pymain_run_module&lt;/span&gt;(config&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;run_module, &lt;span style=&#34;color:#666&#34;&gt;1&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (main_importer_path &lt;span style=&#34;color:#666&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;pymain_run_module&lt;/span&gt;(&lt;span style=&#34;color:#b44&#34;&gt;L&lt;/span&gt;&lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;__main__&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#666&#34;&gt;0&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (config&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;run_filename &lt;span style=&#34;color:#666&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;pymain_run_file&lt;/span&gt;(config);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;pymain_run_stdin&lt;/span&gt;(config);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#00a000&#34;&gt;pymain_repl&lt;/span&gt;(config, exitcode);
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;其内部调用的是 &lt;code&gt;PyRun_AnyFileFlags&lt;/code&gt;，这个函数是 &lt;code&gt;pymain_run_stdin&lt;/code&gt; 调用的函数的一个宏包装：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#080&#34;&gt;#define PyRun_AnyFileFlags(fp, name, flags) \
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#080&#34;&gt;    PyRun_AnyFileExFlags((fp), (name), 0, (flags))
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;但是在 &lt;code&gt;pymain_run_stdin&lt;/code&gt; 中调用 &lt;code&gt;PyRun_AnyFileExFlags&lt;/code&gt; 时其 flags 前的参数也是 0，我不知道为什么还保留 pymain_run_repl 的原因是什么，是为了向后兼容吗？欢迎和我交流你的想法～。&lt;/p&gt;
+&lt;h2 id=&#34;参考资料&#34;&gt;参考资料&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;Guido van Rossum &lt;a href=&#34;https://paper.dropbox.com/doc/Yet-another-guided-tour-of-CPython-XY7KgFGn88zMNivGJ4Jzv&#34;&gt;Yet another guided tour of CPython&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Louie Lu &lt;a href=&#34;https://hackmd.io/@klouielu/ByMHBMjFe?type=view&#34;&gt;A guide from parser to objects, observed using GDB&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Anthony Shaw &lt;a href=&#34;https://realpython.com/cpython-source-code-guide/#establishing-runtime-configuration&#34;&gt;Your Guide to the CPython Source Code&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://devguide.python.org/internals/exploring/&#34;&gt;Python devguide&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://devguide.python.org/internals/compiler/&#34;&gt;Python&amp;rsquo;s Compiler design&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://peps.python.org/pep-0432/&#34;&gt;PEP 432&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://peps.python.org/pep-0587/&#34;&gt;PEP 587&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;</description>
+      
+    </item>
+    
+  </channel>
+</rss>

@@ -2,19 +2,19 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>数据流分析 on 为生活</title>
-    <link>https://forceoflife.cn/tags/%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90/</link>
+    <link>http://localhost:1313/tags/%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90/</link>
     <description>Recent content in 数据流分析 on 为生活</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh</language>
     <managingEditor>Zhixiao-Zhang@outlook.com (Patrick)</managingEditor>
     <webMaster>Zhixiao-Zhang@outlook.com (Patrick)</webMaster>
-    <lastBuildDate>Thu, 14 Mar 2024 02:43:34 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/tags/%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 14 Mar 2024 02:43:34 +0800</lastBuildDate><atom:link href="http://localhost:1313/tags/%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Scalar Optimization</title>
-      <link>https://forceoflife.cn/post/scalar-optimization/scalar/</link>
+      <link>http://localhost:1313/post/scalar-optimization/scalar/</link>
       <pubDate>Thu, 14 Mar 2024 02:43:34 +0800</pubDate>
       <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
-      <guid>https://forceoflife.cn/post/scalar-optimization/scalar/</guid>
+      <guid>http://localhost:1313/post/scalar-optimization/scalar/</guid>
       
       <description>&lt;p&gt;This blog is a note of reading chapter 10 of EAC (Scalar Optimization), which contains not only the content in the book but my understanding. Ultimately, I have finished the reading of the whole book in two months, and will continue to read the dragon book and &lt;em&gt;Advanced Compiler Design and Implementation&lt;/em&gt;. I will also write some notes about those books.&lt;/p&gt;
 &lt;h2 id=&#34;overview&#34;&gt;Overview&lt;/h2&gt;
@@ -71,7 +71,7 @@ Machine dependent: A transformation that relies on knowledge of the target proce
 &lt;li&gt;second pass: walk the code and remove any operation not marked.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;&lt;strong&gt;The algorithm assumes that the code is in SSA form.&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/two-stage.png&#34; alt=&#34;two-stage&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/scalar-optimization/two-stage.png&#34; alt=&#34;two-stage&#34;&gt;&lt;/p&gt;
 &lt;p&gt;For control-flow operations, the treatment of the algorithm is more complex than normal operations.&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;Postdominance: In a CFG, &lt;em&gt;j&lt;/em&gt; postdominates &lt;em&gt;i&lt;/em&gt; if and only if every path from i to the exit node passes through j.
@@ -97,15 +97,15 @@ Actually, I think this explanation is easier to understand than the former, but,
 &lt;ol&gt;
 &lt;li&gt;Fold a Redundant Branch&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/fold-redundant-branch.png&#34; alt=&#34;fold-redundant&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/scalar-optimization/fold-redundant-branch.png&#34; alt=&#34;fold-redundant&#34;&gt;&lt;/p&gt;
 &lt;ol start=&#34;2&#34;&gt;
 &lt;li&gt;Remove an Empty Block&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/remove-empty-block.png&#34; alt=&#34;remove-empty-block&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/scalar-optimization/remove-empty-block.png&#34; alt=&#34;remove-empty-block&#34;&gt;&lt;/p&gt;
 &lt;ol start=&#34;3&#34;&gt;
 &lt;li&gt;Combine Blocks&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/combine-blocks.png&#34; alt=&#34;combine-blocks&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/scalar-optimization/combine-blocks.png&#34; alt=&#34;combine-blocks&#34;&gt;&lt;/p&gt;
 &lt;ol start=&#34;4&#34;&gt;
 &lt;li&gt;Hoist a Branch: If &lt;em&gt;clean&lt;/em&gt; finds a block $B_i$ that ends with a jump to an empty block $B_j$ and $B_j$ ends with a branch. Clean can replace the block-ending jump in $B_i$ with a copy of the branch from $B_j$.&lt;/li&gt;
 &lt;/ol&gt;
@@ -113,9 +113,9 @@ Actually, I think this explanation is easier to understand than the former, but,
 &lt;li&gt;$B_i$ cann’t be empty, and&lt;/li&gt;
 &lt;li&gt;$B_i$ cann’t be $B_j$’s sole prodecessor.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/hoist-branch.png&#34; alt=&#34;hoist-branch&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/scalar-optimization/hoist-branch.png&#34; alt=&#34;hoist-branch&#34;&gt;&lt;/p&gt;
 &lt;p&gt;A systematic C&lt;em&gt;lean&lt;/em&gt; implementation traverses the graph in postorder, so that $B_i$’s successors are simplified before $B_i$ unless the successor lies along a back edge with respect to the postorder number- ing. This method reduces the number of times that the implementation must move some edges.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/dce.png&#34; alt=&#34;DCE&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/scalar-optimization/dce.png&#34; alt=&#34;DCE&#34;&gt;&lt;/p&gt;
 &lt;p&gt;If the CFG contains back edges, then a pass of &lt;em&gt;Clean&lt;/em&gt; may create unprocessed successors along the back edges. For this reason, &lt;em&gt;Clean&lt;/em&gt; repeats the transformation sequence iteratively until the CFG stops changing.&lt;/p&gt;
 &lt;p&gt;With the &lt;em&gt;Dead&lt;/em&gt; routine’s help, &lt;em&gt;Clean&lt;/em&gt; can elinimate an empty loop which can’t be done by itself instead of using a specific transformation to handle it.&lt;/p&gt;
 &lt;h3 id=&#34;eliminating-unreachable-code&#34;&gt;Eliminating Unreachable Code&lt;/h3&gt;
@@ -256,11 +256,11 @@ Partially redundant: an expression $e$ is partially redundant at p if it occurrs
 &lt;p&gt;With this rules, LVN can prove that 2 + a has the same value as a + 2 or as 2 + b when a and b have the same value number. However, it can’t prove that a + a and 2 * a has the same value because they have different operators. Similarly, it can’t prove the a + 0 and a has the same value unless we extended it with algebraic identities.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Name Identity&lt;/strong&gt;: LCM relies on names to prove that two values have the same number. If LCM sees a + b and a + c, it assumes that they have different values because b and c have different names. We can improve the effectiveness of LCM by encoding value identity into the name space of the code before applying LCM. The distinction between LCM and LVN (or SVN) is clear. Therefore, by encoding value identity into the namespace, the compiler can leverage the strengths of both approaches.&lt;/p&gt;
 &lt;h3 id=&#34;dominator-based-value-numbering-dvnt&#34;&gt;Dominator-based Value Numbering (DVNT)&lt;/h3&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/DVNT1.png&#34; alt=&#34;DVNT1&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/scalar-optimization/DVNT1.png&#34; alt=&#34;DVNT1&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Recall that at the SVN algorithm, we assumes that the block $B_4$ begins with no prior context. However, though $B_4$ can’t rely on values computed in either $B_2$ or $B_3$, it can rely on values computed in $B_0$ and $B_1$, since they occur on every path that reaches $B_4$.&lt;/p&gt;
 &lt;p&gt;Fortunately, the SSA name space encodes precisely this distinction. In SSA, a name that is used in some block $B_i$ can only enter $B_i$ in one of two ways. Either the name is defined by a $\phi$-function at the top of $B_i$, or it is defined in some block that dominates $B_i$. Thus, an assignment to x in either $B_2$ or $B_3$ creates a new name for x and forces the insertion of a $\phi$-function for x at the head of $B_4$. Thus, SSA form encodes the presence or absence of an intervening assignment in $B_2$ or $B_3$ directly into the names used in the expression.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;We can use dominance information to locate the most recent predecessor which the algorithm can use.&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimzation/DVNT.png&#34; alt=&#34;DVNT&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/scalar-optimzation/DVNT.png&#34; alt=&#34;DVNT&#34;&gt;&lt;/p&gt;
 &lt;h4 id=&#34;process-the-phi-functions-in-b&#34;&gt;Process the $\phi$-Functions in B&lt;/h4&gt;
 &lt;p&gt;If a $\phi$-function $p$ is meaningless, DVNT sets its value number to the value number for one of its arguments and deletes $p$. If $p$ is redundant, DVNT assigns $p$ the same value number as the $\phi$-function that it duplicates, then DVNT deletes $p$.&lt;/p&gt;
 &lt;blockquote&gt;
@@ -289,10 +289,10 @@ The tree-height balancing algorithm doesn’t eliminate any operations, but it c
 &lt;p&gt;However, cloning has costs, too. It will lead to larger code, which may run more slowly if its size causes additional instruction cache misses.&lt;/p&gt;
 &lt;h3 id=&#34;procedure-cloning&#34;&gt;Procedure Cloning&lt;/h3&gt;
 &lt;p&gt;The idea is analogous to the block cloning that occurs in superblock cloning. The compiler creates multiple copies of the callee and assigns some of the calls to each instance of the clone&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/original.png&#34; alt=&#34;original&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/after-cloning.png&#34; alt=&#34;after-cloning&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/scalar-optimization/original.png&#34; alt=&#34;original&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/scalar-optimization/after-cloning.png&#34; alt=&#34;after-cloning&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;loop-unswitching&#34;&gt;Loop Unswitching&lt;/h3&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/unswitch.png&#34; alt=&#34;unswitch&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/scalar-optimization/unswitch.png&#34; alt=&#34;unswitch&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Unswitching is an enabling transformation, it can lead to better scheduling, better register allocation, and fast execution.&lt;/p&gt;
 &lt;h3 id=&#34;renaming&#34;&gt;Renaming&lt;/h3&gt;
 &lt;p&gt;Renaming is a fertile ground for future work.&lt;/p&gt;
@@ -302,7 +302,7 @@ The tree-height balancing algorithm doesn’t eliminate any operations, but it c
 &lt;blockquote&gt;
 &lt;p&gt;To simplify the explanation of SCCP, we assume that each block in the CFG represents just one statement, plus some optional $\phi$-functions.&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/SCCP1.png&#34; alt=&#34;SCCP1&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/scalar-optimization/SCCP1.png&#34; alt=&#34;SCCP1&#34;&gt;&lt;/p&gt;
 &lt;p&gt;After the initialization phase, the algorithm repeatedly picks an edge from one of the two worklists and process that edge.&lt;/p&gt;
 &lt;p&gt;For a CFG edge (m, n), SCCP determines if the edge is marked as executed.&lt;/p&gt;
 &lt;ul&gt;
@@ -311,8 +311,8 @@ The tree-height balancing algorithm doesn’t eliminate any operations, but it c
 &lt;/ul&gt;
 &lt;p&gt;Next, SCCP determines if block $n$ has been previously entered along another edge. If it has not, then SCCP evaluates the assignment or conditional branch in $n$. This processing may add edges to either worklist.&lt;/p&gt;
 &lt;p&gt;For an SSA edge, the algorithm first checks if the destination block is reachable. If the block is reachable, SCCP calls one of &lt;em&gt;EvaluatePhi,&lt;/em&gt; EvaluateAssign, or &lt;em&gt;EvaluateConditional&lt;/em&gt;, based on the kind of operation that uses the SSA name.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/SCCP2.png&#34; alt=&#34;SCCP2&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/SCCP3.png&#34; alt=&#34;SCCP3&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/scalar-optimization/SCCP2.png&#34; alt=&#34;SCCP2&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/scalar-optimization/SCCP3.png&#34; alt=&#34;SCCP3&#34;&gt;&lt;/p&gt;
 &lt;p&gt;After the propagation step, a final pass is required to replace operations that have operands with &lt;em&gt;Value&lt;/em&gt; tags other than $\bot$. The algorithm cannot rewrite the code until the propagation completes.&lt;/p&gt;
 &lt;h3 id=&#34;subtleties-in-evaluating-and-rewriting-operations&#34;&gt;Subtleties in Evaluating and Rewriting Operations&lt;/h3&gt;
 &lt;p&gt;If the algorithm encounters a multiply operation with operands $\top$ and $\bot$, it might conclude that the operation produces $\bot$. Doing so, however, is premature. Subsequent analysis might lower the $\top$ to the constant 0, so that the multiply produces a value of 0. If SCCP uses the rule $\top \times \bot \rightarrow \bot$, it would increase the running time of SCCP, since the multiply’s value might follow the sequence $\top$, $\bot$, 0. Moreover, it might incorrectly drive other values to $\bot$ and cause SCCP to miss opportunities for improvement.&lt;/p&gt;
@@ -361,9 +361,9 @@ Induction Variable: a value that varies systematically from iteration.&lt;/p&gt;
 This is an method to compute the strongly connected component propsed by &lt;a href=&#34;https://en.wikipedia.org/wiki/Robert_Tarjan&#34;&gt;Robert Tarjan&lt;/a&gt;. You can find more information of this &lt;a href=&#34;%5Bhttps://en.wikipedia.org/wiki/Tarjan&#39;s_strongly_connected_components_algorithm%5D(https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm)&#34;&gt;algorithm&lt;/a&gt;. If you feel confused about this method at first like me, you may get further understanding from this video: &lt;a href=&#34;%5Bhttps://www.youtube.com/watch?v=wUgWX0nc4NY%5D(https://www.youtube.com/watch?v=wUgWX0nc4NY)&#34;&gt;Tarjan’s Strongly Connected Components&lt;/a&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;OSR uses Tarjan’s rtrongly connected region finder to drive the entire process.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/OSR1.png&#34; alt=&#34;OSR1&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/scalar-optimization/OSR1.png&#34; alt=&#34;OSR1&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;rewriting-the-code-1&#34;&gt;Rewriting the Code&lt;/h3&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/scalar-optimization/OSR2.png&#34; alt=&#34;OSR2&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/scalar-optimization/OSR2.png&#34; alt=&#34;OSR2&#34;&gt;&lt;/p&gt;
 &lt;p&gt;&lt;em&gt;Replace&lt;/em&gt; calls &lt;em&gt;Reduce&lt;/em&gt; to rewrite the operation represented by n. Next, it replaces $n$ with a copy operation from the result produced by &lt;em&gt;Replace&lt;/em&gt;. It sets $n$’s header field, and returns.&lt;/p&gt;
 &lt;p&gt;&lt;em&gt;Reduce&lt;/em&gt; and &lt;em&gt;Apply&lt;/em&gt; use a hash table to avoid inserting duplicate operations.&lt;/p&gt;
 &lt;ul&gt;
@@ -389,10 +389,10 @@ This is an method to compute the strongly connected component propsed by &lt;a h
     
     <item>
       <title>Data Flow Analysis</title>
-      <link>https://forceoflife.cn/post/data-flow-analysis/data-flow-analysis/</link>
+      <link>http://localhost:1313/post/data-flow-analysis/data-flow-analysis/</link>
       <pubDate>Tue, 05 Mar 2024 23:16:20 +0800</pubDate>
       <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
-      <guid>https://forceoflife.cn/post/data-flow-analysis/data-flow-analysis/</guid>
+      <guid>http://localhost:1313/post/data-flow-analysis/data-flow-analysis/</guid>
       
       <description>&lt;p&gt;这篇文章是我在看 &lt;em&gt;Engineering A Compiler&lt;/em&gt; (EAC，橡书) 中第 9 章数据流分析的笔记，里面标有 Confused 的地方是我困惑的内容，包括过程间常量传播 (Jump Function)、加速DOM计算，之后如果搞懂了会写文章来补充。&lt;/p&gt;
 &lt;h2 id=&#34;introdution&#34;&gt;Introdution&lt;/h2&gt;
@@ -424,7 +424,7 @@ This is an method to compute the strongly connected component propsed by &lt;a h
 &lt;li&gt;gather initial information for each block&lt;/li&gt;
 &lt;li&gt;solve the equations to produce the $D_{OM}$ sets for each block&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/Iterative-Dominance-Framework.png&#34; alt=&#34;Untitled&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/data-flow-analysis/images/Iterative-Dominance-Framework.png&#34; alt=&#34;Untitled&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;live-variable-analysis&#34;&gt;Live-Variable Analysis&lt;/h3&gt;
 &lt;p&gt;Type: a backward global data-flow problem&lt;/p&gt;
 &lt;blockquote&gt;
@@ -543,7 +543,7 @@ This is an method to compute the strongly connected component propsed by &lt;a h
 &lt;li&gt;For a join point j, each predecessor k of j must have $j \in DF(k)$.&lt;/li&gt;
 &lt;li&gt;If $j \in DF(k)$ for some predecessor k, then j must also be in DF(l) for each $l \in D_{OM}(k)$, unless $l \in D_{OM}(j)$.&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/static/2024/data-flow-analysis/images/DF.png&#34; alt=&#34;DF set&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/static/2024/data-flow-analysis/images/DF.png&#34; alt=&#34;DF set&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;placing-phi-functions&#34;&gt;Placing $\phi$-Functions&lt;/h3&gt;
 &lt;p&gt;To improve the naive algorithm, the basic idea is that a definition of x in block b forces a $\phi$-function at every node in DF(b). But we can continue to improve it, because a variable that is only &lt;strong&gt;live&lt;/strong&gt; within a single block can never have a live $\phi$-function.&lt;/p&gt;
 &lt;p&gt;Globals set: a set of names which are live across multiple blocks.&lt;/p&gt;
@@ -556,9 +556,9 @@ This is an method to compute the strongly connected component propsed by &lt;a h
 &lt;li&gt;These block lists serve as an initial worklist for the $\phi$-insertion algorithm.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;Algorithm to find the sets:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/Globals-Blocks.png&#34; alt=&#34;Globals and blocks&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/data-flow-analysis/images/Globals-Blocks.png&#34; alt=&#34;Globals and blocks&#34;&gt;&lt;/p&gt;
 &lt;p&gt;and to rewrite the code:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/Insertion.png&#34; alt=&#34;Untitled&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/data-flow-analysis/images/Insertion.png&#34; alt=&#34;Untitled&#34;&gt;&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;Since all the $\phi$-functions in a block execute concurrently, the order of their insertion is insignificant.&lt;/p&gt;
 &lt;/blockquote&gt;
@@ -571,7 +571,7 @@ This is an method to compute the strongly connected component propsed by &lt;a h
 &lt;li&gt;The compiler can maintain a checklist of blocks (a single sparse set, which reinitialized along with WorkList) that already contain $\phi$-functions for a given blocks.&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h3 id=&#34;renaming&#34;&gt;Renaming&lt;/h3&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/Renaming.png&#34; alt=&#34;Renaming&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/data-flow-analysis/images/Renaming.png&#34; alt=&#34;Renaming&#34;&gt;&lt;/p&gt;
 &lt;p&gt;This algorithm renames both definitions and uses in a preorder walk over the procedure’s dominator tree. It rewrites the operands with current SSA names, then it creates a new SSA name for the result of the operation. After rewriting the operands and definition, the algorithm rewrites the appropriate $\phi$-function parameters in each CFG successor of the block, using the current SSA names.&lt;/p&gt;
 &lt;p&gt;Finally, it recurs on any children of the block in the dominator tree.&lt;/p&gt;
 &lt;p&gt;Moreover, the algorithm maintains a stack which holds the subscript of the name’s current SSA name.&lt;/p&gt;
@@ -596,18 +596,18 @@ Internally, the compiler can number the edges and parameter slots in any consist
 &lt;p&gt;&lt;strong&gt;The Lost-Copy Problem&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;The lost-copy problem arises from the combination of copy folding and critical edges that cann’t be split.&lt;/p&gt;
 &lt;p&gt;For example:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/out-of-ssa-wrong.png&#34; alt=&#34;out-of-ssa-wrong&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/data-flow-analysis/images/out-of-ssa-wrong.png&#34; alt=&#34;out-of-ssa-wrong&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Panel a assigns z the second to last value of i; the code in panel c assigns $z_0$ the last value of i. With the critical edge split, as in panel d, copy insertion produces the correct behavior. However, it adds a jump to every iteration of the loop.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/split-critical.png&#34; alt=&#34;split&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/data-flow-analysis/images/split-critical.png&#34; alt=&#34;split&#34;&gt;&lt;/p&gt;
 &lt;p&gt;The compiler can avoid this problem by checking the liveness of the target name for each copy that it tries to insert during out-of-SSA translation. When it discovers a copy target(in this example is $i_1$) that is live, it must preserve the living value in a tempory name and rewrite subsequent uses to refer to the tempoary name.&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;This step can be done with an algorithm modelled on the renaming step.&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/correct-insertion.png&#34; alt=&#34;correct&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/data-flow-analysis/images/correct-insertion.png&#34; alt=&#34;correct&#34;&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;The swap problem&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;Reason: all $\phi$-functions in a block execute concurrently, but the assignments execute serially.&lt;/p&gt;
 &lt;p&gt;For example:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/naive-insertion.png&#34; alt=&#34;naive-problem&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/data-flow-analysis/images/naive-insertion.png&#34; alt=&#34;naive-problem&#34;&gt;&lt;/p&gt;
 &lt;p&gt;The straightford fix for this problem is to adopt a two-stage copy protocol.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;The first stage copies each of the $\phi$-function arguments to its own temporary name, simulating the behavior of the original $\phi$-functions.&lt;/li&gt;
@@ -627,9 +627,9 @@ Internally, the compiler can number the edges and parameter slots in any consist
 &lt;li&gt;top element: $\top$, with the properties that $\forall a \in L, a \wedge \top = a, and \ \forall \ a \in L, T ≥ a$&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;The semilattice for a single SSA name:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/Semilattice.png&#34; alt=&#34;Semilattice&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/data-flow-analysis/images/Semilattice.png&#34; alt=&#34;Semilattice&#34;&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Simply Sparse Constant Propagation Algorithm:&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/SSCP.png&#34; alt=&#34;SSCP&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/data-flow-analysis/images/SSCP.png&#34; alt=&#34;SSCP&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Initialization phase:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;If n is defined by a $\phi$-function, SSCP sets &lt;em&gt;Value(n)&lt;/em&gt; to $\top$. (Optimistic)&lt;/li&gt;
@@ -694,7 +694,7 @@ Internally, the compiler can number the edges and parameter slots in any consist
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;Algorithm:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/IPO-CP.png&#34; alt=&#34;IPO-CP&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/data-flow-analysis/images/IPO-CP.png&#34; alt=&#34;IPO-CP&#34;&gt;&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;Similar to the above propagation algoritm, the worklist should be a sparse set or something like it.&lt;/p&gt;
 &lt;/blockquote&gt;
@@ -718,7 +718,7 @@ Internally, the compiler can number the edges and parameter slots in any consist
 &lt;h2 id=&#34;advanced-topic&#34;&gt;Advanced Topic&lt;/h2&gt;
 &lt;h3 id=&#34;speeding-up-the-iterative-domiance-framework-confused&#34;&gt;Speeding up the Iterative Domiance Framework (Confused)&lt;/h3&gt;
 &lt;p&gt;We can use the $ID_{OM}$ sets as a proxy for the $D_{OM}$ sets, provided we can provide efficient methods to initialize the sets and to intersect them. We can use a two-pointer algorithm to identify the common suffix.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://forceoflife.cn/2024/data-flow-analysis/images/Advanced-Topic.png&#34; alt=&#34;Advanced-Topic&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/2024/data-flow-analysis/images/Advanced-Topic.png&#34; alt=&#34;Advanced-Topic&#34;&gt;&lt;/p&gt;
 &lt;p&gt;This improved algorithm efficient, it halts in two passes on any reducible graph, in more than two passes on any irreducible graph.&lt;/p&gt;</description>
       
     </item>
