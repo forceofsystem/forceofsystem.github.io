@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Pages on Force of Life</title>
+    <link>https://forceoflife.cn/en/page/</link>
+    <description>Recent content in Pages on Force of Life</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <managingEditor>Zhixiao-Zhang@outlook.com (Patrick)</managingEditor>
+    <webMaster>Zhixiao-Zhang@outlook.com (Patrick)</webMaster>
+    <lastBuildDate>Sat, 09 Sep 2023 17:09:20 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/en/page/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>About Me</title>
+      <link>https://forceoflife.cn/en/about/</link>
+      <pubDate>Sat, 09 Sep 2023 17:09:20 +0800</pubDate>
+      <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
+      <guid>https://forceoflife.cn/en/about/</guid>
+      
+      <description>&lt;p&gt;&lt;strong&gt;Hello!&lt;/strong&gt;&lt;/p&gt;
+&lt;h2 id=&#34;introduction&#34;&gt;Introduction&lt;/h2&gt;
+&lt;p&gt;I&amp;rsquo;m Patrick Zhang, a software engineering student at Sichuan University in China. I&amp;rsquo;m a fan of systems (you can check this category through &lt;a href=&#34;https://csrankings.org/&#34;&gt;csrankings&lt;/a&gt;), especially in the field of programming language (compiler and program analysis), computer architecture, and operating systems.&lt;/p&gt;
+&lt;p&gt;My favorite software is &lt;a href=&#34;https://www.vim.org/&#34;&gt;vim&lt;/a&gt;, which is a powerful text editor. And I&amp;rsquo;m a fan of &lt;a href=&#34;https://en.wikipedia.org/wiki/Bram_Moolenaar&#34;&gt;Bram Moolenaar&lt;/a&gt;, the author of vim, who has already pass away in 2023. I want to write a software which make a difference to the whole world like vim in the future.&lt;/p&gt;
+&lt;h2 id=&#34;environment&#34;&gt;Environment&lt;/h2&gt;
+&lt;p&gt;I have two laptops, a Macbook Air M1 and a second-hand ThinkPad T480 to provide x86-64.&lt;/p&gt;
+&lt;p&gt;I like Linux at most, because it is an open-source operating system. I can do whatever I want to do on it. I find it&amp;rsquo;s convenient to write code on linux, because it&amp;rsquo;s easy to set the environment by the package manager. Moreover, my favorite distribution is gentoo linux, which is a source-based distribution. I like the moment when I compile the software by myself, and it can be relatively stable compared to arch linux which is also the rolling release. However, I use Debian on my laptop now, because I wanna save time to do other things, and more importantly, save the electricity bill lol. Debian is a stable and powerful distribution, and it&amp;rsquo;s easy to use.&lt;/p&gt;
+&lt;p&gt;I use Macbook Air M1 as my main laptop, because it&amp;rsquo;s stable, and maintain a great balance between development and life. It&amp;rsquo;s posix compliant, but its default animation is more smooth and UI design is more beautiful than Linux. Though I use Windows when I was a child, I don&amp;rsquo;t like Windows, because it usually dumps, and it&amp;rsquo;s not stable. But I still use it to play games and use some softwares which only support Windows.&lt;/p&gt;
+&lt;h2 id=&#34;education&#34;&gt;Education&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;2021.09 - now, Sichuan University, Software Engineering, Bachelor&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;(To be continued)&lt;/p&gt;
+</description>
+      
+    </item>
+    
+  </channel>
+</rss>
