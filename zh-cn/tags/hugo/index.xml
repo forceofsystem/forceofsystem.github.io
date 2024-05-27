@@ -11,10 +11,10 @@
     <lastBuildDate>Sat, 09 Sep 2023 16:30:25 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/zh-cn/tags/hugo/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>从hexo到hugo</title>
-      <link>https://forceoflife.cn/zh-cn/post/%E4%BB%8Ehexo%E8%BF%81%E7%A7%BB%E5%88%B0hugo/</link>
+      <link>https://forceoflife.cn/zh-cn/post/hexotohugo/</link>
       <pubDate>Sat, 09 Sep 2023 16:30:25 +0800</pubDate>
       <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
-      <guid>https://forceoflife.cn/zh-cn/post/%E4%BB%8Ehexo%E8%BF%81%E7%A7%BB%E5%88%B0hugo/</guid>
+      <guid>https://forceoflife.cn/zh-cn/post/hexotohugo/</guid>
       
       <description>&lt;p&gt;没错，我从 hexo 迁移到了 hugo。这已经是我用过的第三个博客软件了，不出意外的话，短期内应该不会再更换了。&lt;/p&gt;
 &lt;h2 id=&#34;更换理由&#34;&gt;更换理由&lt;/h2&gt;

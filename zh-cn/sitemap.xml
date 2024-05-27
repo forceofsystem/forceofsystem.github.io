@@ -2,8 +2,37 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://forceoflife.cn/zh-cn/page/</loc>
+    <lastmod>2024-05-15T00:00:04+08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://forceoflife.cn/en/page/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh-cn"
+                href="https://forceoflife.cn/zh-cn/page/"
+                />
+  </url><url>
+    <loc>https://forceoflife.cn/zh-cn/</loc>
+    <lastmod>2024-05-15T00:00:04+08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://forceoflife.cn/en/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh-cn"
+                href="https://forceoflife.cn/zh-cn/"
+                />
+  </url><url>
+    <loc>https://forceoflife.cn/zh-cn/diary/2024/may/</loc>
+    <lastmod>2024-05-15T00:00:04+08:00</lastmod>
+  </url><url>
     <loc>https://forceoflife.cn/zh-cn/post/</loc>
-    <lastmod>2024-03-14T09:42:51+08:00</lastmod>
+    <lastmod>2024-05-10T23:12:10+08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
@@ -16,7 +45,7 @@
                 />
   </url><url>
     <loc>https://forceoflife.cn/zh-cn/tags/</loc>
-    <lastmod>2024-03-14T09:42:51+08:00</lastmod>
+    <lastmod>2024-05-10T23:12:10+08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
@@ -28,33 +57,23 @@
                 href="https://forceoflife.cn/zh-cn/tags/"
                 />
   </url><url>
-    <loc>https://forceoflife.cn/zh-cn/tags/%E5%A4%A7%E5%AD%A6/</loc>
-    <lastmod>2024-03-14T09:42:51+08:00</lastmod>
-  </url><url>
-    <loc>https://forceoflife.cn/zh-cn/post/shixunjubao/</loc>
-    <lastmod>2024-03-14T09:42:51+08:00</lastmod>
-  </url><url>
-    <loc>https://forceoflife.cn/zh-cn/</loc>
-    <lastmod>2024-03-14T09:42:51+08:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="https://forceoflife.cn/en/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh-cn"
-                href="https://forceoflife.cn/zh-cn/"
-                />
-  </url><url>
-    <loc>https://forceoflife.cn/zh-cn/tags/%E6%9D%82%E8%B0%88/</loc>
-    <lastmod>2024-03-14T09:42:51+08:00</lastmod>
-  </url><url>
-    <loc>https://forceoflife.cn/zh-cn/tags/%E6%94%BF%E6%B2%BB/</loc>
-    <lastmod>2024-03-14T09:42:51+08:00</lastmod>
+    <loc>https://forceoflife.cn/zh-cn/tags/%E4%BA%BA%E6%96%87/</loc>
+    <lastmod>2024-05-10T23:12:10+08:00</lastmod>
   </url><url>
     <loc>https://forceoflife.cn/zh-cn/tags/%E7%94%9F%E6%B4%BB/</loc>
-    <lastmod>2023-12-25T23:52:00+08:00</lastmod>
+    <lastmod>2024-05-10T23:12:10+08:00</lastmod>
+  </url><url>
+    <loc>https://forceoflife.cn/zh-cn/tags/%E5%9B%B4%E7%82%89%E5%A4%9C%E8%AF%9D/</loc>
+    <lastmod>2024-05-10T23:12:10+08:00</lastmod>
+  </url><url>
+    <loc>https://forceoflife.cn/zh-cn/post/wlyh5/</loc>
+    <lastmod>2024-05-10T23:12:10+08:00</lastmod>
+  </url><url>
+    <loc>https://forceoflife.cn/zh-cn/tags/%E6%9D%82%E8%B0%88/</loc>
+    <lastmod>2024-05-10T23:12:10+08:00</lastmod>
+  </url><url>
+    <loc>https://forceoflife.cn/zh-cn/private/shixunjubao/</loc>
+    <lastmod>2024-03-14T09:42:51+08:00</lastmod>
   </url><url>
     <loc>https://forceoflife.cn/zh-cn/post/wangshi-pingshu/</loc>
     <lastmod>2023-12-25T23:52:00+08:00</lastmod>
@@ -74,14 +93,14 @@
     <loc>https://forceoflife.cn/zh-cn/post/bldbjszb/</loc>
     <lastmod>2023-11-08T11:31:10+08:00</lastmod>
   </url><url>
-    <loc>https://forceoflife.cn/zh-cn/tags/%E4%BA%BA%E6%96%87/</loc>
-    <lastmod>2023-10-29T07:32:15+08:00</lastmod>
-  </url><url>
     <loc>https://forceoflife.cn/zh-cn/post/wlyh4/</loc>
     <lastmod>2023-10-29T07:32:15+08:00</lastmod>
   </url><url>
     <loc>https://forceoflife.cn/zh-cn/post/dairy1015/</loc>
     <lastmod>2023-10-15T22:10:05+08:00</lastmod>
+  </url><url>
+    <loc>https://forceoflife.cn/zh-cn/tags/%E5%A4%A7%E5%AD%A6/</loc>
+    <lastmod>2023-09-20T01:14:05+08:00</lastmod>
   </url><url>
     <loc>https://forceoflife.cn/zh-cn/tags/%E7%A4%BE%E7%A7%91/</loc>
     <lastmod>2023-09-20T01:14:05+08:00</lastmod>
@@ -97,19 +116,6 @@
   </url><url>
     <loc>https://forceoflife.cn/zh-cn/tags/%E8%A7%82%E5%90%8E%E6%84%9F/</loc>
     <lastmod>2023-09-19T08:21:50+08:00</lastmod>
-  </url><url>
-    <loc>https://forceoflife.cn/zh-cn/page/</loc>
-    <lastmod>2023-09-09T17:09:20+08:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="https://forceoflife.cn/en/page/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh-cn"
-                href="https://forceoflife.cn/zh-cn/page/"
-                />
   </url><url>
     <loc>https://forceoflife.cn/zh-cn/about/</loc>
     <lastmod>2023-09-09T17:09:20+08:00</lastmod>
@@ -130,37 +136,37 @@
     <loc>https://forceoflife.cn/zh-cn/tags/%E5%8D%9A%E5%AE%A2/</loc>
     <lastmod>2023-09-09T16:30:25+08:00</lastmod>
   </url><url>
-    <loc>https://forceoflife.cn/zh-cn/post/%E4%BB%8Ehexo%E8%BF%81%E7%A7%BB%E5%88%B0hugo/</loc>
+    <loc>https://forceoflife.cn/zh-cn/post/hexotohugo/</loc>
     <lastmod>2023-09-09T16:30:25+08:00</lastmod>
   </url><url>
-    <loc>https://forceoflife.cn/zh-cn/post/%E5%9B%B4%E7%82%89%E5%A4%9C%E8%AF%9D3/</loc>
+    <loc>https://forceoflife.cn/zh-cn/post/wlyh3/</loc>
     <lastmod>2023-08-03T00:22:41+08:00</lastmod>
   </url><url>
     <loc>https://forceoflife.cn/zh-cn/tags/%E6%96%87%E5%AD%A6/</loc>
     <lastmod>2023-07-02T15:42:25+08:00</lastmod>
   </url><url>
-    <loc>https://forceoflife.cn/zh-cn/post/%E7%BB%86%E8%AF%BB%E6%88%91%E4%B8%8E%E5%9C%B0%E5%9D%9B/</loc>
+    <loc>https://forceoflife.cn/zh-cn/post/xdwydt/</loc>
     <lastmod>2023-07-02T15:42:25+08:00</lastmod>
   </url><url>
-    <loc>https://forceoflife.cn/zh-cn/post/%E6%88%91%E5%9C%A8%E5%81%9A%E4%BB%80%E4%B9%88-%E6%9C%AA%E6%9D%A5%E6%88%91%E8%A6%81%E5%81%9A%E4%BB%80%E4%B9%88/</loc>
+    <loc>https://forceoflife.cn/zh-cn/post/whatiamdoingnow/</loc>
     <lastmod>2023-06-30T21:39:11+08:00</lastmod>
   </url><url>
     <loc>https://forceoflife.cn/zh-cn/tags/haskell/</loc>
     <lastmod>2023-06-28T18:10:03+08:00</lastmod>
   </url><url>
-    <loc>https://forceoflife.cn/zh-cn/post/%E5%9C%A8mac%E4%B8%8A%E9%85%8D%E7%BD%AEhaskell%E7%8E%AF%E5%A2%83/</loc>
+    <loc>https://forceoflife.cn/zh-cn/post/haskellinmac/</loc>
     <lastmod>2023-06-28T18:10:03+08:00</lastmod>
   </url><url>
-    <loc>https://forceoflife.cn/zh-cn/post/%E8%81%8A%E8%81%8A%E6%9C%80%E8%BF%91/</loc>
+    <loc>https://forceoflife.cn/zh-cn/post/talksomething/</loc>
     <lastmod>2023-06-24T00:51:59+08:00</lastmod>
   </url><url>
-    <loc>https://forceoflife.cn/zh-cn/post/%E6%96%87%E8%8B%91%E6%9D%82%E8%B0%88%E4%B8%80/</loc>
+    <loc>https://forceoflife.cn/zh-cn/post/wyzt1/</loc>
     <lastmod>2023-05-31T18:06:33+08:00</lastmod>
   </url><url>
     <loc>https://forceoflife.cn/zh-cn/tags/%E6%97%85%E8%A1%8C/</loc>
     <lastmod>2023-05-02T16:44:49+08:00</lastmod>
   </url><url>
-    <loc>https://forceoflife.cn/zh-cn/post/%E6%AD%A6%E6%B1%89%E6%B8%B8%E8%AE%B0/</loc>
+    <loc>https://forceoflife.cn/zh-cn/post/wuhanyouji/</loc>
     <lastmod>2023-05-02T16:44:49+08:00</lastmod>
   </url><url>
     <loc>https://forceoflife.cn/zh-cn/series/</loc>
