@@ -2,112 +2,112 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>http://localhost:1313/en/tags/architecture/</loc>
+    <loc>https://forceoflife.cn/en/tags/architecture/</loc>
     <lastmod>2024-06-30T19:06:13+08:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/en/tags/computer/</loc>
+    <loc>https://forceoflife.cn/en/tags/computer/</loc>
     <lastmod>2024-06-30T19:06:13+08:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/en/</loc>
-    <lastmod>2024-06-30T19:06:13+08:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh-cn"
-                href="http://localhost:1313/zh-cn/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="http://localhost:1313/en/"
-                />
-  </url><url>
-    <loc>http://localhost:1313/en/post/jsjzcysjsy/</loc>
+    <loc>https://forceoflife.cn/en/</loc>
     <lastmod>2024-06-30T19:06:13+08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="zh-cn"
-                href="http://localhost:1313/zh-cn/post/jsjzcysjsy/"
+                href="https://forceoflife.cn/zh-cn/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="http://localhost:1313/en/post/jsjzcysjsy/"
+                href="https://forceoflife.cn/en/"
                 />
   </url><url>
-    <loc>http://localhost:1313/en/post/</loc>
+    <loc>https://forceoflife.cn/en/post/jsjzcysjsy/</loc>
     <lastmod>2024-06-30T19:06:13+08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="zh-cn"
-                href="http://localhost:1313/zh-cn/post/"
+                href="https://forceoflife.cn/zh-cn/post/jsjzcysjsy/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="http://localhost:1313/en/post/"
+                href="https://forceoflife.cn/en/post/jsjzcysjsy/"
                 />
   </url><url>
-    <loc>http://localhost:1313/en/tags/</loc>
+    <loc>https://forceoflife.cn/en/post/</loc>
     <lastmod>2024-06-30T19:06:13+08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="zh-cn"
-                href="http://localhost:1313/zh-cn/tags/"
+                href="https://forceoflife.cn/zh-cn/post/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="http://localhost:1313/en/tags/"
+                href="https://forceoflife.cn/en/post/"
                 />
   </url><url>
-    <loc>http://localhost:1313/en/tags/compiler/</loc>
+    <loc>https://forceoflife.cn/en/tags/</loc>
+    <lastmod>2024-06-30T19:06:13+08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh-cn"
+                href="https://forceoflife.cn/zh-cn/tags/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://forceoflife.cn/en/tags/"
+                />
+  </url><url>
+    <loc>https://forceoflife.cn/en/tags/compiler/</loc>
     <lastmod>2024-03-14T02:43:34+08:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/en/tags/optimization/</loc>
+    <loc>https://forceoflife.cn/en/tags/optimization/</loc>
     <lastmod>2024-03-14T02:43:34+08:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/en/post/scalar/</loc>
+    <loc>https://forceoflife.cn/en/post/scalar/</loc>
     <lastmod>2024-03-14T02:43:34+08:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/en/post/data-flow-analysis/</loc>
+    <loc>https://forceoflife.cn/en/post/data-flow-analysis/</loc>
     <lastmod>2024-03-05T23:16:20+08:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/en/about/</loc>
+    <loc>https://forceoflife.cn/en/about/</loc>
     <lastmod>2023-09-09T17:09:20+08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="zh-cn"
-                href="http://localhost:1313/zh-cn/about/"
+                href="https://forceoflife.cn/zh-cn/about/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="http://localhost:1313/en/about/"
+                href="https://forceoflife.cn/en/about/"
                 />
   </url><url>
-    <loc>http://localhost:1313/en/page/</loc>
+    <loc>https://forceoflife.cn/en/page/</loc>
     <lastmod>2023-09-09T17:09:20+08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="zh-cn"
-                href="http://localhost:1313/zh-cn/page/"
+                href="https://forceoflife.cn/zh-cn/page/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="http://localhost:1313/en/page/"
+                href="https://forceoflife.cn/en/page/"
                 />
   </url><url>
-    <loc>http://localhost:1313/en/series/</loc>
+    <loc>https://forceoflife.cn/en/series/</loc>
     <xhtml:link
                 rel="alternate"
                 hreflang="zh-cn"
-                href="http://localhost:1313/zh-cn/series/"
+                href="https://forceoflife.cn/zh-cn/series/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="http://localhost:1313/en/series/"
+                href="https://forceoflife.cn/en/series/"
                 />
   </url>
 </urlset>

@@ -2,19 +2,19 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Tags on Force of Life</title>
-    <link>http://localhost:1313/en/tags/</link>
+    <link>https://forceoflife.cn/en/tags/</link>
     <description>Recent content in Tags on Force of Life</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <managingEditor>Zhixiao-Zhang@outlook.com (Patrick)</managingEditor>
     <webMaster>Zhixiao-Zhang@outlook.com (Patrick)</webMaster>
-    <lastBuildDate>Sun, 30 Jun 2024 19:06:13 +0800</lastBuildDate><atom:link href="http://localhost:1313/en/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 30 Jun 2024 19:06:13 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/en/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Architecture</title>
-      <link>http://localhost:1313/en/tags/architecture/</link>
+      <link>https://forceoflife.cn/en/tags/architecture/</link>
       <pubDate>Sun, 30 Jun 2024 19:06:13 +0800</pubDate>
       <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
-      <guid>http://localhost:1313/en/tags/architecture/</guid>
+      <guid>https://forceoflife.cn/en/tags/architecture/</guid>
       
       <description></description>
       
@@ -22,10 +22,10 @@
     
     <item>
       <title>Computer</title>
-      <link>http://localhost:1313/en/tags/computer/</link>
+      <link>https://forceoflife.cn/en/tags/computer/</link>
       <pubDate>Sun, 30 Jun 2024 19:06:13 +0800</pubDate>
       <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
-      <guid>http://localhost:1313/en/tags/computer/</guid>
+      <guid>https://forceoflife.cn/en/tags/computer/</guid>
       
       <description></description>
       
@@ -33,10 +33,10 @@
     
     <item>
       <title>Compiler</title>
-      <link>http://localhost:1313/en/tags/compiler/</link>
+      <link>https://forceoflife.cn/en/tags/compiler/</link>
       <pubDate>Thu, 14 Mar 2024 02:43:34 +0800</pubDate>
       <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
-      <guid>http://localhost:1313/en/tags/compiler/</guid>
+      <guid>https://forceoflife.cn/en/tags/compiler/</guid>
       
       <description></description>
       
@@ -44,10 +44,10 @@
     
     <item>
       <title>Optimization</title>
-      <link>http://localhost:1313/en/tags/optimization/</link>
+      <link>https://forceoflife.cn/en/tags/optimization/</link>
       <pubDate>Thu, 14 Mar 2024 02:43:34 +0800</pubDate>
       <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
-      <guid>http://localhost:1313/en/tags/optimization/</guid>
+      <guid>https://forceoflife.cn/en/tags/optimization/</guid>
       
       <description></description>
       

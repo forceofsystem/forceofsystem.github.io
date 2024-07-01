@@ -2,19 +2,19 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Hugo on 生活之力</title>
-    <link>http://localhost:1313/zh-cn/tags/hugo/</link>
+    <link>https://forceoflife.cn/zh-cn/tags/hugo/</link>
     <description>Recent content in Hugo on 生活之力</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <managingEditor>Zhixiao-Zhang@outlook.com (Patrick)</managingEditor>
     <webMaster>Zhixiao-Zhang@outlook.com (Patrick)</webMaster>
-    <lastBuildDate>Sat, 09 Sep 2023 16:30:25 +0800</lastBuildDate><atom:link href="http://localhost:1313/zh-cn/tags/hugo/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 09 Sep 2023 16:30:25 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/zh-cn/tags/hugo/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>从hexo到hugo</title>
-      <link>http://localhost:1313/zh-cn/post/hexotohugo/</link>
+      <link>https://forceoflife.cn/zh-cn/post/hexotohugo/</link>
       <pubDate>Sat, 09 Sep 2023 16:30:25 +0800</pubDate>
       <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
-      <guid>http://localhost:1313/zh-cn/post/hexotohugo/</guid>
+      <guid>https://forceoflife.cn/zh-cn/post/hexotohugo/</guid>
       
       <description>&lt;p&gt;没错，我从 hexo 迁移到了 hugo。这已经是我用过的第三个博客软件了，不出意外的话，短期内应该不会再更换了。&lt;/p&gt;
 &lt;h2 id=&#34;更换理由&#34;&gt;更换理由&lt;/h2&gt;

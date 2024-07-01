@@ -2,19 +2,19 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Pages on 生活之力</title>
-    <link>http://localhost:1313/zh-cn/page/</link>
+    <link>https://forceoflife.cn/zh-cn/page/</link>
     <description>Recent content in Pages on 生活之力</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <managingEditor>Zhixiao-Zhang@outlook.com (Patrick)</managingEditor>
     <webMaster>Zhixiao-Zhang@outlook.com (Patrick)</webMaster>
-    <lastBuildDate>Thu, 14 Mar 2024 09:42:51 +0800</lastBuildDate><atom:link href="http://localhost:1313/zh-cn/page/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 14 Mar 2024 09:42:51 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/zh-cn/page/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>评川大教务处回复——揭露无耻政客的丑恶嘴脸</title>
-      <link>http://localhost:1313/zh-cn/private/shixunjubao/</link>
+      <link>https://forceoflife.cn/zh-cn/private/shixunjubao/</link>
       <pubDate>Thu, 14 Mar 2024 09:42:51 +0800</pubDate>
       <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
-      <guid>http://localhost:1313/zh-cn/private/shixunjubao/</guid>
+      <guid>https://forceoflife.cn/zh-cn/private/shixunjubao/</guid>
       
       <description>&lt;h2 id=&#34;评川大教务处回复揭露无耻政客的丑恶嘴脸&#34;&gt;评川大教务处回复——揭露无耻政客的丑恶嘴脸&lt;/h2&gt;
 &lt;p&gt;本人于 2024 年 2 月 15 日向四川大学校长信箱发送对本学期前三周课程《IT 企业实训》的不满与建议，在 3 月 6 日，邮件发出的 11 天之后，我收到了来自学校教务处的回复。正是这篇回复，让我断绝了再次提出建议、反映的打算，因为这篇回复通篇不见学校对于教育、教学改革的诚意，反倒满是无耻政客的虚与委蛇，令人不齿。以下我将择几处作简要评论。&lt;/p&gt;
@@ -57,19 +57,19 @@
     
     <item>
       <title>个人简介</title>
-      <link>http://localhost:1313/zh-cn/about/</link>
+      <link>https://forceoflife.cn/zh-cn/about/</link>
       <pubDate>Sat, 09 Sep 2023 17:09:20 +0800</pubDate>
       <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
-      <guid>http://localhost:1313/zh-cn/about/</guid>
+      <guid>https://forceoflife.cn/zh-cn/about/</guid>
       
       <description>&lt;p&gt;（实时更新）&lt;/p&gt;
 &lt;p&gt;我是 Zhang Zhixiao，来自内蒙古自治区。&lt;/p&gt;
 &lt;h2 id=&#34;个人简介&#34;&gt;个人简介&lt;/h2&gt;
 &lt;p&gt;热爱计算机（尤其是操作系统和编译器），喜欢读小说和社会科学书籍，渴望学习多门外语如俄语、日语，但现在只会英语和一大堆北方方言。&lt;/p&gt;
 &lt;p&gt;写的东西水平参差不齐，很多时候有一个精彩的想法但懒得写下来，或者写着写着就没激情了，所以大多数文章都是虎头蛇尾。&lt;/p&gt;
-&lt;p&gt;如果你对我的技术文章感兴趣，可以阅读&lt;a href=&#34;http://localhost:1313/zh-cn/post/python1/&#34;&gt;从零开始学 CPython&lt;/a&gt;，或去阅读本站的英文版。&lt;/p&gt;
-&lt;p&gt;如果你对我的散文感兴趣，可以阅读&lt;a href=&#34;http://localhost:1313/zh-cn/post/%E5%9B%B4%E7%82%89%E5%A4%9C%E8%AF%9D3/&#34;&gt;围炉夜话（3）&lt;/a&gt;，围炉夜话是我一直在写的一个散文集，也说不上集，只是想表达一些吸收转化的社科内容时会用这个题目。&lt;/p&gt;
-&lt;p&gt;如果你对我的文学文章感兴趣，可以阅读&lt;a href=&#34;http://localhost:1313/zh-cn/post/%E7%BB%86%E8%AF%BB%E6%88%91%E4%B8%8E%E5%9C%B0%E5%9D%9B/&#34;&gt;细读《我与地坛》&lt;/a&gt;，很遗憾我并没有写过多少纯文学的内容，之后可能会写一些分享，但也可能不会。&lt;/p&gt;
+&lt;p&gt;如果你对我的技术文章感兴趣，可以阅读&lt;a href=&#34;https://forceoflife.cn/zh-cn/post/python1/&#34;&gt;从零开始学 CPython&lt;/a&gt;，或去阅读本站的英文版。&lt;/p&gt;
+&lt;p&gt;如果你对我的散文感兴趣，可以阅读&lt;a href=&#34;https://forceoflife.cn/zh-cn/post/%E5%9B%B4%E7%82%89%E5%A4%9C%E8%AF%9D3/&#34;&gt;围炉夜话（3）&lt;/a&gt;，围炉夜话是我一直在写的一个散文集，也说不上集，只是想表达一些吸收转化的社科内容时会用这个题目。&lt;/p&gt;
+&lt;p&gt;如果你对我的文学文章感兴趣，可以阅读&lt;a href=&#34;https://forceoflife.cn/zh-cn/post/%E7%BB%86%E8%AF%BB%E6%88%91%E4%B8%8E%E5%9C%B0%E5%9D%9B/&#34;&gt;细读《我与地坛》&lt;/a&gt;，很遗憾我并没有写过多少纯文学的内容，之后可能会写一些分享，但也可能不会。&lt;/p&gt;
 &lt;p&gt;我喜欢听音乐，通俗歌曲喜欢听 2000 年之前的粤语、国语歌曲，粤语歌手如林子祥、徐小凤、罗文等；国语歌手如朴树、李宗盛、周华健、罗大佑、崔健等，但更多是小时候听过什么就听什么。欧美通俗音乐喜欢听民谣、民谣摇滚、摇滚风格。国语歌曲更多喜欢听民族唱法，如草原上升起不落的太阳、咱老百姓、走进新时代等。&lt;/p&gt;
 &lt;p&gt;酷爱传统曲艺、戏曲，曲艺由精到疏的顺序为：评书、相声、京韵大鼓、北方小曲小调、不打快板的快板书、二人转；戏曲以京剧为主，听老生，尤其是马派、余派，常学习耿其昌、马长礼、马连良的唱段，如《三家店》、《淮河营》、《劝千岁杀字休出口》、《今日痛饮庆功酒》等。&lt;/p&gt;
 &lt;p&gt;对电影和电视剧不感兴趣。&lt;/p&gt;

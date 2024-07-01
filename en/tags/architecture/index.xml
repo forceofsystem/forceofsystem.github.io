@@ -2,19 +2,19 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Architecture on Force of Life</title>
-    <link>http://localhost:1313/en/tags/architecture/</link>
+    <link>https://forceoflife.cn/en/tags/architecture/</link>
     <description>Recent content in Architecture on Force of Life</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <managingEditor>Zhixiao-Zhang@outlook.com (Patrick)</managingEditor>
     <webMaster>Zhixiao-Zhang@outlook.com (Patrick)</webMaster>
-    <lastBuildDate>Sun, 30 Jun 2024 19:06:13 +0800</lastBuildDate><atom:link href="http://localhost:1313/en/tags/architecture/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 30 Jun 2024 19:06:13 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/en/tags/architecture/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>How CPU accelerates programs?</title>
-      <link>http://localhost:1313/en/post/jsjzcysjsy/</link>
+      <link>https://forceoflife.cn/en/post/jsjzcysjsy/</link>
       <pubDate>Sun, 30 Jun 2024 19:06:13 +0800</pubDate>
       <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
-      <guid>http://localhost:1313/en/post/jsjzcysjsy/</guid>
+      <guid>https://forceoflife.cn/en/post/jsjzcysjsy/</guid>
       
       <description></description>
       
