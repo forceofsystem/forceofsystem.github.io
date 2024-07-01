@@ -2,25 +2,25 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>计算机 on 生活之力</title>
-    <link>https://forceoflife.cn/zh-cn/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA/</link>
+    <link>http://localhost:1313/zh-cn/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA/</link>
     <description>Recent content in 计算机 on 生活之力</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <managingEditor>Zhixiao-Zhang@outlook.com (Patrick)</managingEditor>
     <webMaster>Zhixiao-Zhang@outlook.com (Patrick)</webMaster>
-    <lastBuildDate>Fri, 28 Jun 2024 21:50:46 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/zh-cn/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 28 Jun 2024 21:50:46 +0800</lastBuildDate><atom:link href="http://localhost:1313/zh-cn/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>计算机组成拾遗--CPU 如何更快地运行程序？</title>
-      <link>https://forceoflife.cn/zh-cn/post/jsjzcysjsy/</link>
+      <link>http://localhost:1313/zh-cn/post/jsjzcysjsy/</link>
       <pubDate>Fri, 28 Jun 2024 21:50:46 +0800</pubDate>
       <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
-      <guid>https://forceoflife.cn/zh-cn/post/jsjzcysjsy/</guid>
+      <guid>http://localhost:1313/zh-cn/post/jsjzcysjsy/</guid>
       
       <description>&lt;p&gt;我校的计算机组成原理课的正式名字为：计算机组成原理与体系结构，然而讲授的内容却更多偏向组成原理，体系结构的部分只是讲了最简单的流水线部分的知识。所以我在大二时买了《计算机组成与设计——软件硬件接口》的 MIPS 版打算学习，只读了指令和编码的部分。上个学期又买了 RISC-V 版，也没有来得及看，正好最近在做 GCC RISC-V 后端的工作，自觉在阅读《Computer Architecture: A Quantitive Approach》前应该读一读这本书，便索性画了 3 天连读带写，将书中的内容写成一份博客分享出来。&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;中文译版质量太低，我怀疑是老师手底下的英语没过六级的研究生用 Word 翻译的QAQ。&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h2 id=&#34;如何度量计算机的性能&#34;&gt;如何度量计算机的性能&lt;/h2&gt;
+&lt;h2 id=&#34;1-如何度量计算机的性能&#34;&gt;1. 如何度量计算机的性能&lt;/h2&gt;
 &lt;p&gt;要想让程序运行得快，最简单的方式就是买一台更好、更快的计算机，可如何比较不同计算机的速度呢？你可能认为，只需要计算出程序运行花费了多少秒，或者多少微秒然后比大小就可以了。但我们的目的是要让计算机上运行的程序跑得更快，这种粗粒度的比较方式并不能给我们提供什么有用的信息，所以我们必须要找到一种更具有参考价值的度量方法。&lt;/p&gt;
 &lt;p&gt;一般而言，计算机通过时钟来确定各类事件在硬件中何时发生，这些离散的时间间隔被称为时钟周期数，也就是一个时钟周期的长度。我们还可以使用时钟周期的倒数——时钟频率（如 4 GHZ）。&lt;/p&gt;
 &lt;p&gt;我们通常用如下方法来统计程序的 （CPU）执行时间：&lt;/p&gt;
@@ -28,7 +28,7 @@
 &lt;p&gt;进一步地，拥有了程序的 CPU 时钟周期数，我们就能以此来计算指令的性能：&lt;/p&gt;
 &lt;p&gt;$$CPU\ 时钟周期数 = 程序的指令数 \times 指令平均周期数$$&lt;/p&gt;
 &lt;p&gt;指令平均周期数（clock cycle per instruction）表示执行每条指令所需的时钟周期平均数，缩写为 &lt;strong&gt;CPI&lt;/strong&gt;，这也是我们度量计算机性能的主要指标，我们正是用它来比较不同处理器的性能。&lt;/p&gt;
-&lt;h2 id=&#34;程序可以比想象快流水线&#34;&gt;程序可以比想象快：流水线&lt;/h2&gt;
+&lt;h2 id=&#34;2-程序可以比想象快流水线&#34;&gt;2. 程序可以比想象快：流水线&lt;/h2&gt;
 &lt;img src=&#34;https://cdn.jsdelivr.net/gh/zzxdyf1314/mycloudimg@master/image-20240628223216681.png&#34; alt=&#34;计算机的组成部件&#34; style=&#34;zoom:50%;&#34; /&gt;
 &lt;p&gt;我们可以把计算机认为是一个工厂，我们将原材料送进工厂，工厂给我们提供我们想要的产品，而计算机这个工厂的工人就是 CPU。如何让工厂能够更高效地生产呢，让我们回忆一下在初中历史课本上学到了什么。没错，我猜你和我一样想到了福特，就是福特汽车的创始人——亨利·福特，就是他在汽车制造的工厂中引入了流水线，从而获得了商业上的巨大成功。那我们能不能在计算机这个工厂中引入流水线，让 CPU 像福特公司的工人一样工作呢？&lt;/p&gt;
 &lt;p&gt;当然可以。&lt;/p&gt;
@@ -52,7 +52,7 @@
 &lt;li&gt;存储器操作数只出现在 load 和 store 指令中。&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;虽然流水线能带来很棒的性能提升，但它并非是没有代价的（又有什么是不付出代价就能得到的呢），这种代价就被称为——冒险（hazard）。&lt;/p&gt;
-&lt;h3 id=&#34;流水线冒险&#34;&gt;流水线冒险&lt;/h3&gt;
+&lt;h3 id=&#34;21-流水线冒险&#34;&gt;2.1 流水线冒险&lt;/h3&gt;
 &lt;p&gt;冒险是指下一条指令在下一个时钟周期中无法执行的情况。冒险共分为三种：结构冒险、数据冒险和控制冒险。&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
@@ -87,7 +87,7 @@ sub x2, x19, x3
 &lt;ul&gt;
 &lt;li&gt;解决方法：
 &lt;ul&gt;
-&lt;li&gt;停顿：等低。&lt;/li&gt;
+&lt;li&gt;停顿：等待。&lt;/li&gt;
 &lt;li&gt;预测：预测分支的结果并沿预测方向执行，而不是等分支结果确定后才开始执行。成熟的分支预测是预测一些条件分支指令发生跳转，另一些不发生。当预测错误时，流水线控制必须确保预测错误的条件分支指令之后的指令执行不会生效，并且从正确的分支地址处重新启动流水线。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
@@ -100,7 +100,7 @@ sub x2, x19, x3
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;流水线级数之所以能够让程序跑得更快，是因为它挖掘了顺序指令流中的&lt;strong&gt;指令级并行性&lt;/strong&gt;，相对于多处理器编程，流水线的优点在于它对程序员是不可见的，换句话说，程序员无须操心是否能利用好流水线，这是编译器开发者需要费心的（没错，就是我QAQ……）。那么指令级并行性是什么呢？&lt;/p&gt;
-&lt;h2 id=&#34;流水线背后指令级并行&#34;&gt;流水线背后——指令级并行&lt;/h2&gt;
+&lt;h2 id=&#34;3-流水线背后指令级并行&#34;&gt;3. 流水线背后——指令级并行&lt;/h2&gt;
 &lt;p&gt;指令级并行性（Instruction Level Parallelism，简称ILP）是指在计算机体系结构中，处理器能够同时执行多条没有数据依赖关系的指令的能力。&lt;/p&gt;
 &lt;p&gt;有两种常见的提高指令级并行度的方法：&lt;/p&gt;
 &lt;ul&gt;
@@ -133,7 +133,7 @@ sub x2, x19, x3
 &lt;li&gt;静态多发射：编译时判断&lt;/li&gt;
 &lt;li&gt;动态多发射：动态执行过程中由硬件完成&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&#34;静态多发射&#34;&gt;静态多发射&lt;/h3&gt;
+&lt;h3 id=&#34;31-静态多发射&#34;&gt;3.1 静态多发射&lt;/h3&gt;
 &lt;p&gt;静态多发射处理器可以将同一周期发射出的指令集合（issue packet）看成一条需要进行多种操作的“大指令”。&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;静态多发射处理器通常会对同一周期发射的指令类型进行限制。将发射指令包看成一条预先定义好、需要进行多种操作的指令，这符合超长指令字（Very Long Instruction Word，VLIW）的设计思路。&lt;/p&gt;
@@ -162,7 +162,7 @@ sub x2, x19, x3
 &lt;li&gt;反相关：由于名称服用而导致的顺序排列，并不是真正的数据相关（真相关）。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/blockquote&gt;
-&lt;h3 id=&#34;动态多发射处理器&#34;&gt;动态多发射处理器&lt;/h3&gt;
+&lt;h3 id=&#34;32-动态多发射处理器&#34;&gt;3.2 动态多发射处理器&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;动态多发射处理器也称为超标量处理器或朴素的超标处理器，能够在硬件层面判断当前周期可以发射的指令数。&lt;/li&gt;
 &lt;li&gt;超标量是一种高级流水线级数，指处理器能够在动态执行时选择指令，并在一个周期内执行一条以上的指令。&lt;/li&gt;
@@ -204,15 +204,15 @@ sub x2, x19, x3
 &lt;li&gt;只使用推测式执行技术去挖掘程序的指令级并行性会影响推测式执行的结果，例如频繁出现的例外。&lt;/li&gt;
 &lt;li&gt;不同的流水线实现具有不同的延迟和发射宽度，动态调度技术可以隐藏这部分细节从而降低编译器的开发难度。&lt;/li&gt;
 &lt;/ol&gt;
-&lt;h3 id=&#34;多发射存在的问题&#34;&gt;多发射存在的问题&lt;/h3&gt;
+&lt;h3 id=&#34;33-多发射存在的问题&#34;&gt;3.3 多发射存在的问题&lt;/h3&gt;
 &lt;p&gt;虽然现代处理器可以通过多发射提高性能，但是保持高发射率是非常困难的。尽管存在四发射或六发射的处理器，但应用很难保持两条以上的发射率，原因主要有两点：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;指令之间的依赖关系造成了流水线内部的性能瓶颈。很多时候这种依赖关系并不是真相关而是由于编译器和硬件的能力有限，如 C 语言中使用的指针，会产生存储器别名导致潜在的数据相关。也因此衍生出了静态分析中的别名分析（Alias Analysis）技术。&lt;/li&gt;
 &lt;li&gt;存储层次中的缓存失效会使得流水线不能满负荷运转。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;在挖掘了指令级并行性后，程序即使运行在一个处理器上也可以以一个可观的速度运行。那如何让程序更快呢？我们需要更多的处理器！&lt;/p&gt;
-&lt;h2 id=&#34;程序还能更快并行&#34;&gt;程序还能更快：并行&lt;/h2&gt;
-&lt;h3 id=&#34;并发与并行的区别&#34;&gt;并发与并行的区别&lt;/h3&gt;
+&lt;h2 id=&#34;4-程序还能更快并行&#34;&gt;4 程序还能更快：并行&lt;/h2&gt;
+&lt;h3 id=&#34;41-并发与并行的区别&#34;&gt;4.1 并发与并行的区别&lt;/h3&gt;
 &lt;p&gt;并发（current）和并行（parallel）一直是一个容易混淆的概念，其原因是两者的表现形式都是多个任务同时被执行。并发的反面是顺序，而并行的反面是串行。我们通常会使用操作系统来作为并发程序的例子，操作系统是一组进程互相写作来处理多个任务，因为操作系统是并发程序，所以可以在进程之间不断切换从而执行不同的任务，如果一个操作系统是顺序程序，那么就必须执行完一个任务再执行另一个任务；并发并不需要有多个处理器，它可以通过调度来制造拥有多个处理器的假象。而并行则不然，并行是指有多个处理器来完成任务，可以是任务级并行也可以是并行处理程序。&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;任务级并行：多个处理器完成多个独立的任务，也称为进程级并行。&lt;/p&gt;
@@ -220,7 +220,7 @@ sub x2, x19, x3
 &lt;/blockquote&gt;
 &lt;p&gt;可以用一张表格来区分并发、顺序、并行和串行：&lt;/p&gt;
 &lt;p&gt;&lt;img alt=&#34;并行与并发&#34; src=&#34;https://cdn.jsdelivr.net/gh/zzxdyf1314/mycloudimg@master/image-20240629182117366.png&#34;&gt;&lt;/p&gt;
-&lt;h3 id=&#34;创建并行处理程序的难点&#34;&gt;创建并行处理程序的难点&lt;/h3&gt;
+&lt;h3 id=&#34;42-创建并行处理程序的难点&#34;&gt;4.2 创建并行处理程序的难点&lt;/h3&gt;
 &lt;p&gt;并行性的挑战在于，只有很少的应用程序能在被重写后在多处理器上更快地完成任务，因为很难利用多处理器来加速单个任务的运行，尤其是当处理器的数量增多时。造成这个问题主要有两个原因：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;多处理器上运行的并行处理程序必须获得更好的性能或更高的能效，而单处理器技术（如超标量和乱序执行）都充分利用了指令级并行，减少了多处理器重写程序的需求。&lt;/li&gt;
@@ -277,10 +277,10 @@ sub x2, x19, x3
 &lt;p&gt;同理，对于 12.5% 的负载，对应的加速比为 7，其余处理器的时间不到 20%。&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;上面的计算证明了在编写并行程序时保证负载均衡的重要性。&lt;/p&gt;
-&lt;h3 id=&#34;并行硬件分类和向量机&#34;&gt;并行硬件分类和向量机&lt;/h3&gt;
-&lt;h4 id=&#34;向量与标量&#34;&gt;向量与标量&lt;/h4&gt;
+&lt;h3 id=&#34;43-并行硬件分类和向量机&#34;&gt;4.3 并行硬件分类和向量机&lt;/h3&gt;
+&lt;h4 id=&#34;431-向量与标量&#34;&gt;4.3.1 向量与标量&lt;/h4&gt;
 &lt;p&gt;回忆一下我们在数学中学习过的标量和向量，&lt;strong&gt;标量（Scalar）&lt;strong&gt;只有大小，而向量既有大小又有方向。在计算机体系结构中，标量处理指的是对单个数据项进行操作。标量处理器是顺序操作的，即一次只处理一个数据元素，每次操作针对一个值；而向量处理则是同时对多个数据元素进行操作。在向量处理器中，一条指令可以应用于一组数据，这组数据就被称为&lt;/strong&gt;向量（Vector）&lt;/strong&gt;。&lt;/p&gt;
-&lt;h4 id=&#34;并行硬件分类&#34;&gt;并行硬件分类&lt;/h4&gt;
+&lt;h4 id=&#34;432-并行硬件分类&#34;&gt;4.3.2 并行硬件分类&lt;/h4&gt;
 &lt;p&gt;在引入向量这个概念后，我们就可以分类并行硬件了，下面介绍的这种并行硬件分类方法自上世纪 60 年代提出后到今天仍在使用，该分类基于指令流数量和数据流数量。&lt;/p&gt;
 &lt;p&gt;&lt;img alt=&#34;传统并行分类&#34; src=&#34;https://cdn.jsdelivr.net/gh/zzxdyf1314/mycloudimg@master/image-20240629224026828.png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;传统的单处理器具有单个指令流和单个数据流（即 SISD），传统的多处理器具有多个指令流和多个数据流（即 MIMD）。&lt;/p&gt;
@@ -294,7 +294,7 @@ sub x2, x19, x3
 &lt;li&gt;减少了指令带宽和空间——SIMD 只需要各个处理器同时执行的代码的一个副本，消息传递类型的 MIMD 计算机可能需要在每个处理器中保存一个副本，而共享内存类型的 MIMD 计算机需要多个指令缓存。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;SIMD 在处理 for 循环中的数组时效果最好，在处理 switch 时效果最差。因此，为了在 SIMD 计算机上并行运行，程序中必须存在大量相同数据结构的数据，即&lt;strong&gt;数据级并行（data-level parallelism）&lt;/strong&gt;。&lt;/p&gt;
-&lt;h4 id=&#34;向量体系结构&#34;&gt;向量体系结构&lt;/h4&gt;
+&lt;h4 id=&#34;433-向量体系结构&#34;&gt;4.3.3 向量体系结构&lt;/h4&gt;
 &lt;p&gt;向量体系结构的基本原理是从内存中手机数据元，将它们按顺序放入一大组寄存器（向量寄存器）中，使用流水化的执行单元在寄存器中对它们依次操作，将结果写回内存。&lt;/p&gt;
 &lt;p&gt;下面我们来看一个向量体系结构并行的例子：&lt;/p&gt;
 &lt;p&gt;DAXPY 是一个在数值计算和线性代数中常用的 BLAS 函数，它的全称是Double precision A times X Plus Y。DAXPY的主要功能是执行向量的线性组合，即计算一个向量与另一个向量的标量乘积再加到第三个向量上。数学上，对于两个实数向量x和y以及一个标量a，DAXPY执行以下操作：&lt;/p&gt;
@@ -319,7 +319,7 @@ vle.v 	 v1, 0(x20)  # 加载向量 y
 vfadd.vv v1, v1, v0  # 向量加法，计算a * x[i] + y[i]
 vse.v    v1, 0(x20)  # 将结果存储到 y 中
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;相比之下，向量处理器大大降低了指令带宽，相比于传统 RISC-V 体系结构的 500 条指令，向量 RISC-V 只需要 6 条指令就完成了任务。此外，向量处理器还降低了出现流水线冒险的频率，传统的 RISC-V 代码流水线停顿频率是向量版本的 64 倍，编译器可以使用循环展开来消除这种差异，但仍无法减少指令带宽的巨大差异。&lt;/p&gt;
-&lt;h4 id=&#34;硬件多线程&#34;&gt;硬件多线程&lt;/h4&gt;
+&lt;h4 id=&#34;433-硬件多线程&#34;&gt;4.3.3 硬件多线程&lt;/h4&gt;
 &lt;p&gt;硬件多线程与 MIMD 相关，MIMD 依赖于多个进程或线程来使多个处理器保持忙碌状态，而硬件多线程允许多个线程以重叠的方式共享单个处理器的功能单元以有效利用硬件资源。&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;处理器必须复制每个线程的独立状态，如寄存器堆和程序计数器的独立副本。&lt;/li&gt;
@@ -341,7 +341,7 @@ vse.v    v1, 0(x20)  # 将结果存储到 y 中
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;由于多发射处理器中具有大多数单线程难以充分利用的并行功能单元，所以衍生出了一种硬件多线程的变体，称为同时多线程（Simultaneous Multithreading, SMT），它使用多发射、动态调度流水线的处理器资源来挖掘线程级并行和指令级并行。通过寄存器重命名和动态调度技术，处理器可以不需要考虑依赖关系，发射多条来自相互独立线程的多条指令，通过动态调度来解决相关性的问题。&lt;/p&gt;
-&lt;h4 id=&#34;多核和其他共享内存多处理器&#34;&gt;多核和其他共享内存多处理器&lt;/h4&gt;
+&lt;h4 id=&#34;435-多核和其他共享内存多处理器&#34;&gt;4.3.5 多核和其他共享内存多处理器&lt;/h4&gt;
 &lt;p&gt;硬件多线程用很小的代价提升了处理器效率，但我们仍需要想办法有效利用单个芯片上不断增长的处理器核数量来发挥出摩尔定律呈现出的性能潜力。&lt;/p&gt;
 &lt;p&gt;上文提到，重写就程序使其在并行硬件上高效运行是苦难的，所以我们可以尝试从计算机设计上来降低对应的难度。目前有两种主流的方法：&lt;/p&gt;
 &lt;ul&gt;
@@ -366,7 +366,7 @@ vse.v    v1, 0(x20)  # 将结果存储到 y 中
 &lt;blockquote&gt;
 &lt;p&gt;MIMD 的另一常见硬件为 GPU，本文不作介绍。&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h2 id=&#34;结语&#34;&gt;结语&lt;/h2&gt;
+&lt;h2 id=&#34;5-结语&#34;&gt;5. 结语&lt;/h2&gt;
 &lt;p&gt;通过不断地挖掘潜在的并行性，从指令级并行到真正的硬件级并行，CPU 让我们的程序运行得越来越快，而 GPU，特别是 GPGPU 和 DSA（Domain Specific Architect）似乎代表着未来的发展方向。如今，GPGPU 推动着人工智能行业迅猛发展，不知道未来的体系结构又会发生怎样的变化，让我们拭目以待吧。&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;希望我能参与其中 QAQ。&lt;/p&gt;
@@ -376,10 +376,10 @@ vse.v    v1, 0(x20)  # 将结果存储到 y 中
     
     <item>
       <title>从零开始学 CPython - 0</title>
-      <link>https://forceoflife.cn/zh-cn/post/python1/</link>
+      <link>http://localhost:1313/zh-cn/post/python1/</link>
       <pubDate>Tue, 19 Dec 2023 14:28:43 +0800</pubDate>
       <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
-      <guid>https://forceoflife.cn/zh-cn/post/python1/</guid>
+      <guid>http://localhost:1313/zh-cn/post/python1/</guid>
       
       <description>&lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
 &lt;p&gt;Python 是时下最流行的编程语言，在 &lt;a href=&#34;https://www.tiobe.com/tiobe-index/&#34;&gt;TIOBE&lt;/a&gt; 排行榜上连续多年位居榜首，作为一名计算机相关专业的学生，掌握 Python 是非常有必要的。可我还不会 CPython，真是闻着伤心见者落泪。于是我痛定思痛，打算新开一个系列，从零开始学习 CPython，努力成为一个会调包的合格大学生（误）。你可能注意到了我说我要从零开始学习 CPython，如果你对 CPython 不够了解的话，&lt;del&gt;CPython 是 Python 的别称，意思是像 C 一样快的 Python。&lt;/del&gt;&lt;/p&gt;
@@ -818,10 +818,10 @@ vse.v    v1, 0(x20)  # 将结果存储到 y 中
     
     <item>
       <title>从hexo到hugo</title>
-      <link>https://forceoflife.cn/zh-cn/post/hexotohugo/</link>
+      <link>http://localhost:1313/zh-cn/post/hexotohugo/</link>
       <pubDate>Sat, 09 Sep 2023 16:30:25 +0800</pubDate>
       <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
-      <guid>https://forceoflife.cn/zh-cn/post/hexotohugo/</guid>
+      <guid>http://localhost:1313/zh-cn/post/hexotohugo/</guid>
       
       <description>&lt;p&gt;没错，我从 hexo 迁移到了 hugo。这已经是我用过的第三个博客软件了，不出意外的话，短期内应该不会再更换了。&lt;/p&gt;
 &lt;h2 id=&#34;更换理由&#34;&gt;更换理由&lt;/h2&gt;
@@ -844,10 +844,10 @@ vse.v    v1, 0(x20)  # 将结果存储到 y 中
     
     <item>
       <title>在Mac上配置Haskell环境</title>
-      <link>https://forceoflife.cn/zh-cn/post/haskellinmac/</link>
+      <link>http://localhost:1313/zh-cn/post/haskellinmac/</link>
       <pubDate>Wed, 28 Jun 2023 18:10:03 +0800</pubDate>
       <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
-      <guid>https://forceoflife.cn/zh-cn/post/haskellinmac/</guid>
+      <guid>http://localhost:1313/zh-cn/post/haskellinmac/</guid>
       
       <description>&lt;blockquote&gt;
 &lt;p&gt;这篇博客将介绍如何在&lt;strong&gt;中国&lt;/strong&gt;安装、配置 Mac 的 Haskell 环境和编辑器的高亮、补全，其中编辑器包括 Vim/Neovim、Visual Studio Code。&lt;/p&gt;
