@@ -1,0 +1,917 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>计算机 on 生活之力</title>
+    <link>https://forceoflife.cn/zh-cn/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA/</link>
+    <description>Recent content in 计算机 on 生活之力</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <managingEditor>Zhixiao-Zhang@outlook.com (Patrick)</managingEditor>
+    <webMaster>Zhixiao-Zhang@outlook.com (Patrick)</webMaster>
+    <lastBuildDate>Fri, 28 Jun 2024 21:50:46 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/zh-cn/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>计算机组成拾遗--CPU 如何更快地运行程序？</title>
+      <link>https://forceoflife.cn/zh-cn/post/jsjzcysjsy/</link>
+      <pubDate>Fri, 28 Jun 2024 21:50:46 +0800</pubDate>
+      <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
+      <guid>https://forceoflife.cn/zh-cn/post/jsjzcysjsy/</guid>
+      
+      <description>&lt;p&gt;我校的计算机组成原理课的正式名字为：计算机组成原理与体系结构，然而讲授的内容却更多偏向组成原理，体系结构的部分只是讲了最简单的流水线部分的知识。所以我在大二时买了《计算机组成与设计——软件硬件接口》的 MIPS 版打算学习，只读了指令和编码的部分。上个学期又买了 RISC-V 版，也没有来得及看，正好最近在做 GCC RISC-V 后端的工作，自觉在阅读《Computer Architecture: A Quantitive Approach》前应该读一读这本书，便索性画了 3 天连读带写，将书中的内容写成一份博客分享出来。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;中文译版质量太低，我怀疑是老师手底下的英语没过六级的研究生用 Word 翻译的QAQ。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;1-如何度量计算机的性能&#34;&gt;1. 如何度量计算机的性能&lt;/h2&gt;
+&lt;p&gt;要想让程序运行得快，最简单的方式就是买一台更好、更快的计算机，可如何比较不同计算机的速度呢？你可能认为，只需要计算出程序运行花费了多少秒，或者多少微秒然后比大小就可以了。但我们的目的是要让计算机上运行的程序跑得更快，这种粗粒度的比较方式并不能给我们提供什么有用的信息，所以我们必须要找到一种更具有参考价值的度量方法。&lt;/p&gt;
+&lt;p&gt;一般而言，计算机通过时钟来确定各类事件在硬件中何时发生，这些离散的时间间隔被称为时钟周期数，也就是一个时钟周期的长度。我们还可以使用时钟周期的倒数——时钟频率（如 4 GHZ）。&lt;/p&gt;
+&lt;p&gt;我们通常用如下方法来统计程序的 （CPU）执行时间：&lt;/p&gt;
+&lt;p&gt;$$程序的\ CPU\ 执行时间 = 程序的\ CPU\ 时钟周期数  \times 时钟周期长度$$&lt;/p&gt;
+&lt;p&gt;进一步地，拥有了程序的 CPU 时钟周期数，我们就能以此来计算指令的性能：&lt;/p&gt;
+&lt;p&gt;$$CPU\ 时钟周期数 = 程序的指令数 \times 指令平均周期数$$&lt;/p&gt;
+&lt;p&gt;指令平均周期数（clock cycle per instruction）表示执行每条指令所需的时钟周期平均数，缩写为 &lt;strong&gt;CPI&lt;/strong&gt;，这也是我们度量计算机性能的主要指标，我们正是用它来比较不同处理器的性能。&lt;/p&gt;
+&lt;h2 id=&#34;2-程序可以比想象快流水线&#34;&gt;2. 程序可以比想象快：流水线&lt;/h2&gt;
+&lt;img src=&#34;https://cdn.jsdelivr.net/gh/zzxdyf1314/mycloudimg@master/image-20240628223216681.png&#34; alt=&#34;计算机的组成部件&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;p&gt;我们可以把计算机认为是一个工厂，我们将原材料送进工厂，工厂给我们提供我们想要的产品，而计算机这个工厂的工人就是 CPU。如何让工厂能够更高效地生产呢，让我们回忆一下在初中历史课本上学到了什么。没错，我猜你和我一样想到了福特，就是福特汽车的创始人——亨利·福特，就是他在汽车制造的工厂中引入了流水线，从而获得了商业上的巨大成功。那我们能不能在计算机这个工厂中引入流水线，让 CPU 像福特公司的工人一样工作呢？&lt;/p&gt;
+&lt;p&gt;当然可以。&lt;/p&gt;
+&lt;p&gt;流水线的核心理念是把任务划分成多个步骤，某一个生产单位只负责一个步骤的工作，从而提高生产效率。我们同样可以将处理器也分为多个步骤，例如，常见的 RISC-V 指令的执行过程通常包括以下几步：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;从存储器中取出指令。&lt;/li&gt;
+&lt;li&gt;读取寄存器并译码。&lt;/li&gt;
+&lt;li&gt;执行操作或计算地址。&lt;/li&gt;
+&lt;li&gt;访问数据存储器中的操作数（如有必要）。&lt;/li&gt;
+&lt;li&gt;将结果写入寄存器（如有必要）。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;当我们将 CPU 执行指令的过程分成上面五步后，显然我们会有这样一个流水线：&lt;/p&gt;
+&lt;img src=&#34;https://cdn.jsdelivr.net/gh/zzxdyf1314/mycloudimg@master/image-20240628224814773.png&#34; alt=&#34;image-20240628224814773&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;p&gt;流水线带来的性能提升可以归结为一个公式：&lt;/p&gt;
+&lt;p&gt;$$指令执行时间_{流水线} = \frac{指令执行时间_{非流水线}}{流水线级数}$$&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;理想条件下，流水线带来的加速比约等于流水线级数。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;为了更好地利用流水线，我们可以在设计指令集时加入一些额外的设计，比如 RISC-V：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;所有指令长度相同。&lt;/li&gt;
+&lt;li&gt;只有几种指令格式，源寄存器和目标寄存器字段的位置相同。&lt;/li&gt;
+&lt;li&gt;存储器操作数只出现在 load 和 store 指令中。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;虽然流水线能带来很棒的性能提升，但它并非是没有代价的（又有什么是不付出代价就能得到的呢），这种代价就被称为——冒险（hazard）。&lt;/p&gt;
+&lt;h3 id=&#34;21-流水线冒险&#34;&gt;2.1 流水线冒险&lt;/h3&gt;
+&lt;p&gt;冒险是指下一条指令在下一个时钟周期中无法执行的情况。冒险共分为三种：结构冒险、数据冒险和控制冒险。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;结构冒险：硬件不支持多条指令在同一周期执行。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;数据冒险（流水线数据冒险）：无法提供指令执行所需数据而导致指令不能在预期的时钟周期内执行。&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code class=&#34;language-assembly&#34; data-lang=&#34;assembly&#34;&gt;add x19, x0, x1
+sub x2, x19, x3
+&lt;/code&gt;&lt;/pre&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;解决方法（前递或旁路）：向内部资源添加额外的硬件以找到缺少的运算项，使得不需要等待指令完成就尝试解决数据冒险。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;载入-使用型数据冒险：当载入指令要取的数据还没取回时，其他指令就需要该数据。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;解决方法：流水线停顿（pipeline stall），俗称 bubble。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-asm&#34; data-lang=&#34;asm&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;lw&lt;/span&gt;  &lt;span style=&#34;color:#800&#34;&gt;x1&lt;/span&gt;, &lt;span style=&#34;color:#666&#34;&gt;0&lt;/span&gt;(&lt;span style=&#34;color:#800&#34;&gt;x31&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;lw&lt;/span&gt;  &lt;span style=&#34;color:#800&#34;&gt;x2&lt;/span&gt;, &lt;span style=&#34;color:#666&#34;&gt;8&lt;/span&gt;(&lt;span style=&#34;color:#800&#34;&gt;x31&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;add&lt;/span&gt; &lt;span style=&#34;color:#800&#34;&gt;x3&lt;/span&gt;, &lt;span style=&#34;color:#800&#34;&gt;x1&lt;/span&gt;, &lt;span style=&#34;color:#800&#34;&gt;x2&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;sw&lt;/span&gt;  &lt;span style=&#34;color:#800&#34;&gt;x3&lt;/span&gt;, &lt;span style=&#34;color:#666&#34;&gt;24&lt;/span&gt;(&lt;span style=&#34;color:#800&#34;&gt;x31&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;lw&lt;/span&gt;  &lt;span style=&#34;color:#800&#34;&gt;x4&lt;/span&gt;, &lt;span style=&#34;color:#666&#34;&gt;16&lt;/span&gt;(&lt;span style=&#34;color:#800&#34;&gt;x31&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;add&lt;/span&gt; &lt;span style=&#34;color:#800&#34;&gt;x5&lt;/span&gt;, &lt;span style=&#34;color:#800&#34;&gt;x1&lt;/span&gt;, &lt;span style=&#34;color:#800&#34;&gt;x4&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;sw&lt;/span&gt;  &lt;span style=&#34;color:#800&#34;&gt;x5&lt;/span&gt;, &lt;span style=&#34;color:#666&#34;&gt;32&lt;/span&gt;(&lt;span style=&#34;color:#800&#34;&gt;x31&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;将 &lt;code&gt;lw x4, 16(x31)&lt;/code&gt; 移到第三行可以消除两个 &lt;code&gt;add&lt;/code&gt; 指令对其前一条 &lt;code&gt;lw&lt;/code&gt; 指令的依赖导致的冒险。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;控制冒险（分支冒险）：取到的指令不是需要的，或指令地址的流向不是流水线所预期的，导致正确的指令无法在正确的时钟周期内执行。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;解决方法：
+&lt;ul&gt;
+&lt;li&gt;停顿：等待。&lt;/li&gt;
+&lt;li&gt;预测：预测分支的结果并沿预测方向执行，而不是等分支结果确定后才开始执行。成熟的分支预测是预测一些条件分支指令发生跳转，另一些不发生。当预测错误时，流水线控制必须确保预测错误的条件分支指令之后的指令执行不会生效，并且从正确的分支地址处重新启动流水线。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;动态硬件预测器：根据每个条件分支的行为进行预测，结果在生命周期内可能改变。
+&lt;ul&gt;
+&lt;li&gt;常见实现方法：保存每个条件分支是否发生分支的历史记录根据最近的行为来预测未来。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;流水线级数之所以能够让程序跑得更快，是因为它挖掘了顺序指令流中的&lt;strong&gt;指令级并行性&lt;/strong&gt;，相对于多处理器编程，流水线的优点在于它对程序员是不可见的，换句话说，程序员无须操心是否能利用好流水线，这是编译器开发者需要费心的（没错，就是我QAQ……）。那么指令级并行性是什么呢？&lt;/p&gt;
+&lt;h2 id=&#34;3-流水线背后指令级并行&#34;&gt;3. 流水线背后——指令级并行&lt;/h2&gt;
+&lt;p&gt;指令级并行性（Instruction Level Parallelism，简称ILP）是指在计算机体系结构中，处理器能够同时执行多条没有数据依赖关系的指令的能力。&lt;/p&gt;
+&lt;p&gt;有两种常见的提高指令级并行度的方法：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;增加流水线级数，使更多的指令重叠执行。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;多发射（multiple issue）：增加流水线内部的功能部件数量，使每周期发出多条指令。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;目前高端处理器的发射宽度为每周期 3 - 6 条指令，普通处理器的发射宽度一般为 2。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;推测：编译器或处理器“猜测”指令的行为，以尽早消除掉该指令与其他指令之间的依赖关系，可以由编译器实现（code schedule）或是由处理器硬件在动态执行时完成相同的操作，当推测错误时，需要将处理器恢复到推测前的状态。&lt;/p&gt;
+&lt;p&gt;例如：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;预测分支结果，提早执行分支后的指令；&lt;/li&gt;
+&lt;li&gt;对于先 &lt;code&gt;store&lt;/code&gt; 再 &lt;code&gt;load&lt;/code&gt; 的指令，可以预测两条指令访问的地址不同，同时提早执行 &lt;code&gt;load&lt;/code&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;推测的问题也很明显：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;实现推测错误时的恢复机制比较困难；&lt;/li&gt;
+&lt;li&gt;对某条指令的推测可能引入不必要的例外。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;增加流水线级数是一种很明显的方法，由于有更多的操作可以重叠执行，指令间的并行性自然更高。&lt;/p&gt;
+&lt;p&gt;我们主要来看第二种方法，多发射。根据指令发射与否的判断所在的阶段可以将多发射分为两种：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;静态多发射：编译时判断&lt;/li&gt;
+&lt;li&gt;动态多发射：动态执行过程中由硬件完成&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;31-静态多发射&#34;&gt;3.1 静态多发射&lt;/h3&gt;
+&lt;p&gt;静态多发射处理器可以将同一周期发射出的指令集合（issue packet）看成一条需要进行多种操作的“大指令”。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;静态多发射处理器通常会对同一周期发射的指令类型进行限制。将发射指令包看成一条预先定义好、需要进行多种操作的指令，这符合超长指令字（Very Long Instruction Word，VLIW）的设计思路。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;静态多发射由编译器来支持指令打包和处理冒险，编译器的任务主要有两个：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;静态分支预测&lt;/li&gt;
+&lt;li&gt;代码调度&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;静态单发射处理器（尤其是超长指令字处理器）中，通常对同时发射的指令组合进行限制：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;指令需要成对&lt;/li&gt;
+&lt;li&gt;指令地址需要 64 位对齐&lt;/li&gt;
+&lt;li&gt;ALU 指令和分支指令放在前面&lt;/li&gt;
+&lt;li&gt;如果指令对中的一条指令无法发射，需将其替换为 &lt;code&gt;nop&lt;/code&gt; 指令。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;静态单发射处理器解决冒险主要有两种方式：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;编译器全部解决&lt;/li&gt;
+&lt;li&gt;使用硬件来检测两个指令包间的数据冒险并产生相应的流水线停顿；编译器只负责解决单个指令包中的类型问题。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;如果想同时发射 ALU 和数据传输指令，需要添加硬件以读写寄存器堆。因为 ALU 指令需要读取两个寄存器，store 指令可能需要读取两个以上的源寄存器；ALU 指令和 load 指令都需要更新一个目标寄存器，而 ALU 部件只负责计算 ALU 指令的执行，所以还需要额外增加一个加法器来进行地址的计算从而避免大量的结构冒险。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;利用多发射以提高程序运行的例子：循环展开。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;反相关：由于名称服用而导致的顺序排列，并不是真正的数据相关（真相关）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;32-动态多发射处理器&#34;&gt;3.2 动态多发射处理器&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;动态多发射处理器也称为超标量处理器或朴素的超标处理器，能够在硬件层面判断当前周期可以发射的指令数。&lt;/li&gt;
+&lt;li&gt;超标量是一种高级流水线级数，指处理器能够在动态执行时选择指令，并在一个周期内执行一条以上的指令。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;与超长指令字处理器的区别：不论是否需要编译器参与，超标量处理器都需要在硬件层面保证程序的正确性。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;许多超标量处理器扩展了动态发射逻辑，演变为动态流水线调度技术：一种为避免停顿而对指令执行顺序进行重排的硬件技术。&lt;/p&gt;
+&lt;p&gt;在基于动态流水线调度的处理器中，流水线被分为三个部分：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;取指和发射单元：取指令、译码、将指令发送到各自的功能单元。&lt;/li&gt;
+&lt;li&gt;多功能部件（高端处理器中数量多达十几个）：执行指令，将结果保存到提交单元。每一个功能单元都有若干保留站，用来存放指令的操作和所需的操作数。当指令所需的操作数和功能单元都就绪时，就可以执行指令，执行结果会被传送给保留站中正在等待使用该结果的指令，同时也传送到提交单元中进行保存。&lt;/li&gt;
+&lt;li&gt;提交单元：保存已完成的指令的执行结果，在指令真正提交时用它们更新寄存器或写入内存。
+&lt;ul&gt;
+&lt;li&gt;提交单元的缓冲区被称为 &lt;strong&gt;reorder buffer&lt;/strong&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;img src=&#34;https://cdn.jsdelivr.net/gh/zzxdyf1314/mycloudimg@master/image-20240629162618560.png&#34; alt=&#34;image-20240629162618560&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;blockquote&gt;
+&lt;p&gt;动态多发射处理器通过在保留站中保留操作数以及在重排序缓冲中保存运算结果，提供了一种类似寄存器重命名的技术：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;发射指令时，指令会被拷贝到相应功能单元的保留站中，如果指令所需的操作数已准备好，也会从寄存器堆或者重排序缓冲中拷贝到保留站。对于处在发射阶段的指令，由于可用操作数都保存在保留站中，其在寄存器堆中的副本就没必要保存了，如果有操作需要堆该寄存器执行写操作，那么该寄存器的值就会被更新。&lt;/li&gt;
+&lt;li&gt;如果操作数不在寄存器堆或者重排序缓冲中，那它一定在等待某个计算单元的计算结果，此时该计算单元的名字会被记录。当最终结果计算完毕后，将不会保存到寄存器堆，而是直接从功能单元拷贝到对应保留站中。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;通过这种类似寄存器命名的技术，处理器可以在不违背程序原有数据流顺序的前提下以某种顺序执行指令，即&lt;strong&gt;乱序执行&lt;/strong&gt;。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;虽然在执行阶段，指令可以乱序执行，但为了保证程序行为和简单的按序单发射流水线一致，乱序执行流水线的取指和译码都需要按序进行，以便正确处理指令间的相关。提交阶段也需要按照取指的顺序依次将指令执行的结果写入寄存器和存储中，这种保守的处理方法被称为&lt;strong&gt;按序提交&lt;/strong&gt;。这样的好处是发生例外时处理器很容易就能找到例外前的最后一条指令，保证只更新这条指令之前的指令所写的寄存器。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;更高级的动态调度技术还包括基于硬件的推测式执行，尤其是基于分支预测的推测式执行。通过预测分支指令的转移方向来沿着预测路径不间断地取指和执行指令。这种方法的好处是在提交时，基于按序提交的提交单元可以保证在提交预测路径上的指令结果前就得知是否预测正确。这种方法还支持推测 &lt;code&gt;load&lt;/code&gt; 指令访问的地址。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;乱序执行会产生一些新的流水线冒险：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Write-After-Read（WAR） 冒险&lt;/li&gt;
+&lt;li&gt;Write-After-Write（WAW）冒险&lt;/li&gt;
+&lt;li&gt;Read-After-Write（RAW）冒险&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;相比于只用编译器通过指令调度来解决数据相关的问题，超标量处理器使用基于硬件实现的动态调度技术有以下几点优势：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;不是所有的流水线停顿都是可预测的，特别是由于缓存失效带来的停顿就无法被预测到。&lt;/li&gt;
+&lt;li&gt;只使用推测式执行技术去挖掘程序的指令级并行性会影响推测式执行的结果，例如频繁出现的例外。&lt;/li&gt;
+&lt;li&gt;不同的流水线实现具有不同的延迟和发射宽度，动态调度技术可以隐藏这部分细节从而降低编译器的开发难度。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;33-多发射存在的问题&#34;&gt;3.3 多发射存在的问题&lt;/h3&gt;
+&lt;p&gt;虽然现代处理器可以通过多发射提高性能，但是保持高发射率是非常困难的。尽管存在四发射或六发射的处理器，但应用很难保持两条以上的发射率，原因主要有两点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;指令之间的依赖关系造成了流水线内部的性能瓶颈。很多时候这种依赖关系并不是真相关而是由于编译器和硬件的能力有限，如 C 语言中使用的指针，会产生存储器别名导致潜在的数据相关。也因此衍生出了静态分析中的别名分析（Alias Analysis）技术。&lt;/li&gt;
+&lt;li&gt;存储层次中的缓存失效会使得流水线不能满负荷运转。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;在挖掘了指令级并行性后，程序即使运行在一个处理器上也可以以一个可观的速度运行。那如何让程序更快呢？我们需要更多的处理器！&lt;/p&gt;
+&lt;h2 id=&#34;4-程序还能更快并行&#34;&gt;4 程序还能更快：并行&lt;/h2&gt;
+&lt;h3 id=&#34;41-并发与并行的区别&#34;&gt;4.1 并发与并行的区别&lt;/h3&gt;
+&lt;p&gt;并发（current）和并行（parallel）一直是一个容易混淆的概念，其原因是两者的表现形式都是多个任务同时被执行。并发的反面是顺序，而并行的反面是串行。我们通常会使用操作系统来作为并发程序的例子，操作系统是一组进程互相写作来处理多个任务，因为操作系统是并发程序，所以可以在进程之间不断切换从而执行不同的任务，如果一个操作系统是顺序程序，那么就必须执行完一个任务再执行另一个任务；并发并不需要有多个处理器，它可以通过调度来制造拥有多个处理器的假象。而并行则不然，并行是指有多个处理器来完成任务，可以是任务级并行也可以是并行处理程序。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;任务级并行：多个处理器完成多个独立的任务，也称为进程级并行。&lt;/p&gt;
+&lt;p&gt;并行处理程序：多个处理器完成一个任务。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;可以用一张表格来区分并发、顺序、并行和串行：&lt;/p&gt;
+&lt;p&gt;&lt;img alt=&#34;并行与并发&#34; src=&#34;https://cdn.jsdelivr.net/gh/zzxdyf1314/mycloudimg@master/image-20240629182117366.png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;42-创建并行处理程序的难点&#34;&gt;4.2 创建并行处理程序的难点&lt;/h3&gt;
+&lt;p&gt;并行性的挑战在于，只有很少的应用程序能在被重写后在多处理器上更快地完成任务，因为很难利用多处理器来加速单个任务的运行，尤其是当处理器的数量增多时。造成这个问题主要有两个原因：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;多处理器上运行的并行处理程序必须获得更好的性能或更高的能效，而单处理器技术（如超标量和乱序执行）都充分利用了指令级并行，减少了多处理器重写程序的需求。&lt;/li&gt;
+&lt;li&gt;处理器的增多，意味着需要将任务划分为更多可并行的部分、保证工作之间的负载均衡，解决更复杂的调度问题，尽可能减小同步时间并减小各部分间通信的开销。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;对于第二个原因，我们还可以进一步考虑其影响因素：&lt;/p&gt;
+&lt;p&gt;首先来复习一下 Amdahl 定律：&lt;/p&gt;
+&lt;p&gt;$$优化后的时间 = \frac{受优化影响的执行时间}{优化量} + 不受优化影响的执行时间$$&lt;/p&gt;
+&lt;p&gt;我们可以基于 Amdahl 定律给出加速比上的 Amdahl 定律：&lt;/p&gt;
+&lt;p&gt;$$加速比 = \frac{改进前的执行时间}{改进前的执行时间 - 受优化影响的执行时间 + \frac{受优化影响的执行时间}{优化量}}$$&lt;/p&gt;
+&lt;p&gt;为了进一步阐释这个公式，我们需要进行一些简单的计算：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Q：如果想在 100 个处理器上实现 90 倍的加速，那么原始计算中可以顺序执行的比例是多少？&lt;/p&gt;
+&lt;p&gt;A：假设改进前的执行时间在某个单位时间内为 1，并且受优化影响的执行时间可以被视作与原始执行时间的比值，则有&lt;/p&gt;
+&lt;p&gt;$$加速比 = \frac{1}{(1 - 受优化影响的执行时间比例) + \frac{受优化影响的执行时间比例}{优化量}}$$&lt;/p&gt;
+&lt;p&gt;将优化量带入有：&lt;/p&gt;
+&lt;p&gt;$$90 = \frac{1}{(1 - 受优化影响的执行时间比例) + \frac{受优化影响的执行时间比例}{100}}$$&lt;/p&gt;
+&lt;p&gt;简化公式有：&lt;/p&gt;
+&lt;p&gt;$$受优化影响的执行时间比例 = 89 / 89.1 = 0.999$$&lt;/p&gt;
+&lt;p&gt;即为了在 100 个处理器上实现 90 倍的加速，顺序执行的程序部分最多占 0.1%。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;也就是说，如果一个程序想要充分利用很多核心，即使是该程序的很小一部分也需要进行改写，不幸的是有大量的应用程序都具有固有的并行性，也就是说我们想要改写程序有很大的工作量。为了了解这些固有的并行性从哪里来，我们不妨再进行一些简单的计算：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Q：对于如下两个加法：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;对 10 个标量变量的求和；&lt;/li&gt;
+&lt;li&gt;一对 $10 \times 10$ 的二维数组求和；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;若只有矩阵求和可以并行话，则使用 10 个和 40 个处理器能达到的加速比是多少？如果矩阵维数变为 $20 \times 20$ 呢？&lt;/p&gt;
+&lt;p&gt;A：假设性能是加法程序所需时间 t 的函数，则加法程序在单个处理器上的运行时间是 110t，那么由 Amdahl 定律这个加法程序在 10 个处理器上的执行时间为：&lt;/p&gt;
+&lt;p&gt;$$优化后的时间 = \frac{受优化影响的执行时间}{优化量} + 不受优化影响的执行时间 = \frac{100t}{10} + 10t = 20t$$&lt;/p&gt;
+&lt;p&gt;则加速比为 5.5。&lt;/p&gt;
+&lt;p&gt;在 40 个处理器上的执行时间为：&lt;/p&gt;
+&lt;p&gt;$$优化后的时间 = \frac{受优化影响的执行时间}{优化量} + 不受优化影响的执行时间 = \frac{100t}{40} + 10t = 12.5t$$&lt;/p&gt;
+&lt;p&gt;加速比为 8.8。&lt;/p&gt;
+&lt;p&gt;在这个规模下，在 10 个处理器上获得了潜在加速比的大约 55%，在 40 个处理器上获得了潜在加速比的 22%。&lt;/p&gt;
+&lt;p&gt;在矩阵规模增加后，响应的数据为 82% 和 51%。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;上面的计算告诉我们，保持问题规模不变的情况下在多处理器上获得良好的加速比相比于将问题规模放大的情况是更难的，因此为了区分这两种情况，我们引入了如下的两个定义：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;强比例缩放（strong scaling）：&lt;/li&gt;
+&lt;li&gt;弱比例缩放（weak scaling）：&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;容易想到，扩大问题规模会使处理器使用更多的内存，由此带来的缓存失效可能会干扰弱比例缩放的优势。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;通常来说，我们要根据应用程序的不同来选择不同的缩放方式。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;最后，我们来看负载均衡对于加速比的影响：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Q：在上面的例子中，如果负载最重的处理器完成两倍负载（5%）和五倍负载（12.5%）时的加速比是多少，其他处理器的利用率如何？&lt;/p&gt;
+&lt;p&gt;A：一个处理器需要完成 5% 的并行负载，则它要执行 $5% \times 400 = 20$ 次加法，另外的 39 个处理器将平分剩余的 380 次，由于计算是同时进行的，我们只需要计算两者时间的最大值：&lt;/p&gt;
+&lt;p&gt;$$优化后的执行时间 = max(\frac{350t}{39},\frac{20t}{1}) + 10t = 30t$$&lt;/p&gt;
+&lt;p&gt;加速比变为 14，其余 39 个处理器的使用时间不到负载最重的处理器的一半。&lt;/p&gt;
+&lt;p&gt;同理，对于 12.5% 的负载，对应的加速比为 7，其余处理器的时间不到 20%。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;上面的计算证明了在编写并行程序时保证负载均衡的重要性。&lt;/p&gt;
+&lt;h3 id=&#34;43-并行硬件分类和向量机&#34;&gt;4.3 并行硬件分类和向量机&lt;/h3&gt;
+&lt;h4 id=&#34;431-向量与标量&#34;&gt;4.3.1 向量与标量&lt;/h4&gt;
+&lt;p&gt;回忆一下我们在数学中学习过的标量和向量，&lt;strong&gt;标量（Scalar）&lt;strong&gt;只有大小，而向量既有大小又有方向。在计算机体系结构中，标量处理指的是对单个数据项进行操作。标量处理器是顺序操作的，即一次只处理一个数据元素，每次操作针对一个值；而向量处理则是同时对多个数据元素进行操作。在向量处理器中，一条指令可以应用于一组数据，这组数据就被称为&lt;/strong&gt;向量（Vector）&lt;/strong&gt;。&lt;/p&gt;
+&lt;h4 id=&#34;432-并行硬件分类&#34;&gt;4.3.2 并行硬件分类&lt;/h4&gt;
+&lt;p&gt;在引入向量这个概念后，我们就可以分类并行硬件了，下面介绍的这种并行硬件分类方法自上世纪 60 年代提出后到今天仍在使用，该分类基于指令流数量和数据流数量。&lt;/p&gt;
+&lt;p&gt;&lt;img alt=&#34;传统并行分类&#34; src=&#34;https://cdn.jsdelivr.net/gh/zzxdyf1314/mycloudimg@master/image-20240629224026828.png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;传统的单处理器具有单个指令流和单个数据流（即 SISD），传统的多处理器具有多个指令流和多个数据流（即 MIMD）。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;在 MIMD 计算机上编程时，通常会编写一个运行在 MIMD 计算机中所有处理器的程序，不同处理器通过条件语句来执行对应的代码，这种风格称为&lt;strong&gt;单程序多数据流&lt;/strong&gt;（Single Program Multiple Data，&lt;strong&gt;SPMD&lt;/strong&gt;）。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;通常，我们更喜欢 SIMD，即单指令流多数据流。SIMD 计算机对数据向量进行操作，如单个 SIMD 指令将 64 个数据流发送到 64 个 ALU 上以在单周期内完成 64 次加法来将 64 个数字相加。&lt;/p&gt;
+&lt;p&gt;SIMD 的优点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;SIMD 计算机中所有的并行执行单元都是同步的，响应自同一程序计数器中发出的同一指令。尽管每个单元执行的指令是相同的，但是每个执行单元都有自己的地址寄存器，因此每个单元可以有自己的数据地址。&lt;/li&gt;
+&lt;li&gt;减少了指令带宽和空间——SIMD 只需要各个处理器同时执行的代码的一个副本，消息传递类型的 MIMD 计算机可能需要在每个处理器中保存一个副本，而共享内存类型的 MIMD 计算机需要多个指令缓存。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;SIMD 在处理 for 循环中的数组时效果最好，在处理 switch 时效果最差。因此，为了在 SIMD 计算机上并行运行，程序中必须存在大量相同数据结构的数据，即&lt;strong&gt;数据级并行（data-level parallelism）&lt;/strong&gt;。&lt;/p&gt;
+&lt;h4 id=&#34;433-向量体系结构&#34;&gt;4.3.3 向量体系结构&lt;/h4&gt;
+&lt;p&gt;向量体系结构的基本原理是从内存中手机数据元，将它们按顺序放入一大组寄存器（向量寄存器）中，使用流水化的执行单元在寄存器中对它们依次操作，将结果写回内存。&lt;/p&gt;
+&lt;p&gt;下面我们来看一个向量体系结构并行的例子：&lt;/p&gt;
+&lt;p&gt;DAXPY 是一个在数值计算和线性代数中常用的 BLAS 函数，它的全称是Double precision A times X Plus Y。DAXPY的主要功能是执行向量的线性组合，即计算一个向量与另一个向量的标量乘积再加到第三个向量上。数学上，对于两个实数向量x和y以及一个标量a，DAXPY执行以下操作：&lt;/p&gt;
+&lt;p&gt;$$Y = a \times X + Y$$&lt;/p&gt;
+&lt;p&gt;其中 X 和 Y 是 64 个双精度浮点数的向量，最初存储在内存中，a 是一个标量双精度变量。假设 X 和 Y 的起始地址分别存放在 x19 和  X20 ，传统的 RISC-V 代码为：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code class=&#34;language-assembly&#34; data-lang=&#34;assembly&#34;&gt;      fld		 f0, a(x3)     // 加载标量 a
+      addi	 x5, x19, 512  // 计算数组 X 的边界，作为控制循环结束的条件
+loop: fld		 f1, 0(x19)    // 加载 x[i]
+      fmul.d f1, f1, f0    // 计算 a * x[i]
+      fld		 f2, 0(x20)    // 加载 y[i]
+      fadd.d f2, f2, f1    // 计算 a * x[i] + y[i]
+      fsd    f2, 0(x20)    // 将结果保存到 y[i] 中
+      addi	 x19, x19, 8   // 索引变量 x 自增
+      addi	 x20, x20, 8   // 索引变量 y 自增
+      bltu   x19, x5, loop // 继续循环
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;假设向量的单个元素长度是 64 位，我们可以写出如下基于 V 扩展的 RISC-V 代码：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code class=&#34;language-assembly&#34; data-lang=&#34;assembly&#34;&gt;fld      f0, a(x3)   # 加载标量 a
+vsetvli  x0, x0, e64 # 设置 64 位宽的元素
+vle.v 	 v0, 0(x19)  # 加载向量 x
+vfmul.vf v0, v0, f0  # 向量-标量乘法 a * x[i]
+vle.v 	 v1, 0(x20)  # 加载向量 y
+vfadd.vv v1, v1, v0  # 向量加法，计算a * x[i] + y[i]
+vse.v    v1, 0(x20)  # 将结果存储到 y 中
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;相比之下，向量处理器大大降低了指令带宽，相比于传统 RISC-V 体系结构的 500 条指令，向量 RISC-V 只需要 6 条指令就完成了任务。此外，向量处理器还降低了出现流水线冒险的频率，传统的 RISC-V 代码流水线停顿频率是向量版本的 64 倍，编译器可以使用循环展开来消除这种差异，但仍无法减少指令带宽的巨大差异。&lt;/p&gt;
+&lt;h4 id=&#34;433-硬件多线程&#34;&gt;4.3.3 硬件多线程&lt;/h4&gt;
+&lt;p&gt;硬件多线程与 MIMD 相关，MIMD 依赖于多个进程或线程来使多个处理器保持忙碌状态，而硬件多线程允许多个线程以重叠的方式共享单个处理器的功能单元以有效利用硬件资源。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;处理器必须复制每个线程的独立状态，如寄存器堆和程序计数器的独立副本。&lt;/li&gt;
+&lt;li&gt;硬件需要具有在线程之间快速切换的能力。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;硬件多线程的实现方法：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;细粒度多线程：在每条指令执行后切换线程（不包括在停顿的线程），从而达成多线程的交叉执行。
+&lt;ul&gt;
+&lt;li&gt;优点：可以隐藏由短期和长期停顿引起的吞吐量损失。&lt;/li&gt;
+&lt;li&gt;缺点：减慢单个线程的执行速度。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;粗粒度多线程：仅在高开销的停顿上切换线程，如末级 cache 失效时。
+&lt;ul&gt;
+&lt;li&gt;优点：几乎不会减慢单个线程的执行速度。&lt;/li&gt;
+&lt;li&gt;缺点：降低吞吐量的能力有限，特别是对于短停顿。因为粗粒度多线程处理器从单个线程发出指令，所以当停顿时必须清空或冻结流水线，新线程必须在造成停顿的指令完成前填充流水线，从而造成了流水线启动开销，当停顿较短时这种开销相对较大。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;由于多发射处理器中具有大多数单线程难以充分利用的并行功能单元，所以衍生出了一种硬件多线程的变体，称为同时多线程（Simultaneous Multithreading, SMT），它使用多发射、动态调度流水线的处理器资源来挖掘线程级并行和指令级并行。通过寄存器重命名和动态调度技术，处理器可以不需要考虑依赖关系，发射多条来自相互独立线程的多条指令，通过动态调度来解决相关性的问题。&lt;/p&gt;
+&lt;h4 id=&#34;435-多核和其他共享内存多处理器&#34;&gt;4.3.5 多核和其他共享内存多处理器&lt;/h4&gt;
+&lt;p&gt;硬件多线程用很小的代价提升了处理器效率，但我们仍需要想办法有效利用单个芯片上不断增长的处理器核数量来发挥出摩尔定律呈现出的性能潜力。&lt;/p&gt;
+&lt;p&gt;上文提到，重写就程序使其在并行硬件上高效运行是苦难的，所以我们可以尝试从计算机设计上来降低对应的难度。目前有两种主流的方法：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;为所有处理器提供一个共享的统一物理地址空间，使得程序无需考虑数据的存放位置，只需要考虑如何并行执行。&lt;/li&gt;
+&lt;li&gt;为每个处理器采用独立的地址空间，但是在处理器间显式共享地址空间（硬件通常提供 cache 一致性以保证共享内存的一致性）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;基于第一种方法，共享内存多处理器（Shared Memory Processor，SMP）为所有处理器提供统一物理地址空间，处理器通过存储器中的共享变量进行通信，所有处理器都能通过 &lt;code&gt;load&lt;/code&gt; 和 &lt;code&gt;store&lt;/code&gt; 指令访问存储器的任意位置。&lt;/p&gt;
+&lt;img src=&#34;https://cdn.jsdelivr.net/gh/zzxdyf1314/mycloudimg@master/image-20240630004009431.png&#34; alt=&#34;共享内存多处理器&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;blockquote&gt;
+&lt;p&gt;处理器仍可在自己的虚拟地址空间中独立运行程序。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;单地址空间处理器有两种类型：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;统一内存访问（UMA）多处理器：访问内存的延迟不依赖于提出请求的处理器。&lt;/li&gt;
+&lt;li&gt;非统一内存访问（NUMA）多处理器：通过划分主存储器并分配给不同的处理器或同一芯片上的不同内存控制器，一些存储器的访问会比其他存储器快，这取决于处理器和其访问的存储器。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;在 NUMA 多处理器上编写并行程序的难度更高，但 NUMA 机器更容易扩大到更大规模，同时处理器访问附近的内存时比平均延迟更低。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;处理器并行执行时通常需要共享数据，因此在操作共享数据时需要及时同步，也即需要一套独立的同步机制，通常而言是为共享变量提供锁。&lt;/p&gt;
+&lt;p&gt;常用的共享内存多处理器编程模型是 OpenMP，它是一套支持共享内存多处理的 API，提供可以对标准编程语言进行扩展的编译器制导、环境变量和运行时库。但 OpenMP 的能力有限，所以也存在很多比 OpenMP 更复杂的并行编程系统。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;MIMD 的另一常见硬件为 GPU，本文不作介绍。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;5-结语&#34;&gt;5. 结语&lt;/h2&gt;
+&lt;p&gt;通过不断地挖掘潜在的并行性，从指令级并行到真正的硬件级并行，CPU 让我们的程序运行得越来越快，而 GPU，特别是 GPGPU 和 DSA（Domain Specific Architect）似乎代表着未来的发展方向。如今，GPGPU 推动着人工智能行业迅猛发展，不知道未来的体系结构又会发生怎样的变化，让我们拭目以待吧。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;希望我能参与其中 QAQ。&lt;/p&gt;
+&lt;/blockquote&gt;</description>
+      
+    </item>
+    
+    <item>
+      <title>从零开始学 CPython - 0</title>
+      <link>https://forceoflife.cn/zh-cn/post/python1/</link>
+      <pubDate>Tue, 19 Dec 2023 14:28:43 +0800</pubDate>
+      <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
+      <guid>https://forceoflife.cn/zh-cn/post/python1/</guid>
+      
+      <description>&lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;Python 是时下最流行的编程语言，在 &lt;a href=&#34;https://www.tiobe.com/tiobe-index/&#34;&gt;TIOBE&lt;/a&gt; 排行榜上连续多年位居榜首，作为一名计算机相关专业的学生，掌握 Python 是非常有必要的。可我还不会 CPython，真是闻着伤心见者落泪。于是我痛定思痛，打算新开一个系列，从零开始学习 CPython，努力成为一个会调包的合格大学生（误）。你可能注意到了我说我要从零开始学习 CPython，如果你对 CPython 不够了解的话，&lt;del&gt;CPython 是 Python 的别称，意思是像 C 一样快的 Python。&lt;/del&gt;&lt;/p&gt;
+&lt;p&gt;好吧，玩笑到此就结束了，正式介绍一下，CPython 是 Python 解释器的官方实现，对于大多数人来说，平常写的 Python 代码就是由 CPython 来解释执行的。这个系列是我从零开始阅读 Python 源码，将编译原理、虚拟机等理论知识与工程上具体的实现相结合的尝试。&lt;/p&gt;
+&lt;h2 id=&#34;环境搭建&#34;&gt;环境搭建&lt;/h2&gt;
+&lt;h3 id=&#34;获取-cpython-源码&#34;&gt;获取 CPython 源码&lt;/h3&gt;
+&lt;p&gt;既然是学习 Python 的源码，那么就有必要搭建一个环境来支持我们阅读、运行、修改源代码。在笔者写这篇文章时，Python 已经完全迁移到 Github 上开发了，可以用 git 将 CPython 的源码直接克隆到本地:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;$ git clone https://github.com/python/cpython.git
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;笔者的电脑是一台 M1 芯片的 Macbook Air：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;$ uname -m -s
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Darwin arm64
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;之后可以运行下面的指令来编译 CPython:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;$ ./configure --with-pydebug &lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; make -j
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
+&lt;p&gt;简单解释一下，&lt;code&gt;./configure --with-pydebug&lt;/code&gt; 是执行 &lt;a href=&#34;https://www.gnu.org/software/autoconf/&#34;&gt;GNU Autoconf&lt;/a&gt; 来生成 Makefile。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;编译完成后可以运行一下测试：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;./python.exe -m &lt;span style=&#34;color:#a2f&#34;&gt;test&lt;/span&gt; -j3 
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;你可能会奇怪为什么是 python.exe，这明明不是 Windows 系统。这是因为 Mac 系统是大小写不敏感的，如果不加后缀名的话会与目录中的 Python 目录冲突，加上 .exe 后缀可以避免这种情况。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;$ file python.exe
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;python.exe: Mach-O 64-bit executable arm64
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;到了这里，你就成功拥有了一份完整的 CPython 源码，笔者使用的源码是 3.13.0a2+。如果你在编译中遇到了问题，你可以访问 Python 的&lt;a href=&#34;https://devguide.python.org&#34;&gt;开发者指导&lt;/a&gt;网站来获取不同操作系统的教程。&lt;/p&gt;
+&lt;h3 id=&#34;阅读代码环境搭建&#34;&gt;阅读代码环境搭建&lt;/h3&gt;
+&lt;p&gt;有了源码，接下来是如何阅读源码。对于 CPython 这个体量的项目，一般的工具肯定是不行的。所以，&lt;del&gt;我推荐大家使用 Notepad.exe。&lt;/del&gt;&lt;/p&gt;
+&lt;p&gt;我没有尝试过将 CPython 的代码导入 IDE，但我猜这会吃掉我笔记本的所有内存并占用所有的 CPU 来建立索引。我无意挑起所谓的 &lt;a href=&#34;https://en.wikipedia.org/wiki/Editor_war&#34;&gt;Editor War&lt;/a&gt;，我只是来分享一下我的方案。我使用 Vim + Clangd + Ctags + Ripgrep (rg) 来阅读代码，在 CPython 巨大的代码量下，LSP（Clangd）几乎失灵，我用 Ctags 建立了基本的索引，在无法跳转时，用 rg 搜索对应函数的位置（没有安装 rg 也可以用 grep）。不过有一点我觉得很重要，就是关闭 LSP 的 diagnostics 功能，不然你可能会看到“山河一片红”。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;如果你对我的 Vim 配置感兴趣，欢迎&lt;a href=&#34;https://github.com/forceofsystem/dotvim&#34;&gt;查看&lt;/a&gt;并送我一颗星星，顺带一提，我的配置很简洁而轻量。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;无论如何，不管你选择 Vim、Emacs、Source Insight、VSCode 或是使用其他 IDE，你的目标都是能够方便地查看代码，而不是像以前的我一样为了配置编辑器而配置编辑器～。&lt;/p&gt;
+&lt;h3 id=&#34;调试环境搭建&#34;&gt;调试环境搭建&lt;/h3&gt;
+&lt;p&gt;没错，你还需要一个调试器。当你捋不清函数的调用关系时，你需要打开调试器，查看调用栈来获取更多信息。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;我在撰写本文时大量采用这种方法。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;在 Linux 上，你可以选择 GDB，因为 GDB 没有适配 M1，所以我选择了 LLDB，在 Windows 上，你可以选择 &lt;a href=&#34;https://www.mingw-w6b4.org&#34;&gt;MinGW64&lt;/a&gt; 自带的 GDB。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;我的 LLDB 是通过 &lt;a href=&#34;https://brew.sh&#34;&gt;Homebrew&lt;/a&gt; 安装的，不是 &lt;code&gt;xcode-select --install&lt;/code&gt; 安装的版本。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;python-学习基础&#34;&gt;Python 学习基础&lt;/h2&gt;
+&lt;h3 id=&#34;目录&#34;&gt;目录&lt;/h3&gt;
+&lt;p&gt;在开始阅读源代码之前，我们先来了解一下 CPython 的目录结构。绝大多数 CPython 代码都在下面几个文件夹中：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Include：头文件&lt;/li&gt;
+&lt;li&gt;Objects：各种对象的实现&lt;/li&gt;
+&lt;li&gt;Python：解释器、字节码编译器和其他重要的基础组件&lt;/li&gt;
+&lt;li&gt;Parser：词法分析器、语法分析器以及语法分析生成器&lt;/li&gt;
+&lt;li&gt;Modules：标准库模块以及 main.c&lt;/li&gt;
+&lt;li&gt;Programs：包含了程序的入口函数 main()&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;如果你是在 Linux 或 BSD （不包括 Mac OS X），这就是与你有关的所有目录；而如果你在用 Mac 或者 Windows，还有以下目录：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Mac：专用于 Mac OS X 的代码&lt;/li&gt;
+&lt;li&gt;PC：专用于 Windows 的代码（旧）&lt;/li&gt;
+&lt;li&gt;PCBuild：专用于 Windows 使用的 MSVC 的代码（新）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;在这个系列的博客中，我们只关心公共部分的代码，而不会关注这些特定平台的代码。&lt;/p&gt;
+&lt;h3 id=&#34;命名约定&#34;&gt;命名约定&lt;/h3&gt;
+&lt;p&gt;在阅读之前，我们还需要学习一下 Python 的命名方式，根据 &lt;a href=&#34;https://peps.python.org/pep-0007/#naming-conventions&#34;&gt;PEP 7&lt;/a&gt; 中对于命名约定的说明：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;除 static 函数外，对于所有的 public 函数，使用 &lt;code&gt;Py&lt;/code&gt; 作前缀；对于 global service routines，使用 &lt;code&gt;Py_&lt;/code&gt; 前缀，如 &lt;code&gt;Py_FatalError&lt;/code&gt;；对于特定类型的例程，使用与之相关的较长的前缀，如 &lt;code&gt;PyString_&lt;/code&gt; 之于字符串相关函数。&lt;/li&gt;
+&lt;li&gt;public 函数和变量的命名混合使用大小写和下划线，如：&lt;code&gt;PyObject_GetAttr&lt;/code&gt;，&lt;code&gt;Py_BuildValue&lt;/code&gt;，&lt;code&gt;PyExc_TypeError&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;需要将 internal 的函数可见时，使用 &lt;code&gt;_Py&lt;/code&gt; 前缀，如：&lt;code&gt;_PyObject_Dump&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;对于宏，其前缀是大小写混合，之后的部分全部使用大写，如：&lt;code&gt;PyString_AS_STRING&lt;/code&gt;，&lt;code&gt;Py_PRINT_RAW&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;宏参数应该使用 ALL_CAPS 风格，以便与变量和结构成员进行区分。
+&lt;ul&gt;
+&lt;li&gt;ALL_CAPS 风格：用下划线作分割，全部字母大写。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;学习开始&#34;&gt;学习开始&lt;/h2&gt;
+&lt;h3 id=&#34;学习目标&#34;&gt;学习目标&lt;/h3&gt;
+&lt;p&gt;下面我们就可以开始正式学习 CPython 的代码了，虽然我迫不及待地想看看 Python 是如何进行语法分析（Parse），Python 的虚拟机是如何实现的、采用了什么垃圾回收算法，但是俗话说：“心急吃不了热豆腐”，我们还是从一个简单的目标开始。&lt;/p&gt;
+&lt;p&gt;现在在你的终端运行我们刚编译好的 Python，什么参数也不要加，就像这样：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;$ ./python.exe
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Python 3.13.0a2+ &lt;span style=&#34;color:#666&#34;&gt;(&lt;/span&gt;heads/main:21d52995ea&lt;span style=&#34;color:#666&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;[&lt;/span&gt;Clang 15.0.0 &lt;span style=&#34;color:#666&#34;&gt;(&lt;/span&gt;clang-1500.0.40.1&lt;span style=&#34;color:#666&#34;&gt;)]&lt;/span&gt; on darwin
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Type &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;help&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;copyright&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;credits&amp;#34;&lt;/span&gt; or &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;license&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;for&lt;/span&gt; more information.
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&amp;gt;&amp;gt;&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;现在我们就进入了 Python 的 REPL(Read-Eval-Print-Loop) 模式，作为一个“第一次”使用 Python 的新人，我非常好奇这个 Header 和交互提示符（Prompt）是怎么被打出来的。所以，我决定先探寻一下 Python 是怎么跑起来的，又是怎么打出那个经典的提示符 &lt;code&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/code&gt; 的。&lt;/p&gt;
+&lt;h3 id=&#34;找到入口&#34;&gt;找到入口&lt;/h3&gt;
+&lt;p&gt;就想所有的 C 程序那样，CPython 也有一个入口函数，CPython 的入口函数位于 Programs 的 &lt;code&gt;python.c&lt;/code&gt; 中：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#0b0;font-weight:bold&#34;&gt;int&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;main&lt;/span&gt;(&lt;span style=&#34;color:#0b0;font-weight:bold&#34;&gt;int&lt;/span&gt; argc, &lt;span style=&#34;color:#0b0;font-weight:bold&#34;&gt;char&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;**&lt;/span&gt;argv)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;Py_BytesMain&lt;/span&gt;(argc, argv);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;可以看到这个函数调用了定义在 Modules/main.c 中的 &lt;code&gt;Py_BytesMain&lt;/code&gt; 函数。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;据 Guido 所说，main.c 不在 &lt;code&gt;Python&lt;/code&gt; 目录下而在 &lt;code&gt;Modules&lt;/code&gt; 目录下是由于一些不太重要的历史原因。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;可以看到，在保存了命令行参数后，&lt;code&gt;Py_BytesMain&lt;/code&gt; 函数就调用了 &lt;code&gt;pymain_main&lt;/code&gt; 函数。在这个函数里，首先执行了对解释器的初始化。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;Py_BytesMain&lt;/code&gt; 是对 &lt;code&gt;Py_Main&lt;/code&gt; 的包装，用来防治因为 locale 和编码模式不同而导致的错误。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;初始化解释器&#34;&gt;初始化解释器&lt;/h3&gt;
+&lt;p&gt;在 &lt;code&gt;pymain_main&lt;/code&gt; 中，调用 &lt;code&gt;pymain_init&lt;/code&gt; 来初始化解释器：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    PyStatus status &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;pymain_init&lt;/span&gt;(args);
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;首先来看一下 &lt;code&gt;PyStatus&lt;/code&gt; 这个类型，根据 &lt;a href=&#34;https://peps.python.org/pep-0587/&#34;&gt;PEP587&lt;/a&gt;，其是用来存储初始化函数的状态，成功、错误或是退出，并且还会存储造成错误的函数名。简单看一下 &lt;code&gt;PyStatus&lt;/code&gt; 的字段组成：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;exitcode&lt;/code&gt; (int): Argument passed to exit().&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;err_msg&lt;/code&gt; (const char*): Error message.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;func&lt;/code&gt; (const char *): Name of the function which created an error, can be NULL.&lt;/li&gt;
+&lt;li&gt;private &lt;code&gt;_type&lt;/code&gt; field: for internal usage only.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;进入 &lt;code&gt;pymain_init&lt;/code&gt; 函数，可以看到初始化包括三个部分：运行时、preconfig、config。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;static&lt;/span&gt; PyStatus
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;pymain_init&lt;/span&gt;(&lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;const&lt;/span&gt; _PyArgv &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;args)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    PyStatus status;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    status &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_PyRuntime_Initialize&lt;/span&gt;();
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    PyPreConfig preconfig;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#00a000&#34;&gt;PyPreConfig_InitPythonConfig&lt;/span&gt;(&lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;preconfig);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    status &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_Py_PreInitializeFromPyArgv&lt;/span&gt;(&lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;preconfig, args);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    PyConfig config;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#00a000&#34;&gt;PyConfig_InitPythonConfig&lt;/span&gt;(&lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;config);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (args&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;use_bytes_argv) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        status &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;PyConfig_SetBytesArgv&lt;/span&gt;(&lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;config, args&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;argc, args&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;bytes_argv);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        status &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;PyConfig_SetArgv&lt;/span&gt;(&lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;config, args&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;argc, args&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;wchar_argv);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    status &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;Py_InitializeFromConfig&lt;/span&gt;(&lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;config);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    status &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_PyStatus_OK&lt;/span&gt;();
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
+&lt;p&gt;代码省略了部分错误处理。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这对应着 &lt;a href=&#34;https://peps.python.org/pep-0432/&#34;&gt;PEP432&lt;/a&gt; 中提到的解释器初始化的三个步骤：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Python 核心运行时预初始化（Python core runtime preinitiallization）:
+&lt;ul&gt;
+&lt;li&gt;启动内存管理；&lt;/li&gt;
+&lt;li&gt;决定系统接口使用的编码；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Python 核心运行时初始化（Python core runtime initialization）:
+&lt;ul&gt;
+&lt;li&gt;确保 C API 已经可以使用；&lt;/li&gt;
+&lt;li&gt;确保内置模块与冻结模块（&lt;code&gt;frozen&lt;/code&gt;）是可访问的；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;主解释器配置（Main interpreter configuration）:
+&lt;ul&gt;
+&lt;li&gt;确保外部模块是可访问的；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;在 3.8 之前，初始化过程都是分为 2 步。CPython 的开发者们从 2012 年末到 2020 中期，用了 8 年的时间来重构，以让 Python 的启动过程更容易维护，同时也更容易嵌入到大型应用中。大家可以去阅读 PEP 432 和 PEP 587 来获取更完整的信息。
+在现在的设计中，Python 的初始化过程分为以下四个阶段：&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;未初始化：还未开始初始化过程；&lt;/li&gt;
+&lt;li&gt;预初始化：解释器还不能使用；&lt;/li&gt;
+&lt;li&gt;运行时已初始化：主解释器部分可用，还不能创建子解释器；&lt;/li&gt;
+&lt;li&gt;初始化完成：主解释器完全可用，可以创建子解释器。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;在 Python 3.8 中，为上述步骤都添加了一些数据结构，我们可以在上面的代码中看到。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;PyPreConfig&lt;/code&gt; 结构体用来预初始化 Python 的下述功能：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;设置内存分配器；&lt;/li&gt;
+&lt;li&gt;配置 LC_CTYPE locale；&lt;/li&gt;
+&lt;li&gt;设置 UTF-8 模式；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;在上面的代码中可以看到与预初始化相关的函数：&lt;code&gt;PyPreConfig_InitPythonConfig&lt;/code&gt; 和 &lt;code&gt;Py_PreInitializeFromPyArgv&lt;/code&gt;，前者用来初始化默认配置（preconfiguration），后者则用来预初始化 Python。&lt;/p&gt;
+&lt;p&gt;预初始化结束后，开始初始化。首先初始化默认配置，将命令行参数存储到 &lt;code&gt;config-&amp;gt;argv&lt;/code&gt;，之后调用 &lt;code&gt;Py_InitializeFromConfig&lt;/code&gt; 完成之后的初始化过程。&lt;code&gt;PyConfig&lt;/code&gt; 是一个相当庞大的结构体，其定义有足足 100 行之多。&lt;/p&gt;
+&lt;h3 id=&#34;运行开始&#34;&gt;运行开始&lt;/h3&gt;
+&lt;p&gt;在执行完初始化过程后，&lt;code&gt;pymain_main&lt;/code&gt; 函数调用了 &lt;code&gt;Py_RunMain&lt;/code&gt; 函数，终于要开始正式运行了，初始化过程可真是漫长，呜呼～。进入这个函数，它的代码意外地简单，我还以为会很复杂呢。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#0b0;font-weight:bold&#34;&gt;int&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;Py_RunMain&lt;/span&gt;(&lt;span style=&#34;color:#0b0;font-weight:bold&#34;&gt;void&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#0b0;font-weight:bold&#34;&gt;int&lt;/span&gt; exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;0&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#00a000&#34;&gt;pymain_run_python&lt;/span&gt;(&lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;exitcode);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (&lt;span style=&#34;color:#00a000&#34;&gt;Py_FinalizeEx&lt;/span&gt;() &lt;span style=&#34;color:#666&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;0&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#080;font-style:italic&#34;&gt;/* Value unlikely to be confused with a non-error exit status or
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#080;font-style:italic&#34;&gt;           other special meaning */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;120&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#00a000&#34;&gt;pymain_free&lt;/span&gt;();
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (_PyRuntime.signals.unhandled_keyboard_interrupt) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;exit_sigint&lt;/span&gt;();
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;return&lt;/span&gt; exitcode;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;很容易发现，这个函数是对 &lt;code&gt;pymain_run_python&lt;/code&gt; 的一个包装，要想探究真正的运行过程，我们还需要继续抽丝剥茧地向里探查，&lt;code&gt;pymain_run_python&lt;/code&gt; 启动！&lt;/p&gt;
+&lt;p&gt;一进入这个函数，这个近 100 行的函数体就让我感到头晕。跳过一些获取解释器状态的代码，我们看到这个函数首先加载了 &lt;code&gt;readline&lt;/code&gt; 模块,这个模块可以为我们提供获取输入的能力。&lt;code&gt;pymain_import_readling&lt;/code&gt; 函数是对 &lt;code&gt;PyImport_ImportModule&lt;/code&gt; 的封装，在这个函数里一共引入了两个模块，分别是 &lt;code&gt;readline&lt;/code&gt; 和 &lt;code&gt;rlcompleter&lt;/code&gt;，后者用于提供在交互式环境下的自动补全功能。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#00a000&#34;&gt;pymain_import_readline&lt;/span&gt;(config);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    PyObject &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;mod &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;PyImport_ImportModule&lt;/span&gt;(&lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;readline&amp;#34;&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    ...
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    mod &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;PyImport_ImportModule&lt;/span&gt;(&lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;rlcompleter&amp;#34;&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;让我们越过那些冗长的错误处理（虽然它们是必要的，但是对于梳理代码运行逻辑可真没什么用），我们看到了今天的第一个目标，&lt;code&gt;pymain_header&lt;/code&gt;，没错，这个函数会输出我们在进入 python repl 时显示的那几行关于版本的信息。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#00a000&#34;&gt;fprintf&lt;/span&gt;(stderr, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;Python %s on %s&lt;/span&gt;&lt;span style=&#34;color:#b62;font-weight:bold&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#00a000&#34;&gt;Py_GetVersion&lt;/span&gt;(), &lt;span style=&#34;color:#00a000&#34;&gt;Py_GetPlatform&lt;/span&gt;());
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (config&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;site_import) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#00a000&#34;&gt;fprintf&lt;/span&gt;(stderr, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;%s&lt;/span&gt;&lt;span style=&#34;color:#b62;font-weight:bold&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;&lt;/span&gt;, COPYRIGHT);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
+&lt;p&gt;COPYRIGHT 是一个定义在 main.c 中的宏。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;之后我们就会看到通往下一个阶段的大门，一个 if-else if-else 语句，用来调用不同运行模式下的函数。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (config&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;run_command) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;pymain_run_command&lt;/span&gt;(config&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;run_command);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (config&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;run_module) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;pymain_run_module&lt;/span&gt;(config&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;run_module, &lt;span style=&#34;color:#666&#34;&gt;1&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (main_importer_path &lt;span style=&#34;color:#666&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;pymain_run_module&lt;/span&gt;(&lt;span style=&#34;color:#b44&#34;&gt;L&lt;/span&gt;&lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;__main__&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#666&#34;&gt;0&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (config&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;run_filename &lt;span style=&#34;color:#666&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;pymain_run_file&lt;/span&gt;(config);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;pymain_run_stdin&lt;/span&gt;(config);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;因为我们是在终端运行的，所以会进入到 &lt;code&gt;pymain_run_stdin&lt;/code&gt; 函数中去，跳过对能否交互和错误处理的部分，我们最终会进入到这一行：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#0b0;font-weight:bold&#34;&gt;int&lt;/span&gt; run &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;PyRun_AnyFileExFlags&lt;/span&gt;(stdin, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;&amp;lt;stdin&amp;gt;&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#666&#34;&gt;0&lt;/span&gt;, &lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;cf);
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我们不妨猜测一下，应该马上就要开始运行了。可以看出，这个函数是对标准输入和文件输入做了统一，当处于交互式模式（REPL）、用标准输入传递脚本文件（./python.exe &amp;lt; hello.py）或是正常的运行脚本文件时都可以使用这个函数。在对文件系统的编码进行转换后，这个函数继续调用 &lt;code&gt;_PyRun_AnyFileObject&lt;/code&gt;。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    PyObject &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;filename_obj;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (filename &lt;span style=&#34;color:#666&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        filename_obj &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;PyUnicode_DecodeFSDefault&lt;/span&gt;(filename);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (filename_obj &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#00a000&#34;&gt;PyErr_Print&lt;/span&gt;();
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;1&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        filename_obj &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#0b0;font-weight:bold&#34;&gt;int&lt;/span&gt; res &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_PyRun_AnyFileObject&lt;/span&gt;(fp, filename_obj, closeit, flags);
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在这个函数中，与运行直接相关的代码是下面这个条件语句：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#0b0;font-weight:bold&#34;&gt;int&lt;/span&gt; res;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (&lt;span style=&#34;color:#00a000&#34;&gt;_Py_FdIsInteractive&lt;/span&gt;(fp, filename)) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        res &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_PyRun_InteractiveLoopObject&lt;/span&gt;(fp, filename, flags);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (closeit) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#00a000&#34;&gt;fclose&lt;/span&gt;(fp);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        res &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_PyRun_SimpleFileObject&lt;/span&gt;(fp, filename, closeit, flags);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;对于可交互环境，它会调用 &lt;code&gt;_PyRun_InteracticeLoopObject&lt;/code&gt; 函数，从命名就可以看出，这里面会包括一个循环用于不断进行交互；而如果是执行一个脚本文件，则会调用下面这个函数。因为我们的目标是找到 &lt;code&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/code&gt; 是在哪里输出的，所以我们继续进入上面这个函数。一进入这个函数，我们就看到了我们想要的东西：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    PyObject &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;v &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_PySys_GetAttr&lt;/span&gt;(tstate, &lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;_Py_ID&lt;/span&gt;(ps1));
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (v &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#00a000&#34;&gt;_PySys_SetAttr&lt;/span&gt;(&lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;_Py_ID&lt;/span&gt;(ps1), v &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;PyUnicode_FromString&lt;/span&gt;(&lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;&amp;gt;&amp;gt;&amp;gt; &amp;#34;&lt;/span&gt;));
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#00a000&#34;&gt;Py_XDECREF&lt;/span&gt;(v);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    v &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_PySys_GetAttr&lt;/span&gt;(tstate, &lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;_Py_ID&lt;/span&gt;(ps2));
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (v &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#00a000&#34;&gt;_PySys_SetAttr&lt;/span&gt;(&lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;_Py_ID&lt;/span&gt;(ps2), v &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;PyUnicode_FromString&lt;/span&gt;(&lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;... &amp;#34;&lt;/span&gt;));
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#00a000&#34;&gt;Py_XDECREF&lt;/span&gt;(v);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;是的，我们看到了 &lt;code&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/code&gt;，不过别急，离它被输出到终端模拟器还有好一段距离。这段代码将系统的提示符，&lt;code&gt;sys.ps1&lt;/code&gt; 和 &lt;code&gt;sys.ps2&lt;/code&gt; 分别设置为 &lt;code&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/code&gt; 和 &lt;code&gt;...&lt;/code&gt;。由于对 sys 模块的属性操作非常频繁，所以有专门的辅助函数来完成设置，这两个函数定义在 Python 目录下的 sysmoudle.c 中。再往下看，我们果然看到了一个 do-while 循环，在 Guido 的教程里，我们可以看到最初使用的是 for 循环，不知道为什么改为了 do-while 循环，也许是使从无限循环用 break 跳出，do-while 循环结束的条件更清晰。在这个循环里，很明显我们需要关注下面这个函数：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;     ret &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;PyRun_InteractiveOneObjectEx&lt;/span&gt;(fp, filename, flags);
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;进入这个函数后，我一眼就看到了 &lt;code&gt;pyrun_one_parse_ast&lt;/code&gt; 和 &lt;code&gt;run_mod&lt;/code&gt;，根据我开发解释器的经验，前者是用来进行语法分析，建立 AST （Abstract Syntax Tree，抽象语法树）的，后者则是用来执行字节码的。据此，我对 Python 的编译器架构有了一定的猜测，Python 是用 Parser 来驱动 Lexer，而不是同一级别顺次执行。进入 &lt;code&gt;pyrun_one_parse_ast&lt;/code&gt; 函数，我们又看到了熟悉的 &lt;code&gt;sys.ps1&lt;/code&gt;、&lt;code&gt;sys.ps2&lt;/code&gt;，这个函数先设置了编码和两个提示符，之后作为参数传递给了 &lt;code&gt;_PyParser_InteractiveASTFromFile&lt;/code&gt; 函数，后者作为包装函数又调用了 &lt;code&gt;_PyPegen_run_parser_from_file_pointer&lt;/code&gt;。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;好深的调用关系qwq。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;在这个名字超长的函数里，我注意到了几行关键代码：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;struct&lt;/span&gt; tok_state &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;tok &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_PyTokenizer_FromFile&lt;/span&gt;(fp, enc, ps1, ps2);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    Parser &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;p &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_PyPegen_Parser_New&lt;/span&gt;(tok, start_rule, parser_flags, PY_MINOR_VERSION,
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                                    errcode, arena);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    result &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_PyPegen_run_parser&lt;/span&gt;(p);
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;也就是说，CPython 是由 Parser 驱动 Tokenizer，Tokenizer 驱动 Lexer 的。第一行代码是获取一个 Tokenizer，第二行是创建一个新的 Parser，第三行则是执行这个 parser。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Pegen 是 Parser generator 的缩写，与 Python Parser 的设计有关，之后的文章再写。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;我们现在只想知道 &lt;code&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/code&gt; 是怎么来的，所以直接查看 &lt;code&gt;_PyPegen_run_parser&lt;/code&gt; 的代码，而这个函数是对 &lt;code&gt;_PyPegen_parse&lt;/code&gt; 的包装。在这个函数里，我们又看到了 if-else if-else 的代码结构来区分不同的执行方式：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;start_rule &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; Py_file_input) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        result &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;file_rule&lt;/span&gt;(p);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    } &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;start_rule &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; Py_single_input) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        result &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;interactive_rule&lt;/span&gt;(p);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    } &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;start_rule &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; Py_eval_input) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        result &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;eval_rule&lt;/span&gt;(p);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    } &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;start_rule &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; Py_func_type_input) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        result &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;func_type_rule&lt;/span&gt;(p);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我们是交互模式，所以进入 &lt;code&gt;interactive_rule&lt;/code&gt; 函数，发现里面有一块没有被条件语句或循环语句包围的作用域：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    { &lt;span style=&#34;color:#080;font-style:italic&#34;&gt;// statement_newline
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#080;font-style:italic&#34;&gt;&lt;/span&gt;        &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;error_indicator) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;level&lt;span style=&#34;color:#666&#34;&gt;--&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#00a000&#34;&gt;D&lt;/span&gt;(&lt;span style=&#34;color:#00a000&#34;&gt;fprintf&lt;/span&gt;(stderr, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;%*c&amp;gt; interactive[%d-%d]: %s&lt;/span&gt;&lt;span style=&#34;color:#b62;font-weight:bold&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;&lt;/span&gt;, p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;level, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#39; &amp;#39;&lt;/span&gt;, _mark, p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;mark, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;statement_newline&amp;#34;&lt;/span&gt;));
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        asdl_stmt_seq&lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt; a;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            (a &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;statement_newline_rule&lt;/span&gt;(p))  &lt;span style=&#34;color:#080;font-style:italic&#34;&gt;// statement_newline
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#080;font-style:italic&#34;&gt;&lt;/span&gt;        )
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#00a000&#34;&gt;D&lt;/span&gt;(&lt;span style=&#34;color:#00a000&#34;&gt;fprintf&lt;/span&gt;(stderr, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;%*c+ interactive[%d-%d]: %s succeeded!&lt;/span&gt;&lt;span style=&#34;color:#b62;font-weight:bold&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;&lt;/span&gt;, p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;level, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#39; &amp;#39;&lt;/span&gt;, _mark, p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;mark, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;statement_newline&amp;#34;&lt;/span&gt;));
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            _res &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_PyAST_Interactive&lt;/span&gt; ( a , p &lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt; arena );
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (_res &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;PyErr_Occurred&lt;/span&gt;()) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;error_indicator &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;1&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;level&lt;span style=&#34;color:#666&#34;&gt;--&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;goto&lt;/span&gt; done;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;mark &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; _mark;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#00a000&#34;&gt;D&lt;/span&gt;(&lt;span style=&#34;color:#00a000&#34;&gt;fprintf&lt;/span&gt;(stderr, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;%*c%s interactive[%d-%d]: %s failed!&lt;/span&gt;&lt;span style=&#34;color:#b62;font-weight:bold&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;&lt;/span&gt;, p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;level, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#39; &amp;#39;&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                  p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;error_indicator &lt;span style=&#34;color:#666&#34;&gt;?&lt;/span&gt; &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;ERROR!&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;:&lt;/span&gt; &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;-&amp;#34;&lt;/span&gt;, _mark, p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;mark, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;statement_newline&amp;#34;&lt;/span&gt;));
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;进入-tokenizer&#34;&gt;进入 Tokenizer&lt;/h3&gt;
+&lt;p&gt;根据注释我们可以知道，这个作用域是用来处理新一行的。这里代码有些复杂，&lt;code&gt;D()&lt;/code&gt; 是一个宏，用来在调试模式下输出一些内容，分析一下可以发现，prompt 是在每一行的开头输出的，所以我们的目标应该是 &lt;code&gt;statement_newline_rule&lt;/code&gt; 函数。进入这个函数后，里面的内容印证了我前文中的猜测，Python 的 Tokenizer 是由 Parser 驱动的，理由就是这个函数：&lt;code&gt;_PyPegen_fill_token&lt;/code&gt;。从名字可以看出，这个函数是用来填充 token 来供 Parser 解析的，函数内的前三行代码也反映了这一功能：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;struct&lt;/span&gt; token new_token;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#00a000&#34;&gt;_PyToken_Init&lt;/span&gt;(&lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;new_token);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#0b0;font-weight:bold&#34;&gt;int&lt;/span&gt; type &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;_PyTokenizer_Get&lt;/span&gt;(p&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;tok, &lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;new_token);
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;新建，初始化，获取一气呵成。因为目前为止还没有看到获取输入的部分，所以我们还没有触及到输出提示符的位置。而根据编译器的性质，直接获取输入的都是 lexer，所以我们需要继续向下。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;代码真的好复杂呜呜。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;进入 &lt;code&gt;_PyTokenizer_Get&lt;/code&gt; 函数，发现其是对 &lt;code&gt;tok_get&lt;/code&gt; 的简单包装。后者对需要获取的 token 类型进行了判断，因为我们什么都没输入，所以不属于 f-string 类型，所以会调用 &lt;code&gt;tok_get_normal_mode&lt;/code&gt; 函数。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (current_tok&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;kind &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; TOK_REGULAR_MODE) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;tok_get_normal_mode&lt;/span&gt;(tok, current_tok, token);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    } &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;tok_get_fstring_mode&lt;/span&gt;(tok, current_tok, token);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
+&lt;p&gt;f-string 是 Python 的一种特性，支持格式化字符串。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-Python&#34; data-lang=&#34;Python&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;name &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;Alice&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;age &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;30&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;formatted_string &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#b44&#34;&gt;f&lt;/span&gt;&lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;My name is &lt;/span&gt;&lt;span style=&#34;color:#b68;font-weight:bold&#34;&gt;{&lt;/span&gt;name&lt;span style=&#34;color:#b68;font-weight:bold&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#b44&#34;&gt; and I am &lt;/span&gt;&lt;span style=&#34;color:#b68;font-weight:bold&#34;&gt;{&lt;/span&gt;age&lt;span style=&#34;color:#b68;font-weight:bold&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#b44&#34;&gt; years old.&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/blockquote&gt;
+&lt;p&gt;在函数中我们看到了一个无限的 for 循环：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;for&lt;/span&gt; (;;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            c &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;tok_nextc&lt;/span&gt;(tok);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (c &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#b44&#34;&gt;&amp;#39; &amp;#39;&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                col&lt;span style=&#34;color:#666&#34;&gt;++&lt;/span&gt;, altcol&lt;span style=&#34;color:#666&#34;&gt;++&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (c &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#b44&#34;&gt;&amp;#39;\t&amp;#39;&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                col &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; (col &lt;span style=&#34;color:#666&#34;&gt;/&lt;/span&gt; tok&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;tabsize &lt;span style=&#34;color:#666&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt; tok&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;tabsize;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                altcol &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; (altcol &lt;span style=&#34;color:#666&#34;&gt;/&lt;/span&gt; ALTTABSIZE &lt;span style=&#34;color:#666&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt; ALTTABSIZE;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (c &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#b44&#34;&gt;&amp;#39;\014&amp;#39;&lt;/span&gt;)  {&lt;span style=&#34;color:#080;font-style:italic&#34;&gt;/* Control-L (formfeed) */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                col &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; altcol &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;0&lt;/span&gt;; &lt;span style=&#34;color:#080;font-style:italic&#34;&gt;/* For Emacs users */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (c &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#b44&#34;&gt;&amp;#39;\\&amp;#39;&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                   &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; ((c &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;tok_continuation_line&lt;/span&gt;(tok)) &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;1&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;MAKE_TOKEN&lt;/span&gt;(ERRORTOKEN);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;break&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        }
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;很明显可以看出，这个循环是获取缩进的，因为 Python 是一个缩进敏感的语言，而 &lt;code&gt;tok_nextc&lt;/code&gt; 则很明显是我们接下来的目标。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;据 Guido 说，他把 Python 设计成这样是为了让程序员们能够好好格式化他们的代码，因为以前的编辑器自动格式化功能总是没办法使人满意。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;里面又是一个无限循环，与上同理，我们的关注目标是：&lt;code&gt;rc = tok-&amp;gt;underflow(tok);&lt;/code&gt;，rc 是我们获取的 token，而赋值右边的这个代码，如果你熟悉 C 语言的话就会认出，&lt;code&gt;tok-&amp;gt;underflow&lt;/code&gt; 是一个函数指针，它以 tok 作为参数调用了某个函数，那它究竟调用了哪个函数？&lt;/p&gt;
+&lt;p&gt;因为 tok 的一个字段是函数指针，所以我们有必要回头关注一下 tok 的初始化过程。在 &lt;code&gt;_PyTokenizer_FromFile&lt;/code&gt; 中，tok-&amp;gt;underflow 被设置为了 &lt;code&gt;&amp;amp;tok_underflow_interactive&lt;/code&gt;。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (ps1 &lt;span style=&#34;color:#666&#34;&gt;||&lt;/span&gt; ps2) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        tok&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;underflow &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;tok_underflow_interactive;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    } &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        tok&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;underflow &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&lt;/span&gt;tok_underflow_file;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
+&lt;p&gt;这并不是一个 C 语言的教程，所以我假定你对函数指针有一定的了解，并简单使用过它。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;也就是说 &lt;code&gt;tok-&amp;gt;underflow(tok)&lt;/code&gt; 会调用 tok_underflow_interactive(tok)，而在这个函数中会调用 PyOS_Readline 函数，经过初始化和获取可读锁后，调用了 PyOS_StdioReadline 函数。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#a0a000&#34;&gt;tok_underflow_interactive&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#0b0;font-weight:bold&#34;&gt;char&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;newtok &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;PyOS_Readline&lt;/span&gt;(tok&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;fp &lt;span style=&#34;color:#666&#34;&gt;?&lt;/span&gt; tok&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;&lt;span style=&#34;color:#a0a000&#34;&gt;fp&lt;/span&gt; : stdin, stdout, tok&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;prompt);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#a0a000&#34;&gt;PyOS_Readline&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (PyOS_ReadlineFunctionPointer &lt;span style=&#34;color:#666&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        PyOS_ReadlineFunctionPointer &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; PyOS_StdioReadline;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    _PyOS_ReadlineTState &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; tstate;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    Py_BEGIN_ALLOW_THREADS
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#00a000&#34;&gt;PyThread_acquire_lock&lt;/span&gt;(_PyOS_ReadlineLock, &lt;span style=&#34;color:#666&#34;&gt;1&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (&lt;span style=&#34;color:#666&#34;&gt;!&lt;/span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;isatty&lt;/span&gt;(&lt;span style=&#34;color:#00a000&#34;&gt;fileno&lt;/span&gt;(sys_stdin)) &lt;span style=&#34;color:#666&#34;&gt;||&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;!&lt;/span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;isatty&lt;/span&gt;(&lt;span style=&#34;color:#00a000&#34;&gt;fileno&lt;/span&gt;(sys_stdout)) &lt;span style=&#34;color:#666&#34;&gt;||&lt;/span&gt; &lt;span style=&#34;color:#666&#34;&gt;!&lt;/span&gt;&lt;span style=&#34;color:#00a000&#34;&gt;_Py_IsMainInterpreter&lt;/span&gt;(tstate&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;interp))
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        rv &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;PyOS_StdioReadline&lt;/span&gt;(sys_stdin, sys_stdout, prompt);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        rv &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; (&lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;PyOS_ReadlineFunctionPointer)(sys_stdin, sys_stdout, prompt);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里你可能会疑惑为什么需要一个条件判断，而且条件判断执行的内容还是一样的。据 Guido 所说，因为 PyOS_ReadlineFunctionPointer 是一个公开的 C api，所以可以编写一个 C 扩展来自定义它，这会方便那些希望 GUI 能够处理 python 输入的开发者来更好地将 python 嵌入到他们自己的程序中。更多信息可以查看 Guido 自己的教程。&lt;/p&gt;
+&lt;p&gt;不论如何，我们都进入到了 PyOS_StdioReadline 函数里，跳过关于 Windows console 的宏，我们就看到了最终的目标：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#00a000&#34;&gt;fflush&lt;/span&gt;(sys_stdout);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (prompt) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#00a000&#34;&gt;fprintf&lt;/span&gt;(stderr, &lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;%s&amp;#34;&lt;/span&gt;, prompt);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#00a000&#34;&gt;fflush&lt;/span&gt;(stderr);
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;到了这里，你可以长舒一口气了，不过 prompt 是在哪里被设置的呢？我们先追溯这个参数第一次被传入的位置，我们刚刚在寻找 &lt;code&gt;tok-&amp;gt;underflow&lt;/code&gt; 是何时被绑定的时，最终确定是在 &lt;code&gt;_PyTokenizer_FromFile&lt;/code&gt; 函数里，如果你观察仔细的话，你会发现它的上一行就是对提示符的赋值：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  tok&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;prompt &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; ps1;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  tok&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;nextprompt &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; ps2;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;呜呼，所以我们知道了 Python 是如何初始化，REPL 中的 &lt;code&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/code&gt; 是怎么打出来的，多么寻常而又不寻常的一条 &lt;code&gt;fprintf&lt;/code&gt; 语句啊。那么这次的文章就到这里，之后我们可以再来看看 Python 是怎么运行起来的（lexer，tokenizer，parser）。&lt;/p&gt;
+&lt;p&gt;等等，我还有一个疑问，就是在 &lt;code&gt;pymain_run_python&lt;/code&gt; 函数中的 if-else if-else 语句中：它的下面还有一行：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (config&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;run_command) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;pymain_run_command&lt;/span&gt;(config&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;run_command);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (config&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;run_module) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;pymain_run_module&lt;/span&gt;(config&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;run_module, &lt;span style=&#34;color:#666&#34;&gt;1&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (main_importer_path &lt;span style=&#34;color:#666&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;pymain_run_module&lt;/span&gt;(&lt;span style=&#34;color:#b44&#34;&gt;L&lt;/span&gt;&lt;span style=&#34;color:#b44&#34;&gt;&amp;#34;__main__&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#666&#34;&gt;0&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;if&lt;/span&gt; (config&lt;span style=&#34;color:#666&#34;&gt;-&amp;gt;&lt;/span&gt;run_filename &lt;span style=&#34;color:#666&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#a2f&#34;&gt;NULL&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;pymain_run_file&lt;/span&gt;(config);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a2f;font-weight:bold&#34;&gt;else&lt;/span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#666&#34;&gt;*&lt;/span&gt;exitcode &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#00a000&#34;&gt;pymain_run_stdin&lt;/span&gt;(config);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#00a000&#34;&gt;pymain_repl&lt;/span&gt;(config, exitcode);
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;其内部调用的是 &lt;code&gt;PyRun_AnyFileFlags&lt;/code&gt;，这个函数是 &lt;code&gt;pymain_run_stdin&lt;/code&gt; 调用的函数的一个宏包装：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#080&#34;&gt;#define PyRun_AnyFileFlags(fp, name, flags) \
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#080&#34;&gt;    PyRun_AnyFileExFlags((fp), (name), 0, (flags))
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;但是在 &lt;code&gt;pymain_run_stdin&lt;/code&gt; 中调用 &lt;code&gt;PyRun_AnyFileExFlags&lt;/code&gt; 时其 flags 前的参数也是 0，我不知道为什么还保留 pymain_run_repl 的原因是什么，是为了向后兼容吗？欢迎和我交流你的想法～。&lt;/p&gt;
+&lt;h2 id=&#34;参考资料&#34;&gt;参考资料&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;Guido van Rossum &lt;a href=&#34;https://paper.dropbox.com/doc/Yet-another-guided-tour-of-CPython-XY7KgFGn88zMNivGJ4Jzv&#34;&gt;Yet another guided tour of CPython&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Louie Lu &lt;a href=&#34;https://hackmd.io/@klouielu/ByMHBMjFe?type=view&#34;&gt;A guide from parser to objects, observed using GDB&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Anthony Shaw &lt;a href=&#34;https://realpython.com/cpython-source-code-guide/#establishing-runtime-configuration&#34;&gt;Your Guide to the CPython Source Code&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://devguide.python.org/internals/exploring/&#34;&gt;Python devguide&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://devguide.python.org/internals/compiler/&#34;&gt;Python&amp;rsquo;s Compiler design&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://peps.python.org/pep-0432/&#34;&gt;PEP 432&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://peps.python.org/pep-0587/&#34;&gt;PEP 587&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;</description>
+      
+    </item>
+    
+    <item>
+      <title>从hexo到hugo</title>
+      <link>https://forceoflife.cn/zh-cn/post/hexotohugo/</link>
+      <pubDate>Sat, 09 Sep 2023 16:30:25 +0800</pubDate>
+      <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
+      <guid>https://forceoflife.cn/zh-cn/post/hexotohugo/</guid>
+      
+      <description>&lt;p&gt;没错，我从 hexo 迁移到了 hugo。这已经是我用过的第三个博客软件了，不出意外的话，短期内应该不会再更换了。&lt;/p&gt;
+&lt;h2 id=&#34;更换理由&#34;&gt;更换理由&lt;/h2&gt;
+&lt;p&gt;我的第一个博客软件是 &lt;code&gt;wordpress&lt;/code&gt;，是在看 &lt;code&gt;TheCW&lt;/code&gt; 的视频里知道的。当时正在上大一下的我还不懂什么是动态生成和静态生成，只知道 Wordpress 是一个被广泛使用的软件。当时用的还是 apache 服务器，而不是现在非常火的 nginx，就连安装也是通过宝塔一键完成的，基本谈不上任何技术含量。印象里并没有用那个软件发过一篇博客，只是配置了主题之后就搁置了。回想起来，动态生成的博客对于新手来说确实麻烦，当时只能在网页里写作，布局也没有配置文件，只能在网页里选择，或许当时放弃了也是一个值得庆幸的事。&lt;/p&gt;
+&lt;p&gt;之后开始使用 hexo，不过这次并没有放在自己的服务器上。理由有几个，其一，服务器我只买了一年，后面续费的价格不低，我不一定会续费；其二，当时用 nginx 跑着自己的图书下载站和云笔记 docker，我对 nginx 并不熟悉；其三，如果部署到服务器，写博客就只能远程上去写，虽然也可以用 git、scp，但是仍然很麻烦……所以，最后选择了 GitHub pages，一直用到了现在。&lt;/p&gt;
+&lt;p&gt;hexo 还是陪伴了我一段时间的，自打我用了 hexo，之前微信公众号的使用频率就降低了。我并不会把每一篇博文都转载到公众号去，只有当写了比较满意的文章才会发过去，毕竟公众号是真的会有人看，哈哈哈。我并没有像很多博客主一样对主题进行再加工，只是选择了一个比较火的 &lt;a href=&#34;https://ppoffice.github.io/hexo-theme-icarus/&#34;&gt;icarus&lt;/a&gt; 主题，对里面的控件位置进行了修改，加了评论和 Google Search 的支持。我在上面写了不少博文，其中有几篇我还是比较满意的，但 hexo 的一些问题也给我造成了许多困扰。&lt;/p&gt;
+&lt;h3 id=&#34;nodejs&#34;&gt;NodeJS&lt;/h3&gt;
+&lt;p&gt;hexo 是基于 nodejs 的，这对我非常不友好。我对于 web 领域一窍不通，平日几乎不会主动学习这方面的知识。所以对于诸如 &lt;code&gt;node_modules&lt;/code&gt;、&lt;code&gt;package.json &lt;/code&gt;等，我可谓是又想动又不敢动。而且，也不知道是不是因为 nodejs，每次更新博客要等很久才能生成，经常已经刷新到不耐烦了，新的内容才部署上去。&lt;/p&gt;
+&lt;p&gt;其次，由于我对 nodejs 的不熟悉，导致我无法对主题进行改动，有些在本地实现的效果，一部署上去就失效了，令人费解。而且 hexo 用的 js 并不是标准的 js，而是一个修改过的框架，使得本就对前端知之甚少的我更加无所适从。&lt;/p&gt;
+&lt;h2 id=&#34;hugo&#34;&gt;Hugo&lt;/h2&gt;
+&lt;p&gt;其实我知道 hugo 和 hexo 的时间是差不多的，在我刚使用 hexo 时，就看到一位比较著名的知乎答主，&lt;a href=&#34;https://www.zhihu.com/people/skywind3000&#34;&gt;韦易笑&lt;/a&gt;的博客使用了 hugo。那时我并不知道 hexo 和 hugo 有甚区别，甚至觉得 hexo 是更先进的（并不是说 hugo 就更先进，只是那时无知），加之彼时还并未感受到 hexo 的问题，所以就选择了 hexo。&lt;/p&gt;
+&lt;p&gt;前几天，当我为了 icarus 的几个效果而熬到很晚时，我便有了换一个软件的想法，第一时间就想到了 hugo。惭愧地说，促使我换到 hugo 的一大原因是我找到了我很喜欢的一个主题：&lt;a href=&#34;https://themes.gohugo.io/themes/hugo-octopress/#mainsections&#34;&gt;hugo-octopress&lt;/a&gt;，这个主题非常符合我的想法。其实之前在 hexo 也有一个我喜欢的主题：&lt;a href=&#34;https://jysperm.me/&#34;&gt;王子亭的博客 (jysperm.me)&lt;/a&gt;，但是我一直部署失败，不知为何。&lt;/p&gt;
+&lt;p&gt;现在大部分博客主题都不符合我的审美，我个人审美非常复杂，经常出现矛盾的地方。我很喜欢上世纪 70-90 年代的那种简单甚至简陋的样子（简约这个词太现代而精致了，并不符合那个年代的风格），现在的绝大多数主题都是非常现代化的布局，颜色设计、对比度、模糊、毛玻璃等特效非常绚丽，但我却喜欢不起来；那些所谓复古的主题也不过是披着复古衣服的现代产品罢了。&lt;/p&gt;
+&lt;p&gt;再加上有看到，hugo 基于 go 使得它有更快的生成速度，配置相对更明确等优点，我便下定决心迁移。实话说迁移也费了一番功夫，中文网的教程虽多，但不是过时，就是语焉不详。我查了一段时间才知道，如果要部署到 github pages，是要用两个仓库，一个存放根目录，一个存放 public，而不能像 hexo 一样用一个 git 插件就解决问题，不过用 git 手工生成倒是更符合我的习惯。最后花了大约半天的时间，搞定了所有的内容，成功部署了上去，并且重新解析了我的域名到这个新的博客。&lt;/p&gt;
+&lt;h2 id=&#34;使用体验&#34;&gt;使用体验&lt;/h2&gt;
+&lt;p&gt;刚换了没几天，所以没有什么深度的感受。最大的感觉就是掌控感变强了，之前由于对 nodejs 的不熟悉，导致改代码都不知道怎么改，而 hugo 似乎是使用了纯粹的 html + css + js，使得修改代码变得简单了。不过要吐槽的是，这个主题的代码质量实在不敢恭维，我几乎不敢相信这是一份开源出来的代码而不是为了赶时间外包的产物，不过我对 web 并不熟悉，也不敢随意修改，只能慢慢实践。&lt;/p&gt;
+&lt;p&gt;总的来说，hugo 目前给我的体验还是很好的，配置上也比 hexo 要方便许多，整体看起来也更清爽，没有令我如鲠在喉的&lt;code&gt;node_modules&lt;/code&gt; 和 &lt;code&gt;package.json&lt;/code&gt;，之后要做的就是好好产出内容了。&lt;/p&gt;</description>
+      
+    </item>
+    
+    <item>
+      <title>在Mac上配置Haskell环境</title>
+      <link>https://forceoflife.cn/zh-cn/post/haskellinmac/</link>
+      <pubDate>Wed, 28 Jun 2023 18:10:03 +0800</pubDate>
+      <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
+      <guid>https://forceoflife.cn/zh-cn/post/haskellinmac/</guid>
+      
+      <description>&lt;blockquote&gt;
+&lt;p&gt;这篇博客将介绍如何在&lt;strong&gt;中国&lt;/strong&gt;安装、配置 Mac 的 Haskell 环境和编辑器的高亮、补全，其中编辑器包括 Vim/Neovim、Visual Studio Code。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;安装-haskell&#34;&gt;安装 Haskell&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;本文将带你安装 GHCup、GHC、Cabal。由于笔者写这篇文章时还是 Haskell 的初学者，所以没有办法细致的分析各种工具的优劣，故选择目前相对流行、配置简单的工具。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;要安装 Haskell，首先要打开一个 terminal，之后的操作都会基于 terminal 来完成。&lt;/p&gt;
+&lt;p&gt;第一步我们要安装 GHCup，由于这个软件比较新，所以较少有镜像，这里我们选择&lt;a href=&#34;https://mirrors.ustc.edu.cn/help/ghcup.html&#34;&gt;中科大的镜像网站&lt;/a&gt;。但是由于 GHCup 在安装 Cabal 时会下载一个文件，所以我们必须提前替换 hackage 源，否则将无法正常安装。换源方法如下：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#080;font-style:italic&#34;&gt;# 第一步在家目录下创建一个 .cabal 文件夹&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#a2f&#34;&gt;cd&lt;/span&gt; ~ &lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; mkdir .cabal
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#080;font-style:italic&#34;&gt;# 第二步创建并编辑一个 config 文件&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;vi .cabal/config
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里我选择用 vim，你可以用 nano，vscode 等等编辑器，不会有任何影响，&lt;del&gt;当然，我不推荐你使用 emacs&lt;/del&gt;。然后将如下内容粘贴进去，保存退出：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;repository mirrors.ustc.edu.cn
+  url: https://mirrors.ustc.edu.cn/hackage/
+  secure: True
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;之后就可以在终端执行命令了：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;curl --proto &lt;span style=&#34;color:#b44&#34;&gt;&amp;#39;=https&amp;#39;&lt;/span&gt; --tlsv1.2 -sSf https://mirrors.ustc.edu.cn/ghcup/sh/bootstrap-haskell | &lt;span style=&#34;color:#b8860b&#34;&gt;BOOTSTRAP_HASKELL_YAML&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt;https://mirrors.ustc.edu.cn/ghcup/ghcup-metadata/ghcup-0.0.7.yaml sh
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;接下来你会看到这样的界面：&lt;/p&gt;
+&lt;p&gt;&lt;img alt=&#34;image-20230702042402797&#34; src=&#34;https://cdn.jsdelivr.net/gh/zzxdyf1314/mycloudimg@master/image-20230702042402797.png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;请仔细阅读所有提示，如果你不知道该做什么，就照我的选择去做：&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;是否自动将 ghcup 目录自动加入 PATH 直接回车&lt;/li&gt;
+&lt;li&gt;是否安装 haskell 的 lsp
+&lt;ul&gt;
+&lt;li&gt;如果你想使用 vscode 或 vim 等编辑器来补全、高亮、提示 Haskell 代码，就输入 Y；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;是否安装 Stack，输入 N，不安装。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;之后的选项都直接回车，就完成了 GHCup 的安装，这里你需要设置当前 shell 的 PATH：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#a2f&#34;&gt;source&lt;/span&gt; ~/.ghcup/env
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果你不想这样做，也可以直接重启你的 shell。&lt;/p&gt;
+&lt;p&gt;这时你的 Haskell 环境已经安装完成了，可以简单测试一下：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;ghc --version
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;cabal --version
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;ghci
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#080;font-style:italic&#34;&gt;# 输入 :q 以退出 ghci&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;接下来的步骤是配置 GHCup 的源&lt;/p&gt;
+&lt;p&gt;编辑 &lt;code&gt;~/.ghcup/config.yaml&lt;/code&gt;文件，向其中添加：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;url-source:
+    OwnSource: https://mirrors.ustc.edu.cn/ghcup/ghcup-metadata/ghcup-0.0.7.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&#34;编辑器配置&#34;&gt;编辑器配置&lt;/h2&gt;
+&lt;p&gt;如果你想在 Vim/Neovim 上使用 HLS 来完成高亮、补全、提示、报错的话，你需要安装 &lt;a href=&#34;https://github.com/neoclide/coc.nvim&#34;&gt;Coc.nvim&lt;/a&gt;，并安装&lt;code&gt;coc-hls&lt;/code&gt;插件，可以直接在 vim 的 command 模式下输入&lt;code&gt;:CocInstall coc-hls&lt;/code&gt;，之后就可以正常使用了（一定要保证你安装了 HLS）。&lt;/p&gt;
+&lt;p&gt;在 vscode 上搜索 Haskell，安装同名插件即可。&lt;/p&gt;
+&lt;p&gt;不管是在 vim 还是 vscode 上都可能出现一种情况，插件提示说找不到对应版本的 HLS，一般来说问题出在你安装的 GHC 还不支持你安装的 HLS，可以在终端输入：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;ghcup tui
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;进入 ghcup 的 ui 界面：&lt;/p&gt;
+&lt;p&gt;&lt;img alt=&#34;image-20230702043610766&#34; src=&#34;https://cdn.jsdelivr.net/gh/zzxdyf1314/mycloudimg@master/image-20230702043610766.png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;一定要保证你安装的 GHC 后面标有 hls-powered，你可以按上下键移动到对应的 GHC 版本上按&lt;code&gt;i&lt;/code&gt;安装或按&lt;code&gt;u&lt;/code&gt;卸载。同样的，你也可以安装或卸载其他的工具。&lt;/p&gt;
+&lt;p&gt;如果你是从这个界面安装的其他版本的 GHC，并卸掉了之前安装的，那么你需要替换掉原本的 ghc 文件和 ghci 文件，你可以在重启 shell 后发现 ghc 和 ghci 命令不存在或是还是原来的版本，这时你需要更新这两个文件。&lt;/p&gt;
+&lt;p&gt;ghc 和 ghci 的默认路径在家目录下的&lt;code&gt;.ghcup/bin/&lt;/code&gt;下，是软连接到.ghcup/ghc/version code/bin/`下的文件，我们要做的就是重新软连接：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;ln -s ~/.ghcup/ghc/verison code/bin ghci ~/.ghcup/bin/ghci
+ln -s ~/.ghcup/ghc/verison code/bin ghc ~/.ghcup/bin/ghc
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;之后重启 shell/vscode，就会发现你的 HLS 已经可以运行了。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;如果最开始有短暂的卡顿，是 HLS 正在启动，稍等即可。&lt;/p&gt;
+&lt;/blockquote&gt;</description>
+      
+    </item>
+    
+  </channel>
+</rss>

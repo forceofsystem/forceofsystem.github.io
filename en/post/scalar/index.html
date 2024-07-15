@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  
+  <meta name="author" content="Patrick">
+
+  
+  
+  <meta name="description" content="This blog is a note of reading chapter 10 of EAC (Scalar Optimization), which contains not only the content in the book but my understanding. Ultimately, I have finished the reading of the whole book in two months, and will continue to read the dragon book and Advanced Compiler Design and Implementation. I will also write some notes about those books.">
+  
+
+  
+  <link rel="icon" href="https://forceoflife.cn/favicon.jpeg">
+
+  
+  
+  <meta name="keywords" content=" hugo  latex  theme ">
+  
+
+  
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.3/dist/katex.min.css"
+  integrity="sha384-KiWOvVjnN8qwAZbuQyWDIbfCLFhLXNETzBQjA/92pIowpC0d2O3nppDGQVgwd2nB" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.3/dist/katex.min.js"
+  integrity="sha384-0fdwu/T/EQMsQlrHCCHoH10pkPLlKA1jL5dFyUOvB3lfeT2540/2g6YgSi2BL14p" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.3/dist/contrib/auto-render.min.js"
+  integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    renderMathInElement(document.body, {
+      delimiters: [
+        { left: '$$', right: '$$', display: true },
+        { left: '\\[', right: '\\]', display: true },
+        { left: '$', right: '$', display: false },
+        { left: '\\(', right: '\\)', display: false }
+      ],
+      ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'option'],
+      throwOnError: false
+    });
+  });
+</script>
+
+
+  
+
+  
+  <meta property="og:url" content="https://forceoflife.cn/en/post/scalar/">
+  <meta property="og:site_name" content="Force of Life">
+  <meta property="og:title" content="Scalar Optimization">
+  <meta property="og:description" content="This blog is a note of reading chapter 10 of EAC (Scalar Optimization), which contains not only the content in the book but my understanding. Ultimately, I have finished the reading of the whole book in two months, and will continue to read the dragon book and Advanced Compiler Design and Implementation. I will also write some notes about those books.">
+  <meta property="og:locale" content="en">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="post">
+    <meta property="article:published_time" content="2024-03-14T02:43:34+08:00">
+    <meta property="article:modified_time" content="2024-03-14T02:43:34+08:00">
+    <meta property="article:tag" content="Compiler">
+    <meta property="article:tag" content="Optimization">
+    <meta property="article:tag" content="Computer">
+
+
+  
+  <link rel="canonical" href="https://forceoflife.cn/en/post/scalar/">
+
+  
+  
+  
+  <meta itemprop="name" content="Scalar Optimization">
+  <meta itemprop="description" content="This blog is a note of reading chapter 10 of EAC (Scalar Optimization), which contains not only the content in the book but my understanding. Ultimately, I have finished the reading of the whole book in two months, and will continue to read the dragon book and Advanced Compiler Design and Implementation. I will also write some notes about those books.">
+  <meta itemprop="datePublished" content="2024-03-14T02:43:34+08:00">
+  <meta itemprop="dateModified" content="2024-03-14T02:43:34+08:00">
+  <meta itemprop="wordCount" content="5066">
+  <meta itemprop="keywords" content="Compiler,Optimization,Computer">
+
+  
+  <link media="screen" rel="stylesheet" href='https://forceoflife.cn/css/common.css'>
+  <link media="screen" rel="stylesheet" href='https://forceoflife.cn/css/content.css'>
+
+  
+  
+  <title>Scalar Optimization - Force of Life</title>
+  
+
+  
+  
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Scalar Optimization">
+  <meta name="twitter:description" content="This blog is a note of reading chapter 10 of EAC (Scalar Optimization), which contains not only the content in the book but my understanding. Ultimately, I have finished the reading of the whole book in two months, and will continue to read the dragon book and Advanced Compiler Design and Implementation. I will also write some notes about those books.">
+
+
+  
+<link rel="stylesheet" href='https://forceoflife.cn/css/single.css'>
+
+</head>
+
+<body>
+  <div id="wrapper">
+    <header id="header">
+  <h1>
+    <a href="https://forceoflife.cn/">Force of Life</a>
+  </h1>
+
+  <nav>
+    
+    <span class="nav-bar-item">
+      <a class="link" href="/en/">Home</a>
+    </span>
+    
+    <span class="nav-bar-item">
+      <a class="link" href="/en/post/">Posts</a>
+    </span>
+    
+    <span class="nav-bar-item">
+      <a class="link" href="/en/about/">About</a>
+    </span>
+    
+    <span class="nav-bar-item">
+      <a class="link" href="/en/index.xml">Subscribe</a>
+    </span>
+    
+    <span class="nav-bar-item">
+      <a class="link" href="/zh-cn">中文</a>
+    </span>
+    
+  </nav>
+</header>
+
+    
+<main id="main" class="post">
+  
+  
+  <h1>Scalar Optimization</h1>
+  
+  <div>
+    <b>Keywords: </b>
+    
+    <a class="link" href='https://forceoflife.cn/tags/compiler'>#Compiler</a>
+    
+    <a class="link" href='https://forceoflife.cn/tags/optimization'>#Optimization</a>
+    
+    <a class="link" href='https://forceoflife.cn/tags/computer'>#Computer</a>
+    
+  </div>
+  
+  
+  
+  <details>
+    <summary>
+      <b>Table of Contents</b>
+    </summary>
+    <div class="toc"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#death-code-elimination">Death Code Elimination</a>
+      <ul>
+        <li><a href="#eliminating-useless-code">Eliminating Useless Code</a></li>
+        <li><a href="#eliminating-useless-control-flow">Eliminating Useless Control Flow</a></li>
+        <li><a href="#eliminating-unreachable-code">Eliminating Unreachable Code</a></li>
+      </ul>
+    </li>
+    <li><a href="#code-motion">Code Motion</a>
+      <ul>
+        <li><a href="#lazy-code-motion">Lazy Code Motion</a></li>
+        <li><a href="#code-hoisting">Code Hoisting</a></li>
+      </ul>
+    </li>
+    <li><a href="#specialization">Specialization</a>
+      <ul>
+        <li><a href="#tail-call-optimization">Tail-Call Optimization</a></li>
+        <li><a href="#leaf-call-optimization">Leaf-Call Optimization</a></li>
+        <li><a href="#parameter-promotion">Parameter Promotion</a></li>
+      </ul>
+    </li>
+    <li><a href="#redundancy-elimination">Redundancy Elimination</a>
+      <ul>
+        <li><a href="#value-identity-and-name-identity">Value Identity and Name Identity</a></li>
+        <li><a href="#dominator-based-value-numbering-dvnt">Dominator-based Value Numbering (DVNT)</a></li>
+      </ul>
+    </li>
+    <li><a href="#enabling-other-transformations">Enabling Other Transformations</a>
+      <ul>
+        <li><a href="#superblock-cloning">Superblock Cloning</a></li>
+        <li><a href="#procedure-cloning">Procedure Cloning</a></li>
+        <li><a href="#loop-unswitching">Loop Unswitching</a></li>
+        <li><a href="#renaming">Renaming</a></li>
+      </ul>
+    </li>
+    <li><a href="#sparse-conditional-constant-propagation-sccp">Sparse Conditional Constant Propagation (SCCP)</a>
+      <ul>
+        <li><a href="#subtleties-in-evaluating-and-rewriting-operations">Subtleties in Evaluating and Rewriting Operations</a></li>
+        <li><a href="#effectiveness">Effectiveness</a></li>
+      </ul>
+    </li>
+    <li><a href="#strength-reduction">Strength Reduction</a>
+      <ul>
+        <li><a href="#background">Background</a></li>
+        <li><a href="#the-algorithm">The Algorithm</a></li>
+        <li><a href="#rewriting-the-code-1">Rewriting the Code</a></li>
+        <li><a href="#linear-function-test-replacement-lftr">Linear-Function Test Replacement (LFTR)</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+  </details>
+  
+  
+  <article class="content">
+    
+    <p>This blog is a note of reading chapter 10 of EAC (Scalar Optimization), which contains not only the content in the book but my understanding. Ultimately, I have finished the reading of the whole book in two months, and will continue to read the dragon book and <em>Advanced Compiler Design and Implementation</em>. I will also write some notes about those books.</p>
+<h2 id="overview">Overview</h2>
+<p>Scalar optimization: opimization of code along a single thread of control.</p>
+<p>Goals of optimizer:</p>
+<ul>
+<li>Rewriting the code into a more efficient or more effective form.</li>
+<li>Producing highly efficient code on a much larger set of inputs.</li>
+<li>Robust</li>
+</ul>
+<p>There are two machanisms to achieve these goals:</p>
+<ul>
+<li>It eliminates unnescessarys overhead introduced by programming language abstractions, and</li>
+<li>it matches the needs of the resulting program to the available hardware and software resources of the target machine.</li>
+</ul>
+<blockquote>
+<p>Machine independent: A transformation that improves code on most target machines is considered machine independent.
+Machine dependent: A transformation that relies on knowledge of the target processor is considered machine dependent.</p>
+</blockquote>
+<p><strong>Most optimizers are built as a series of passes.</strong> Each pass takes code in IR form as its input, and produces a rewritten version of the IR code as its output. This structure creates a natural way for the compiler to provide different levels of optimization; each level specifies a set of passes to run.</p>
+<p>We concern, in general, five specific effects of the transformation:</p>
+<ul>
+<li>Eliminate useless and unreachable code</li>
+<li>Move code</li>
+<li>Specialize a computation</li>
+<li>Eliminate a redundant computation</li>
+<li>Enable other transformation</li>
+</ul>
+<h2 id="death-code-elimination">Death Code Elimination</h2>
+<p>Useless code (death code): An operationis useless if no operation uses its result, or if all uses of the result are, themselves dead.</p>
+<p>Unreachable code: An operation is unreachable if no valid control-flow path contains the operation.</p>
+<blockquote>
+<p>The source of these code: macro expansion or naive translation in the front end.</p>
+</blockquote>
+<blockquote>
+<p>These code arises in most programs as the direct result of optimization in the compiler.</p>
+</blockquote>
+<p><strong>Branch, or conditionnal branch, is different to jump, or unconditional jump.</strong></p>
+<h3 id="eliminating-useless-code">Eliminating Useless Code</h3>
+<p>Critical operation: an operation is <em><strong>critical</strong></em> if:</p>
+<ul>
+<li>it sets return values for the procedure;</li>
+<li>it’s an input/output statement, or</li>
+<li>it affects the value in a storage location that may be accessible from outside the current procedure (like pointers).</li>
+</ul>
+<p>The algorithm for eliminating useless code performs two pass over the code, like the mark-sweep gc.</p>
+<ul>
+<li>first pass:
+<ul>
+<li>Clear all the mark fields and mark critical operations as “useful”</li>
+<li>Trace the operands of useful operations back to their definitions and marks them as “useful”</li>
+</ul>
+</li>
+<li>second pass: walk the code and remove any operation not marked.</li>
+</ul>
+<p><strong>The algorithm assumes that the code is in SSA form.</strong></p>
+<div align="center">
+  <img src="/2024/scalar-optimization/two-stage.png" alt="two-stage" style="zoom:50%;" />
+</div>
+<p>For control-flow operations, the treatment of the algorithm is more complex than normal operations.</p>
+<blockquote>
+<p>Postdominance: In a CFG, <em>j</em> postdominates <em>i</em> if and only if every path from i to the exit node passes through j.
+Reverse dominance frontier: dominance frontiers computed on the reverse CFG, denoted $RDF(j)$.</p>
+</blockquote>
+<p>Control-dependence: in a CFG, node j is control-dependent on node i if and only if</p>
+<ol>
+<li>There exists a nonnull path from i to j such that j postdominates every node on the path <strong>after i</strong>.</li>
+<li>j <strong>doesn’t strictly</strong> postdominate i.</li>
+</ol>
+<blockquote>
+<p>In other words, two or more edges leaves block i. One or more edges leads to j and one or more edges do not.
+Actually, I think this explanation is easier to understand than the former, but, it’s not a formal definition, hhh.</p>
+</blockquote>
+<p>When <em>Mark</em> marks an operation in block b as useful, it visits every block in b’s $RDF$ and marks their block-ending branches as useful. (the last part of <em>Mark</em> routine)</p>
+<p><em>Sweep</em> replaces any unmarked branch with a jump to its first postdominator that contains a marked operation. If the branch is unmarked, then its successors, down to its immediate postdominator, contain no useful operations. (Otherwise, when those operations were marked, the branch would have been marked.)</p>
+<blockquote>
+<p>To find the nearest useful postdominator, the algorithm can walk up the postdominator tree until it finds a block that con- tains a useful operation.</p>
+</blockquote>
+<h3 id="eliminating-useless-control-flow">Eliminating Useless Control Flow</h3>
+<p>If the compiler includes optimizations that can produce useless control flow as a side effect, then it should include a pass that simplifies the cfg by eliminating useless control flow.</p>
+<p>The <em>clean</em> algorithm uses four transformations, which are applyed in the following order:</p>
+<ol>
+<li>Fold a Redundant Branch</li>
+</ol>
+<div align="center">
+  <img src="/2024/scalar-optimization/fold-redundant-branch.png" alt="fold-redundant" />
+</div>
+<ol start="2">
+<li>Remove an Empty Block</li>
+</ol>
+<div align="center">
+  <img src="/2024/scalar-optimization/remove-empty-block.png" alt="remove-empty-block" />
+</div>
+<ol start="3">
+<li>Combine Blocks</li>
+</ol>
+<div align="center">
+  <img src="/2024/scalar-optimization/combine-blocks.png" alt="combine-blocks" />
+</div>
+<ol start="4">
+<li>Hoist a Branch: If <em>clean</em> finds a block $B_i$ that ends with a jump to an empty block $B_j$ and $B_j$ ends with a branch. Clean can replace the block-ending jump in $B_i$ with a copy of the branch from $B_j$.</li>
+</ol>
+<ul>
+<li>$B_i$ cann’t be empty, and</li>
+<li>$B_i$ cann’t be $B_j$’s sole prodecessor.</li>
+</ul>
+<div align="center">
+  <img src="/2024/scalar-optimization/hoist-branch.png" alt="hoist-branch" />
+</div>
+<p>A systematic C<em>lean</em> implementation traverses the graph in postorder, so that $B_i$’s successors are simplified before $B_i$ unless the successor lies along a back edge with respect to the postorder number- ing. This method reduces the number of times that the implementation must move some edges.</p>
+<div align="center">
+  <img src="/2024/scalar-optimization/dce.png" alt="DCE" style="zoom: 50%" />
+</div>
+<p>If the CFG contains back edges, then a pass of <em>Clean</em> may create unprocessed successors along the back edges. For this reason, <em>Clean</em> repeats the transformation sequence iteratively until the CFG stops changing.</p>
+<p>With the <em>Dead</em> routine’s help, <em>Clean</em> can elinimate an empty loop which can’t be done by itself instead of using a specific transformation to handle it.</p>
+<h3 id="eliminating-unreachable-code">Eliminating Unreachable Code</h3>
+<p>A block can be unreachable for two distinct reasons:</p>
+<ol>
+<li>there may be no path through the CFG that leads to the block, or</li>
+<li>the paths that reach the block may not be executable.</li>
+</ol>
+<p>The former case is easy to handle with the same “mark-sweep” algorithm. However, the latter case requires the compiler to reason about the values of expressions that control branches.</p>
+<blockquote>
+<p>If the source language allows arithmetic on code pointers or labels (such as C’s pointers), the compiler must preserve all blocks. Otherwise, it can limit the preserved set to blocks whose labels are referenced.</p>
+</blockquote>
+<h2 id="code-motion">Code Motion</h2>
+<h3 id="lazy-code-motion">Lazy Code Motion</h3>
+<p>LCM performs loop-invariant code motion. It uses data-flow analysis to discover both operations that are candidates for code motion and locations where it can place those operations.</p>
+<p><strong>The algorithm operates on the IR form of the program and its CFG, rather than on SSA form.</strong></p>
+<blockquote>
+<p>Redundant: an expression $e$ is redundant at p if it has already been evaluated on every path that leads to p.
+Partially redundant: an expression $e$ is partially redundant at p if it occurrs on some, but not all, paths that reach p.</p>
+</blockquote>
+<p>LCM combines code motion with elimination of both redundant and partially redundant computations. For the partially redundant expressions, LCM inserts an edge on the path where p doesn’t occur to make the computation fully redundant.</p>
+<h4 id="code-shape"><strong>Code Shape</strong></h4>
+<p>LCM moves expression evaluations, not assignments.</p>
+<blockquote>
+<p>Program variables are set by register-to- register copy operations. Variables have lower subscripts than any expression, and that in any operation other than a copy, the defined register’s subscript must be larger than the subscripts of the operation’s arguments.</p>
+</blockquote>
+<h4 id="available-expressions"><strong>Available Expressions</strong></h4>
+<p>LCM needs availability at the end of the block, so it computes $A_{VAIL}O_{UT}$ rather than $A_{VAIL}I_N$.</p>
+<blockquote>
+<p>An expression $e$ is available on exit from block $b$ if, along every path from $n_0$ to $b$, $e$ has been evaluated and none of its arguments has been subsequently defined.</p>
+</blockquote>
+<p>LCM computes $A_{VAIL}O_{UT}$ as follows:</p>
+<p>$A_{VAIL}O_{UT}(n_0) = \empty$</p>
+<p>$A_{VAIL}O_{UT}(n) = {\ all\ expressions\ }$, $\forall n ≠ n_0$</p>
+<p>and then iteratively evaluates the following equation until it reaches a fixed point:</p>
+<p>$A_{VAIL}O_{UT}(n) = \mathop{\bigcap}\limits_{m \in preds(n)}(DEE_{XPR}(m) \cup (A_{VAIL}O_{UT}(m) \cap \overline{E_{XPR}K_{ILL}(m)}))$</p>
+<p>If an expression $e \in A_{VAIL}O_{UT}(b)$, the compiler could place an evaluation $e$ at the end of block $b$ and obtain the result produced by its most recent evaluation on any control-flow path from $n_0$ to b.</p>
+<p><strong>In this light, $A_{VAIL}O_{UT}$ sets tell the compiler how far forward in the CFG it can move the evaluation of $e$, ignoring any uses of $e$.</strong></p>
+<h4 id="anticipable-expressions"><strong>Anticipable Expressions</strong></h4>
+<p>Definition: an expression is anticipable at point $p$ if and only if it is computed on every path that leaves p and produces the same value at each of these compuations.</p>
+<p>The initial condition of the sets is:</p>
+<p>$A_{NT}O_{UT}(n_f) = \empty$</p>
+<p>$A_{NT}O_{UT}(n) = {\ all\ expressions\ }$, $\forall n ≠ n_f$</p>
+<p>Next, it solve the follow fixed-point problems:</p>
+<p>$A_{NT}I_{N}(m) = \mathop{\bigcap}\limits_{m \in succ(n)}(UEE_{XPR}(m) \cup (A_{NT}O_{UT}(m) \cap \overline{E_{XPR}K_{ILL}(m)}))$</p>
+<p>$A_{NT}O_{UT}(n) = \mathop{\bigcap}\limits_{m \in succ(n)} A_{NT}I_N(m)$, $n ≠ n_f$</p>
+<p>$A_{NT}O_{UT}$ provides information about the safety of hoisting an evaluation to either the start or the end of the current block. If $x \in A_{NT}O_{UT}(b)$, then the compiler can place an evaluation of $x$ at the end of b, with two guarantees:</p>
+<ol>
+<li>The evaluation at the end of b will produce the same value as the next evaluation of $x$ along any execution path in the procedure.</li>
+<li>Along any execution path leading out of $b$, the program will evaluate $x$ before redefining any of its arguments.</li>
+</ol>
+<h4 id="earliest-placement"><strong>Earliest Placement</strong></h4>
+<blockquote>
+<p>To simplify the placement equations, LCM assumes that it will place the evaluation on a CFG edge rather than at the start or end of a specific block.</p>
+</blockquote>
+<p>Computing an edge placement lets the compiler defer the decision to place the evaluation <strong>at the end of the edge’s source</strong>, <strong>at the start of its sink</strong>, or <strong>in a new block in the middle of the edge</strong>.</p>
+<p>$E_{ARLIEST}$ set: for a CFG edge &lt;i, j&gt;, an expression $e$ is in $E_{ARLIEST}(i, j)$ if and only if the compiler can legally move $e$ to &lt;i, j&gt;, and cannot move it to any earlier edge in the CFG.</p>
+<p>The $E_{ARLIEST}$ equation encodes this condition as the intersection of three terms:</p>
+<p>$E_{ARLIEST}(i, j) = A_{NT}I_N(j) \cap \overline{A_{VAIL}O_{UT}(i)} \cap (E_{XPR}K_{ILL}(i) \cup \overline{A_{NT}O_{UT}(i)})$</p>
+<p>These terms define an earliest placement for $e$ as follows:</p>
+<ol>
+<li>$e \in A_{NT}I_{N}(j)$ means that the compiler can safely move $e$ to the head of $j$.</li>
+<li>$e \notin A_{VAIL}O_{UT}(i)$ shows that no prior computation of $e$ is available on exit from $i$.</li>
+<li>If $e \in E_{XPR}K_{ILL}(i)$, the compiler cann’t move $e$ through block $i$ because of a definition in $i$. If $e \notin A_{NT}O_{UT}(i)$, the compiler cann’t move $e$ into $i$ because $e \notin A_{NT}I_{N}(k)$ for some edge &lt;i, k&gt;. If either is true, then $e$ can move no further than &lt;i, j&gt;</li>
+</ol>
+<h4 id="later-placement">Later Placement</h4>
+<p>This problem determines when an earliest placement can be defered to a later point in the CFG while achieving the same effect. It’s formulated as a forward data-flow problem on the CFG with a set $L_{ATER}I_N(n)$ associated with each node and another set $L_{ATER}(i, j)$ associated with each edge &lt;i, j&gt;.</p>
+<p>LCM initializes the $L_{ATER}I_N$ sets as follows:</p>
+<p>$L_{ATER}I_N(n_0) = \empty$</p>
+<p>$L_{ATER}I_N(n) = {\ all\ expressions\ }$, $\forall n ≠ n_0$</p>
+<p>Next, it iteratively computes $L_{ATER}I_N$ and $L_{ATER}$ sets for each block.</p>
+<p>$L_{ATER}I_N(j) = \mathop{\bigcap}\limits_{m \in preds(j)} L_{ATER}(i, j), j \not= n_0$</p>
+<p>$L_{ATER}(i, j) = E_{ARLIEST}(i, j) \cup (L_{ATER}I_N(i) \cap \overline{UEE_{XPR}(i)})$</p>
+<p>An expression $e \in L_{ATER}I_N(k)$ if and only if:</p>
+<ul>
+<li>every path that reaches k includes an edge &lt;p, q&gt; such that $e]in E_{ARLIEST}(p, q)$, and</li>
+<li>the path from q to k
+<ul>
+<li>neither redefines $e’s$ operands</li>
+<li>nor contains an evaluation of $e$ that an earlier placement of $e$ would anticipate.</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>The first condition is that the flow can reach here through the &lt;p, q&gt; where the evaluation can be placed. The second one ensures that the evaluation can produce a correct value and it’s not too late, because if there is an evaluation of $e$ located at the predecessors of $k$, it’s redundant to place another one subsequently.</p>
+</blockquote>
+<p>The $E_{ARLIEST}$ term in the equation for $L_{ATER}$ ensures that $L_{ATER}(i,j)$ includes $E_{ARLIEST}(i, j)$. The rest of that equation puts $e$ into $L_{ATER}(i,j)$ if $e$ can be moved forward from $i$ ($e \in L_{ATER}I_N(i)$) and a placement at the entry to i does not anticipate a use in i ($e \notin UEE_{XPR}(i)$).</p>
+<blockquote>
+<p>The former indicates that it’s not too late to put the evaluation into here, the latter implies that the placement is premature because no reference depends on it.</p>
+</blockquote>
+<p><strong>Given $L_{ATER}I_N$ and $L_{ATER}$ sets, $e \in L_{ATER}I_N(i)$ implies that the compiler can move the evaluation of $e$ forward through $i$ without losing any benefit; and $e \in L_{ATER}(i, j)$ implies that the compiler can move an evaluation of $e$ in $i$ into $j$.</strong></p>
+<h4 id="rewriting-the-code">Rewriting the Code</h4>
+<p>LCM computes two additional sets, $I_{NSERT}$ and $D_{ELETE}$ to drive the rewriting process.</p>
+<ul>
+<li>The $I_{NSERT}$ set specifies, for each edge, the computations that LCM should insert on that edge. The equation is $I_{NSERT}(i, j) = L_{ATER(i,j)} \cup \overline{L_{ATER}I_N(j)}$.
+<ul>
+<li>If $i$ has only one successor, LCM can insert the computations at the end of $i$.</li>
+<li>If $j$ has only one predecessor, it can insert the computations at the entry of $j$.</li>
+<li>If neither condition applies, the edge &lt;i, j&gt; is a <strong>critical edge</strong>, so it should be split by inserting a block in the middle of the edge to evaluate the expressions in $I_{NSERT}(i,j)$.</li>
+</ul>
+</li>
+<li>The $D_{ELETE}$ set specifies, for a block, which computations LCM should delete from the block. The equation is $D_{ELETE}(i) = UEE_{XPR}(i) \cup \overline{L_{ATER}I_N(i)}$.
+<ul>
+<li>$D_{ELETE}(n_0)$ is empty, since no block precedes $n_0$.</li>
+<li>If $e \in D_ELETE(i)$, then the first computation of $e$ in $i$ is redundant after all the insertions have been made. Any subsequent evaluation of $e$ in $i$ that has upward-exposed uses—that is, the operands are not defined between the start of $i$ and the evaluation—can also be deleted, the compiler even doesn’t need to rewrite subsequent references.</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>Recall that LCM doesn’t care about variables, if a register to register copy is unnecessary, subsequent copy coalescing, either in the register allocator or as a standalone pass, should discover that fact and eliminate the copy operation.</p>
+</blockquote>
+<h3 id="code-hoisting">Code Hoisting</h3>
+<p>Code hoisting provides one direct way of reducing the size of the compiled code. It uses the results of anticipability in a particular simple way.</p>
+<p>If an expression $e \in A_{NT}O_{UT}(b)$, for some block b, that means that $e$ is evaluated along every path that leaves $b$ and evaluating $e$ at the end of $b$ would make the first evaluation along each path redundant. To reduce code size, the compiler can insert an evaluation of $e$ on each path leaving $b$ with a reference to the previously computed value.</p>
+<p>A simple approach has the compiler visit each block $b$ and insert an evaluation of $e$ at the end of $b$, for every expression $e \in A_{NT}O_{UT}(b)$. Subsequent application of LCM or SVN will then remove the newly redundant expressions.</p>
+<h2 id="specialization">Specialization</h2>
+<blockquote>
+<p>Major techniques that perform specialization appear in other sections, such as constant propagation, interprocedural constant propagation, operator strength reduction, peephole optimization, and value numbering.</p>
+</blockquote>
+<h3 id="tail-call-optimization">Tail-Call Optimization</h3>
+<p>Tail call: the last action that a procedure takes is a call.</p>
+<p>The compiler can specialize tail calls to their contexts in ways that eliminate much of the overhead from the procedure linkage. Supposed that o calls $p$ and $p$ calls $q$, if the call from $p$ to $q$ is a tail call, then no useful computation occurs between the postreturn sequence and the epilogue sequence in $p$. Hence, any code that preserves and restores $p$’s state, beyond what is needed for the return from $p$ to $o$.</p>
+<p>At the call from $p$ to $q$, the minimal precall sequence must evaluate the actual parameters at the call from $p$ to $q$ and adjust the access links or the display if necessary. It need not preserve any caller-saves registers, because they cannot be live. It need not allocate a new AR, because $q$ can use $p$’s AR.</p>
+<p>The tail recursion is a special case of tail call, in which the entire precall sequence devolves to argument evaluation and a branch back to the top of the routine. An eventual return out of the recursion requires <strong>one branch</strong>, rather than one branch per recursive invocation.</p>
+<h3 id="leaf-call-optimization">Leaf-Call Optimization</h3>
+<p>Definition: a procedure that makes no calls.</p>
+<p>During translation of a leaf procedure, the compiler can avoid inserting operations whose sole purpose is to set up for sequent calls such as saving return address from a register into a slot in the AR. In a leaf procedure, the register allocator should try to use caller-saves register before callee-saves registers, which can even keep untouched.</p>
+<p>In addition, the compiler can avoid the runtime overhead of activation-record allocation for leaf procedures.</p>
+<h3 id="parameter-promotion">Parameter Promotion</h3>
+<p>Promotion: the compiler proves that an ambiguous value has just one corresponding memory location through detailed analysis of pointer values or array subscript values, or special case analysis. In these cases, it can rewrite the code to move that value into a scalar local variable, where the register allocator can keep it in a register.</p>
+<blockquote>
+<p>To apply this transformation to a procedure p, the optimizer must identify all of the call sites that can invoke p.</p>
+</blockquote>
+<h2 id="redundancy-elimination">Redundancy Elimination</h2>
+<p>We’ve learnt three effective techniques for this topic: LVN, SVN, LCM. All three methods differ in the scope of their approach to discovering identical values.</p>
+<h3 id="value-identity-and-name-identity">Value Identity and Name Identity</h3>
+<p><strong>Value Identity</strong>: LVM introduced a simple mechanism under SSA form to prove that two expressions had the same value. It assumes that two expressions produce the same value if they have the same operator and their operands have the same value numbers.</p>
+<p>With this rules, LVN can prove that 2 + a has the same value as a + 2 or as 2 + b when a and b have the same value number. However, it can’t prove that a + a and 2 * a has the same value because they have different operators. Similarly, it can’t prove the a + 0 and a has the same value unless we extended it with algebraic identities.</p>
+<p><strong>Name Identity</strong>: LCM relies on names to prove that two values have the same number. If LCM sees a + b and a + c, it assumes that they have different values because b and c have different names. We can improve the effectiveness of LCM by encoding value identity into the name space of the code before applying LCM. The distinction between LCM and LVN (or SVN) is clear. Therefore, by encoding value identity into the namespace, the compiler can leverage the strengths of both approaches.</p>
+<h3 id="dominator-based-value-numbering-dvnt">Dominator-based Value Numbering (DVNT)</h3>
+<div align="center">
+  <img src="/2024/scalar-optimization/DVNT1.png" alt="DVNT1" />
+</div>
+<p>Recall that at the SVN algorithm, we assumes that the block $B_4$ begins with no prior context. However, though $B_4$ can’t rely on values computed in either $B_2$ or $B_3$, it can rely on values computed in $B_0$ and $B_1$, since they occur on every path that reaches $B_4$.</p>
+<p>Fortunately, the SSA name space encodes precisely this distinction. In SSA, a name that is used in some block $B_i$ can only enter $B_i$ in one of two ways. Either the name is defined by a $\phi$-function at the top of $B_i$, or it is defined in some block that dominates $B_i$. Thus, an assignment to x in either $B_2$ or $B_3$ creates a new name for x and forces the insertion of a $\phi$-function for x at the head of $B_4$. Thus, SSA form encodes the presence or absence of an intervening assignment in $B_2$ or $B_3$ directly into the names used in the expression.</p>
+<p><strong>We can use dominance information to locate the most recent predecessor which the algorithm can use.</strong></p>
+<div align="center">
+  <img src="/2024/scalar-optimization/DVNT.png" alt="DVNT" style="zoom: 50%" />
+</div>
+<h4 id="process-the-phi-functions-in-b">Process the $\phi$-Functions in B</h4>
+<p>If a $\phi$-function $p$ is meaningless, DVNT sets its value number to the value number for one of its arguments and deletes $p$. If $p$ is redundant, DVNT assigns $p$ the same value number as the $\phi$-function that it duplicates, then DVNT deletes $p$.</p>
+<blockquote>
+<p>meaningless: all its arguments have the same value number.
+redundant: it produces the same value number as another $\phi$-function.</p>
+</blockquote>
+<p>Otherwise, the $\phi$-function computes a new value.</p>
+<h4 id="process-the-assignments-in-b">Process the Assignments in B</h4>
+<p>DVNT iterates over the assignments in B and process them in a manner analogous to LVN and SVN. When the algorithm encounters a statement $x ← y\ op\ z$, it can simply replace $y$ with $VN[y]$ because the name in $VN[y]$ holds the same value as y.</p>
+<h4 id="propagate-information-to-bs-successors">Propagate Information to B’s Successors</h4>
+<p>Once DVNT has processed all the $\phi$-functions and assignments in $B$, it visits each of B’s CFG successors $s$ and updates $\phi$ function arguments that correspond to values flowing across the edge $(B,s)$. It records the current value number for the argument in the $\phi$-function by overwriting the argument’s SSA name.</p>
+<p>Next, the algorithm recurs on $B$’s children in the dominator tree (follow a preorder walk). Finally, it deallocates the hash table scope that is used for $B$.</p>
+<h2 id="enabling-other-transformations">Enabling Other Transformations</h2>
+<blockquote>
+<p>Both loop unrolling and inline substitution obtain most of their benefits by creating context for other optimization.
+The tree-height balancing algorithm doesn’t eliminate any operations, but it creates a code shape that can produce better results from instruction scheduling.</p>
+</blockquote>
+<h3 id="superblock-cloning">Superblock Cloning</h3>
+<p>In superblock cloning, the optimizer starts with a loop head—the entry to a loop—and clones each path until it reaches a backward branch.</p>
+<p>Superblock cloning can improve the results of optimization in three principal ways.</p>
+<ol>
+<li>It creates longer blocks.</li>
+<li>It eliminates branches.</li>
+<li>It creates points where optimization can occur such as specialization and redundancy elimination.</li>
+</ol>
+<p>However, cloning has costs, too. It will lead to larger code, which may run more slowly if its size causes additional instruction cache misses.</p>
+<h3 id="procedure-cloning">Procedure Cloning</h3>
+<p>The idea is analogous to the block cloning that occurs in superblock cloning. The compiler creates multiple copies of the callee and assigns some of the calls to each instance of the clone</p>
+<div align="center">
+  <img src="/2024/scalar-optimization/original.png" alt="original" />
+</div>
+<div align="center">
+  <img src="/2024/scalar-optimization/after-cloning.png" alt="after-cloning" />
+</div>
+<h3 id="loop-unswitching">Loop Unswitching</h3>
+<div align="center">
+  <img src="/2024/scalar-optimization/unswitch.png" alt="unswitch" style="zoom: 50%" />
+</div>
+<p>Unswitching is an enabling transformation, it can lead to better scheduling, better register allocation, and fast execution.</p>
+<h3 id="renaming">Renaming</h3>
+<p>Renaming is a fertile ground for future work.</p>
+<h2 id="sparse-conditional-constant-propagation-sccp">Sparse Conditional Constant Propagation (SCCP)</h2>
+<p>SSCP assigns a lattice value to the operand used by a conditional branch. If the value is neither $\top$ nor $\bot$, then the operand must have a known value and the compiler can rewrite the branch with a jump to one of its two targets, simplifying the CFG. Since this removes an edge from the CFG, it may make the block that was the branch target unreachable. SSCP has no mechanism to take advantage of this knowledge.</p>
+<p>In concept, SCCP operates in a straightforward way. It initializes the data structures. It iterates over two graphs, the CFG and the SSA graph. It propagates reachability information on the CFG and value information on the SSA graph. It halts when the value information reaches a fixed point. Combining these two kinds of information, SCCP can discover both unreachable code and constant values.</p>
+<blockquote>
+<p>To simplify the explanation of SCCP, we assume that each block in the CFG represents just one statement, plus some optional $\phi$-functions.</p>
+</blockquote>
+<div align="center">
+  <img src="/2024/scalar-optimization/SCCP1.png" alt="SCCP1" style="zoom: 50%" />
+</div>
+<p>After the initialization phase, the algorithm repeatedly picks an edge from one of the two worklists and process that edge.</p>
+<p>For a CFG edge (m, n), SCCP determines if the edge is marked as executed.</p>
+<ul>
+<li>If (m, n) is so marked, SCCP take no further action for (m, n).</li>
+<li>If (m, n) is marked as unexecuted, then SCCP marks it as executed and evaluates all of the $\phi$-functions at the start of block $n$.</li>
+</ul>
+<p>Next, SCCP determines if block $n$ has been previously entered along another edge. If it has not, then SCCP evaluates the assignment or conditional branch in $n$. This processing may add edges to either worklist.</p>
+<p>For an SSA edge, the algorithm first checks if the destination block is reachable. If the block is reachable, SCCP calls one of <em>EvaluatePhi,</em> EvaluateAssign, or <em>EvaluateConditional</em>, based on the kind of operation that uses the SSA name.</p>
+<div align="center">
+  <img src="/2024/scalar-optimization/SCCP2.png" alt="SCCP2" style="width: 49%" />
+  <img src="/2024/scalar-optimization/SCCP3.png" alt="SCCP3" style="width: 49%" />
+</div>
+<p>After the propagation step, a final pass is required to replace operations that have operands with <em>Value</em> tags other than $\bot$. The algorithm cannot rewrite the code until the propagation completes.</p>
+<h3 id="subtleties-in-evaluating-and-rewriting-operations">Subtleties in Evaluating and Rewriting Operations</h3>
+<p>If the algorithm encounters a multiply operation with operands $\top$ and $\bot$, it might conclude that the operation produces $\bot$. Doing so, however, is premature. Subsequent analysis might lower the $\top$ to the constant 0, so that the multiply produces a value of 0. If SCCP uses the rule $\top \times \bot \rightarrow \bot$, it would increase the running time of SCCP, since the multiply’s value might follow the sequence $\top$, $\bot$, 0. Moreover, it might incorrectly drive other values to $\bot$ and cause SCCP to miss opportunities for improvement.</p>
+<p>To address this, SCCP should use three rules for multiplies that involve $\bot$, as follows: $\top \times \bot \rightarrow \top$, $\alpha \times \bot \rightarrow \bot$ for $\alpha ≠ T$ and $\alpha ≠ 0$, and $0 \times \bot \rightarrow 0$. This same effect occurs for any operation for which the value of one argument can completely determine the result.</p>
+<h3 id="effectiveness">Effectiveness</h3>
+<p>sccp can find constants that the sscp algorithm cannot. Similarly, it can discover unreachable code that no combination of the algorithms can discover.</p>
+<h2 id="strength-reduction">Strength Reduction</h2>
+<h3 id="background">Background</h3>
+<blockquote>
+<p>Region Constant: a value that doesn’t vary in a loop.
+Induction Variable: a value that varies systematically from iteration.</p>
+</blockquote>
+<p>Strength reduction looks for contexts in which <strong>an operation</strong>, such as a multiply, executes inside a loop and its operands are region constant and induction variable. When it finds this situation, it creates a new induction variable that computes the same sequence of values as the original multiplication in a more effcient way.</p>
+<blockquote>
+<p>Candidate Operation: an operation can be reduced with strength reduction.</p>
+</blockquote>
+<p>We assume that candidate Operation only has five forms as following:</p>
+<ul>
+<li>$x \leftarrow c \times i$</li>
+<li>$x \leftarrow i \times c$</li>
+<li>$x \leftarrow c + i$</li>
+<li>$x \leftarrow i + c$</li>
+<li>$x \leftarrow i - c$</li>
+</ul>
+<p>where $c$ is a region constant and $i$ is an induction variable.</p>
+<p>A region constant can either be a literal constant, or a loop-invariant value. With the code in SSA form, we can determine the region constant whether its definition dominate the entry to the loop that defines the induction variable.</p>
+<blockquote>
+<p>Performing LCM and constant propagation before strength reduction may expose more region constants.</p>
+</blockquote>
+<p>To make the algorithm effective, we are supposed to give a restricted definition to induction variable: an induction variable is a strongly connected component (SCC) of the SSA graph in which each operation that updates its value is one of</p>
+<ol>
+<li>an induction variable plus a region constant;</li>
+<li>an induction variable minus a region constant;</li>
+<li>a $\phi$-function, or</li>
+<li>a register-to-register copy from another induction variable.</li>
+</ol>
+<blockquote>
+<p>The SSA graph: In SSA form, each name has a unique definition, so that a name specifies a particular operation in the code that computed its value. We draw SSA graphs with edges that run from a use to its corresponding definition, and the compiler needs to traverse the edges in both directions.</p>
+</blockquote>
+<p>Consider an operation $o$ of the form $x \leftarrow i \times c$, where $i$ is an induction variable. To test whether $c$ has this property, OSR must relate the SCC for $i$ in the SSA graph back to a loop in the CFG.</p>
+<p>OSR considers the node with the lowest reverse postorder to be the header of the SCC and records that fact in the header field of each node of the SCC.</p>
+<p>In SSA form, the induction variable’s header is the $\phi$-function at the start of the outermost loop in which it varies. In an operation $x \leftarrow i \times c$, where $i$ is an induction variable, $c$ is a region constant if the CFG block that contains its definition dominates the CFG block that contains $i$’s header. To perform this test, the SSA construction must produce a map from each SSA node to the CFG block where it originated.</p>
+<h3 id="the-algorithm">The Algorithm</h3>
+<blockquote>
+<p>Tarjan’s Strongly Connected Region Finder:
+This is an method to compute the strongly connected component propsed by <a href="https://en.wikipedia.org/wiki/Robert_Tarjan">Robert Tarjan</a>. You can find more information of this <a href="https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm">algorithm</a>. If you feel confused about this method at first like me, you may get further understanding from this video: <a href="https://www.youtube.com/watch?v=wUgWX0nc4NY">Tarjan’s Strongly Connected Components</a></p>
+</blockquote>
+<p>OSR uses Tarjan’s rtrongly connected region finder to drive the entire process.</p>
+<div align="center">
+  <img src="/2024/scalar-optimization/OSR1.png" alt="OSR1" style="zoom: 50%" />
+</div>
+<h3 id="rewriting-the-code-1">Rewriting the Code</h3>
+<div align="center">
+  <img src="/2024/scalar-optimization/OSR2.png" alt="OSR2" style="zoom: 50%" />
+</div>
+<p><em>Replace</em> calls <em>Reduce</em> to rewrite the operation represented by n. Next, it replaces $n$ with a copy operation from the result produced by <em>Replace</em>. It sets $n$’s header field, and returns.</p>
+<p><em>Reduce</em> and <em>Apply</em> use a hash table to avoid inserting duplicate operations.</p>
+<ul>
+<li>Reduce: first, it calls <em>Clone</em> to copy the definition for <em>iv</em>, the induction variable in the operation being reduced. Next, it recurs on the operands of this new operands. An operand defined outside the scc must be either the initial value of <em>iv</em> or a value by which <em>iv</em> is incremented. The initial value must be a $\phi$-function argument from outside the SCC. Reduce calls Apply on each such argument.</li>
+<li><em>Apply</em> takes an opcode and two operands, locates an appropriate point in the code, and inserts that opeartion. It returns the new SSA name for the result of that operation. Normally, <em>Apply</em> gets a new name, inserts the operation, and returns the result. It locates an appropriate block for the new operation using dominance information. The new operation must go into a block dominated by the blocks that define its operands. If one operand is a constant, <em>Apply</em> can duplicate the constant in the block that defines the other operand. Otherwise, both operands must have definitions that dominate the header block, and one must dominate the other.</li>
+</ul>
+<h3 id="linear-function-test-replacement-lftr">Linear-Function Test Replacement (LFTR)</h3>
+<p>Strength reduction often eliminates all uses of an induction variable, except for an end-of-loop test.</p>
+<p>If the compiler can remove this last use, it can eliminate the original induction variable as dead code.</p>
+<p>To perform LFTR, the compiler must</p>
+<ol>
+<li>locate comparisons that rely on otherwise unneeded induction variables,</li>
+<li>locate an appropriate new induction variable that the comparison could use</li>
+<li>compute the correct region constant for the rewritten test, and</li>
+<li>rewrite tht code.</li>
+</ol>
+<p>Having lftr cooperate with OSR can simplify all of these tasks to produce a fast, effective transformation.</p>
+<p>The operations that lftr targets compare the value of an induction vari- able against a region constant. After OSR finishes its work, lftr should revisit each of these comparisons.</p>
+<p>To facilitate this process, Reduce can record the arithmetic relationship it uses to derive each new induction variable. It can insert a special LFTR edge from each node in the original induction variable to the corresponding node in its reduced counterpart and label it with the operation and region constant of the candidate operation responsible for creating that induction variable.</p>
+<p>When LFTR finds a comparison that should be replaced, it can follow the edges from its induction-variable argument to the final induction variable that resulted from a chain of one or more reductions. The comparison should use this induction variable with an appropriate new region constant.</p>
+    
+  </article>
+  <div class="paginator">
+    
+    <a class="link" href="https://forceoflife.cn/en/post/data-flow-analysis/">← prev</a>
+    
+    
+    <a class="link" href="https://forceoflife.cn/en/post/jsjzcysjsy/">next →</a>
+    
+  </div>
+  <div class="comment">
+    
+    
+    
+    
+      <script src="https://giscus.app/client.js"
+        data-repo="forceofsystem/forceofsystem.github.io"
+        data-repo-id="R_kgDOJn4OQw"
+        data-category="Announcements"
+        data-category-id="DIC_kwDOJn4OQ84CeqcH"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="top"
+        data-theme="preferred_color_scheme"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+
+    
+    
+    
+  </div>
+  
+</main>
+
+    <footer id="footer">
+  <div>
+    <span>© 2023</span> - <span>2024</span>
+  </div>
+
+  <div>
+    <span>Powered by </span>
+    <a class="link" href="https://gohugo.io/">Hugo</a>
+    <span> 🍦 Theme </span>
+    <a class="link" href="https://github.com/forceofsystem/hugo-theme-texify">TeXify</a>
+  </div>
+
+  <div class="footnote">
+    <span>Follow me on <a class=link href=https://github.com/forceofsystem>GitHub</a> |
+<a class=link href=https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh target=_blank rel=noopener>CC BY-NC-SA 4.0</a>
+</span>
+  </div>
+</footer>
+
+  </div>
+
+  
+  
+
+  
+  
+
+  
+  
+  
+    
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-TZC1QJP9DV"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-TZC1QJP9DV');
+        }
+      </script>
+    
+  
+
+
+
+</body>
+
+</html>
