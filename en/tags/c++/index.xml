@@ -2,19 +2,19 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>C&#43;&#43; on Force of Life</title>
-    <link>https://forceoflife.cn/en/tags/c&#43;&#43;/</link>
+    <link>http://localhost:1313/en/tags/c&#43;&#43;/</link>
     <description>Recent content in C&#43;&#43; on Force of Life</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <managingEditor>Zhixiao-Zhang@outlook.com (Patrick)</managingEditor>
     <webMaster>Zhixiao-Zhang@outlook.com (Patrick)</webMaster>
-    <lastBuildDate>Wed, 03 Jul 2024 09:13:27 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/en/tags/c++/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 03 Jul 2024 09:13:27 +0800</lastBuildDate><atom:link href="http://localhost:1313/en/tags/c++/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Introduction to C&#43;&#43;20: Concepts</title>
-      <link>https://forceoflife.cn/en/post/concepts/</link>
+      <link>http://localhost:1313/en/post/concepts/</link>
       <pubDate>Wed, 03 Jul 2024 09:13:27 +0800</pubDate>
       <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
-      <guid>https://forceoflife.cn/en/post/concepts/</guid>
+      <guid>http://localhost:1313/en/post/concepts/</guid>
       
       <description>&lt;h2 id=&#34;concepts&#34;&gt;Concepts&lt;/h2&gt;
 &lt;p&gt;Sometimes, we want to use template to meet multiple requirements, like this:&lt;/p&gt;

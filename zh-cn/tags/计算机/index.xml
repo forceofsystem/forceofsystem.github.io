@@ -2,19 +2,19 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>计算机 on 生活之力</title>
-    <link>https://forceoflife.cn/zh-cn/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA/</link>
+    <link>http://localhost:1313/zh-cn/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA/</link>
     <description>Recent content in 计算机 on 生活之力</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <managingEditor>Zhixiao-Zhang@outlook.com (Patrick)</managingEditor>
     <webMaster>Zhixiao-Zhang@outlook.com (Patrick)</webMaster>
-    <lastBuildDate>Fri, 28 Jun 2024 21:50:46 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/zh-cn/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 28 Jun 2024 21:50:46 +0800</lastBuildDate><atom:link href="http://localhost:1313/zh-cn/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>计算机组成拾遗--CPU 如何更快地运行程序？</title>
-      <link>https://forceoflife.cn/zh-cn/post/jsjzcysjsy/</link>
+      <link>http://localhost:1313/zh-cn/post/jsjzcysjsy/</link>
       <pubDate>Fri, 28 Jun 2024 21:50:46 +0800</pubDate>
       <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
-      <guid>https://forceoflife.cn/zh-cn/post/jsjzcysjsy/</guid>
+      <guid>http://localhost:1313/zh-cn/post/jsjzcysjsy/</guid>
       
       <description>&lt;p&gt;我校的计算机组成原理课的正式名字为：计算机组成原理与体系结构，然而讲授的内容却更多偏向组成原理，体系结构的部分只是讲了最简单的流水线部分的知识。所以我在大二时买了《计算机组成与设计——软件硬件接口》的 MIPS 版打算学习，只读了指令和编码的部分。上个学期又买了 RISC-V 版，也没有来得及看，正好最近在做 GCC RISC-V 后端的工作，自觉在阅读《Computer Architecture: A Quantitive Approach》前应该读一读这本书，便索性画了 3 天连读带写，将书中的内容写成一份博客分享出来。&lt;/p&gt;
 &lt;blockquote&gt;
@@ -376,10 +376,10 @@ vse.v    v1, 0(x20)  # 将结果存储到 y 中
     
     <item>
       <title>从零开始学 CPython - 0</title>
-      <link>https://forceoflife.cn/zh-cn/post/python1/</link>
+      <link>http://localhost:1313/zh-cn/post/python1/</link>
       <pubDate>Tue, 19 Dec 2023 14:28:43 +0800</pubDate>
       <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
-      <guid>https://forceoflife.cn/zh-cn/post/python1/</guid>
+      <guid>http://localhost:1313/zh-cn/post/python1/</guid>
       
       <description>&lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
 &lt;p&gt;Python 是时下最流行的编程语言，在 &lt;a href=&#34;https://www.tiobe.com/tiobe-index/&#34;&gt;TIOBE&lt;/a&gt; 排行榜上连续多年位居榜首，作为一名计算机相关专业的学生，掌握 Python 是非常有必要的。可我还不会 CPython，真是闻着伤心见者落泪。于是我痛定思痛，打算新开一个系列，从零开始学习 CPython，努力成为一个会调包的合格大学生（误）。你可能注意到了我说我要从零开始学习 CPython，如果你对 CPython 不够了解的话，&lt;del&gt;CPython 是 Python 的别称，意思是像 C 一样快的 Python。&lt;/del&gt;&lt;/p&gt;
@@ -818,10 +818,10 @@ vse.v    v1, 0(x20)  # 将结果存储到 y 中
     
     <item>
       <title>从hexo到hugo</title>
-      <link>https://forceoflife.cn/zh-cn/post/hexotohugo/</link>
+      <link>http://localhost:1313/zh-cn/post/hexotohugo/</link>
       <pubDate>Sat, 09 Sep 2023 16:30:25 +0800</pubDate>
       <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
-      <guid>https://forceoflife.cn/zh-cn/post/hexotohugo/</guid>
+      <guid>http://localhost:1313/zh-cn/post/hexotohugo/</guid>
       
       <description>&lt;p&gt;没错，我从 hexo 迁移到了 hugo。这已经是我用过的第三个博客软件了，不出意外的话，短期内应该不会再更换了。&lt;/p&gt;
 &lt;h2 id=&#34;更换理由&#34;&gt;更换理由&lt;/h2&gt;
@@ -844,10 +844,10 @@ vse.v    v1, 0(x20)  # 将结果存储到 y 中
     
     <item>
       <title>在Mac上配置Haskell环境</title>
-      <link>https://forceoflife.cn/zh-cn/post/haskellinmac/</link>
+      <link>http://localhost:1313/zh-cn/post/haskellinmac/</link>
       <pubDate>Wed, 28 Jun 2023 18:10:03 +0800</pubDate>
       <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
-      <guid>https://forceoflife.cn/zh-cn/post/haskellinmac/</guid>
+      <guid>http://localhost:1313/zh-cn/post/haskellinmac/</guid>
       
       <description>&lt;blockquote&gt;
 &lt;p&gt;这篇博客将介绍如何在&lt;strong&gt;中国&lt;/strong&gt;安装、配置 Mac 的 Haskell 环境和编辑器的高亮、补全，其中编辑器包括 Vim/Neovim、Visual Studio Code。&lt;/p&gt;

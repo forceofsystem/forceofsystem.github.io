@@ -2,19 +2,19 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>编译原理 on 生活之力</title>
-    <link>https://forceoflife.cn/zh-cn/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/</link>
+    <link>http://localhost:1313/zh-cn/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/</link>
     <description>Recent content in 编译原理 on 生活之力</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <managingEditor>Zhixiao-Zhang@outlook.com (Patrick)</managingEditor>
     <webMaster>Zhixiao-Zhang@outlook.com (Patrick)</webMaster>
-    <lastBuildDate>Tue, 19 Dec 2023 14:28:43 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/zh-cn/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 19 Dec 2023 14:28:43 +0800</lastBuildDate><atom:link href="http://localhost:1313/zh-cn/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>从零开始学 CPython - 0</title>
-      <link>https://forceoflife.cn/zh-cn/post/python1/</link>
+      <link>http://localhost:1313/zh-cn/post/python1/</link>
       <pubDate>Tue, 19 Dec 2023 14:28:43 +0800</pubDate>
       <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
-      <guid>https://forceoflife.cn/zh-cn/post/python1/</guid>
+      <guid>http://localhost:1313/zh-cn/post/python1/</guid>
       
       <description>&lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
 &lt;p&gt;Python 是时下最流行的编程语言，在 &lt;a href=&#34;https://www.tiobe.com/tiobe-index/&#34;&gt;TIOBE&lt;/a&gt; 排行榜上连续多年位居榜首，作为一名计算机相关专业的学生，掌握 Python 是非常有必要的。可我还不会 CPython，真是闻着伤心见者落泪。于是我痛定思痛，打算新开一个系列，从零开始学习 CPython，努力成为一个会调包的合格大学生（误）。你可能注意到了我说我要从零开始学习 CPython，如果你对 CPython 不够了解的话，&lt;del&gt;CPython 是 Python 的别称，意思是像 C 一样快的 Python。&lt;/del&gt;&lt;/p&gt;
