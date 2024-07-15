@@ -7,6 +7,62 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <managingEditor>Zhixiao-Zhang@outlook.com (Patrick)</managingEditor>
-    <webMaster>Zhixiao-Zhang@outlook.com (Patrick)</webMaster><atom:link href="https://forceoflife.cn/en/tags/index.xml" rel="self" type="application/rss+xml" />
+    <webMaster>Zhixiao-Zhang@outlook.com (Patrick)</webMaster>
+    <lastBuildDate>Wed, 03 Jul 2024 09:13:27 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/en/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>C&#43;&#43;</title>
+      <link>https://forceoflife.cn/en/tags/c&#43;&#43;/</link>
+      <pubDate>Wed, 03 Jul 2024 09:13:27 +0800</pubDate>
+      <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
+      <guid>https://forceoflife.cn/en/tags/c&#43;&#43;/</guid>
+      
+      <description></description>
+      
+    </item>
+    
+    <item>
+      <title>Computer</title>
+      <link>https://forceoflife.cn/en/tags/computer/</link>
+      <pubDate>Wed, 03 Jul 2024 09:13:27 +0800</pubDate>
+      <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
+      <guid>https://forceoflife.cn/en/tags/computer/</guid>
+      
+      <description></description>
+      
+    </item>
+    
+    <item>
+      <title>Architecture</title>
+      <link>https://forceoflife.cn/en/tags/architecture/</link>
+      <pubDate>Sun, 30 Jun 2024 19:06:13 +0800</pubDate>
+      <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
+      <guid>https://forceoflife.cn/en/tags/architecture/</guid>
+      
+      <description></description>
+      
+    </item>
+    
+    <item>
+      <title>Compiler</title>
+      <link>https://forceoflife.cn/en/tags/compiler/</link>
+      <pubDate>Thu, 14 Mar 2024 02:43:34 +0800</pubDate>
+      <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
+      <guid>https://forceoflife.cn/en/tags/compiler/</guid>
+      
+      <description></description>
+      
+    </item>
+    
+    <item>
+      <title>Optimization</title>
+      <link>https://forceoflife.cn/en/tags/optimization/</link>
+      <pubDate>Thu, 14 Mar 2024 02:43:34 +0800</pubDate>
+      <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
+      <guid>https://forceoflife.cn/en/tags/optimization/</guid>
+      
+      <description></description>
+      
+    </item>
+    
   </channel>
 </rss>

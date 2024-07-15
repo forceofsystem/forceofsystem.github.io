@@ -2,6 +2,95 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://forceoflife.cn/en/tags/c&#43;&#43;/</loc>
+    <lastmod>2024-07-03T09:13:27+08:00</lastmod>
+  </url><url>
+    <loc>https://forceoflife.cn/en/tags/computer/</loc>
+    <lastmod>2024-07-03T09:13:27+08:00</lastmod>
+  </url><url>
+    <loc>https://forceoflife.cn/en/</loc>
+    <lastmod>2024-07-03T09:13:27+08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh-cn"
+                href="https://forceoflife.cn/zh-cn/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://forceoflife.cn/en/"
+                />
+  </url><url>
+    <loc>https://forceoflife.cn/en/post/concepts/</loc>
+    <lastmod>2024-07-03T09:13:27+08:00</lastmod>
+  </url><url>
+    <loc>https://forceoflife.cn/en/post/</loc>
+    <lastmod>2024-07-03T09:13:27+08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh-cn"
+                href="https://forceoflife.cn/zh-cn/post/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://forceoflife.cn/en/post/"
+                />
+  </url><url>
+    <loc>https://forceoflife.cn/en/tags/</loc>
+    <lastmod>2024-07-03T09:13:27+08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh-cn"
+                href="https://forceoflife.cn/zh-cn/tags/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://forceoflife.cn/en/tags/"
+                />
+  </url><url>
+    <loc>https://forceoflife.cn/en/tags/architecture/</loc>
+    <lastmod>2024-06-30T19:06:13+08:00</lastmod>
+  </url><url>
+    <loc>https://forceoflife.cn/en/post/jsjzcysjsy/</loc>
+    <lastmod>2024-06-30T19:06:13+08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh-cn"
+                href="https://forceoflife.cn/zh-cn/post/jsjzcysjsy/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://forceoflife.cn/en/post/jsjzcysjsy/"
+                />
+  </url><url>
+    <loc>https://forceoflife.cn/en/tags/compiler/</loc>
+    <lastmod>2024-03-14T02:43:34+08:00</lastmod>
+  </url><url>
+    <loc>https://forceoflife.cn/en/tags/optimization/</loc>
+    <lastmod>2024-03-14T02:43:34+08:00</lastmod>
+  </url><url>
+    <loc>https://forceoflife.cn/en/post/scalar/</loc>
+    <lastmod>2024-03-14T02:43:34+08:00</lastmod>
+  </url><url>
+    <loc>https://forceoflife.cn/en/post/data-flow-analysis/</loc>
+    <lastmod>2024-03-05T23:16:20+08:00</lastmod>
+  </url><url>
+    <loc>https://forceoflife.cn/en/about/</loc>
+    <lastmod>2023-09-09T17:09:20+08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh-cn"
+                href="https://forceoflife.cn/zh-cn/about/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://forceoflife.cn/en/about/"
+                />
+  </url><url>
     <loc>https://forceoflife.cn/en/</loc>
     <lastmod>2023-09-09T17:09:20+08:00</lastmod>
     <xhtml:link
@@ -15,6 +104,19 @@
                 href="https://forceoflife.cn/en/"
                 />
   </url><url>
+    <loc>https://forceoflife.cn/en/page/</loc>
+    <lastmod>2023-09-09T17:09:20+08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh-cn"
+                href="https://forceoflife.cn/zh-cn/page/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://forceoflife.cn/en/page/"
+                />
+  </url><url>
     <loc>https://forceoflife.cn/en/series/</loc>
     <xhtml:link
                 rel="alternate"
@@ -25,18 +127,6 @@
                 rel="alternate"
                 hreflang="en"
                 href="https://forceoflife.cn/en/series/"
-                />
-  </url><url>
-    <loc>https://forceoflife.cn/en/tags/</loc>
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh-cn"
-                href="https://forceoflife.cn/zh-cn/tags/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="https://forceoflife.cn/en/tags/"
                 />
   </url>
 </urlset>
