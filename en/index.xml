@@ -1054,10 +1054,12 @@ Internally, the compiler can number the edges and parameter slots in any consist
 &lt;h3&gt;Sichuan University&lt;/h3&gt;
 &lt;/div&gt;
 &lt;div style=&#34;text-align: right&#34;&gt;September 2021 - Now&lt;/div&gt;
-&lt;li&gt; B.S.E in Software Engineering&lt;/li&gt;
-&lt;li&gt; Overall GPA: 3.54, average score: 85.73&lt;/li&gt;
-&lt;li&gt; IELTS score: 7.0 &lt;/li&gt;
-&lt;li&gt; Expected graduation date: June 2025.
+&lt;ul&gt;
+  &lt;li&gt;B.S.E in Software Engineering&lt;/li&gt;
+  &lt;li&gt;Overall GPA: 3.54, average score: 85.73&lt;/li&gt;
+  &lt;li&gt;IELTS score: 7.0 &lt;/li&gt;
+  &lt;li&gt;Expected graduation date: June 2025.
+&lt;/ul&gt;
 &lt;img width=&#34;100%&#34; height=&#34;2&#34; src=&#34;https://forceoflife.cn/resources/blackbar.png&#34;&gt;
 &lt;h2 id=&#34;internship&#34;&gt;Internship&lt;/h2&gt;
 &lt;div&gt;
@@ -1070,13 +1072,17 @@ Internally, the compiler can number the edges and parameter slots in any consist
   &lt;/div&gt;
   &lt;div style=&#34;text-align: right&#34;&gt;May 2024 - Now&lt;/div&gt;
 &lt;/div&gt;
-&lt;li&gt; Porting the RISC-V Packed SIMD extension to &lt;a href=&#34;https://ruyisdk.org/en/&#34;)&gt;RuyiSDK&lt;/a&gt;&#39;s gnu toolchain (GCC 14.1.0 and Binutils 2.42).&lt;/li&gt;
-&lt;li&gt; Engaged in the maintenance of &lt;a href=&#34;https://www.openhwgroup.org&#34;&gt;OpenHW Group&lt;/a&gt;’s CORE-V GNU Toolchain (Binutils and GCC).
+&lt;ul&gt;
+  &lt;li&gt; Porting the RISC-V Packed SIMD extension to &lt;a href=&#34;https://ruyisdk.org/en/&#34;)&gt;RuyiSDK&lt;/a&gt;&#39;s gnu toolchain (GCC 14.1.0 and Binutils 2.42).&lt;/li&gt;
+  &lt;li&gt; Engaged in the maintenance of &lt;a href=&#34;https://www.openhwgroup.org&#34;&gt;OpenHW Group&lt;/a&gt;’s CORE-V GNU Toolchain (Binutils and GCC).
+&lt;/ul&gt;
 &lt;img width=&#34;100%&#34; height=&#34;2&#34; src=&#34;https://forceoflife.cn/resources/blackbar.png&#34;&gt;
 &lt;h2&gt;Awards and Honours&lt;/h2&gt;
-&lt;li&gt;2021-2022 The Second Prize Scholarship.&lt;/li&gt;
-&lt;li&gt;&lt;b&gt;Champion&lt;/b&gt; of Debate Contest of &lt;i&gt;FengHuangZhanChi&lt;/i&gt; (the most important debate contest in SCU).&lt;/li&gt;
-&lt;li&gt;Third prize of 2022 &lt;i&gt;Debating Cup&lt;/i&gt; (a school-level debate contest).
+&lt;ul&gt;
+  &lt;li&gt;2021-2022 The Second Prize Scholarship.&lt;/li&gt;
+  &lt;li&gt;&lt;b&gt;Champion&lt;/b&gt; of Debate Contest of &lt;i&gt;FengHuangZhanChi&lt;/i&gt; (the most important debate contest in SCU).&lt;/li&gt;
+  &lt;li&gt;Third prize of 2022 &lt;i&gt;Debating Cup&lt;/i&gt; (a school-level debate contest).
+&lt;/ul&gt;
 &lt;img width=&#34;100%&#34; height=&#34;2&#34; src=&#34;https://forceoflife.cn/resources/blackbar.png&#34;&gt;
 &lt;h2 id=&#34;projects&#34;&gt;Projects&lt;/h2&gt;
 &lt;div&gt;
@@ -1088,31 +1094,43 @@ Internally, the compiler can number the edges and parameter slots in any consist
     &lt;div style=&#34;text-align: right&#34;&gt;December 2021 - May 2022&lt;/div&gt;
   &lt;/div&gt;
 &lt;/div&gt;
-&lt;li&gt;Designed a static typed language, which is C&#39;s subset.&lt;/li&gt;
-&lt;li&gt;Created an intermediate representation for the language.&lt;/li&gt;
-&lt;li&gt;Implented a compiler, which can transform the source code into mips assembly code.&lt;/li&gt;
-&lt;li&gt;Collaborated with other members to arrange the system to the Internet.&lt;/li&gt;
+&lt;ul&gt;
+  &lt;li&gt;Designed a static typed language, which is C&#39;s subset.&lt;/li&gt;
+  &lt;li&gt;Created an intermediate representation for the language.&lt;/li&gt;
+  &lt;li&gt;Implented a compiler, which can transform the source code into mips assembly code.&lt;/li&gt;
+  &lt;li&gt;Collaborated with other members to arrange the system to the Internet.&lt;/li&gt;
+&lt;/ul&gt;
 &lt;div&gt;
   &lt;div style=&#34;text-align: center&#34;&gt;
     &lt;h3&gt;MIT 6.1810 XV6 Lab&lt;/h3&gt;
   &lt;/div&gt;
 &lt;/div&gt;
-&lt;li&gt;Finished all the 10 labs of MIT 6.1810 independently, added the essential features for the xv6 operating system.&lt;/li&gt;
+&lt;ul&gt;
+  &lt;li&gt;Finished all the 10 labs of MIT 6.1810 independently, added the essential features for the xv6 operating system.&lt;/li&gt;
+&lt;/ul&gt;
 &lt;div&gt;
   &lt;div style=&#34;text-align: center&#34;&gt;
     &lt;h3&gt;Lox Crafting Interpreter&lt;/h3&gt;
   &lt;/div&gt;
 &lt;/div&gt;
-&lt;li&gt;Implemented a Lox interpreter in C and Java, which is a scripting language designed by Robert Nystrom in his book &lt;i&gt;Crafting Interpreters&lt;/i&gt;.
+&lt;ul&gt;
+  &lt;li&gt;Implemented a Lox interpreter in C and Java, which is a scripting language designed by Robert Nystrom in his book &lt;i&gt;Crafting Interpreters&lt;/i&gt;.&lt;/li&gt;
+&lt;/ul&gt;
 &lt;img width=&#34;100%&#34; height=&#34;2&#34; src=&#34;https://forceoflife.cn/resources/blackbar.png&#34;&gt;
 &lt;h2 id=&#34;skills-and-interests&#34;&gt;Skills and Interests&lt;/h2&gt;
-&lt;li&gt; Research interests: compiler (both programming language and architecture), software engineering, and operating system.&lt;/li&gt;
-&lt;li&gt;Compiler: familiar with the theory of compiler (especially for the optimization and backend).&lt;/li&gt;
-&lt;li&gt;Programming languages: &lt;b&gt;proficient&lt;/b&gt;: C; &lt;b&gt;familar&lt;/b&gt;: Modern C++ (C++ 20), Java, Python, Haskell, sh, Vimscript.&lt;/li&gt;
-&lt;li&gt;Instuction set architecture: RISC-V, ARM, AMD64.&lt;/li&gt;
-&lt;li&gt;Development softwares: GCC, Binutils, QEMU, Make, Vim, LLVM.&lt;/li&gt;
-&lt;li&gt;Operating system experience: Linux (for daily use and development), finishing Linux From Scratch.&lt;/li&gt;
-&lt;li&gt;Reading: &lt;i&gt;Engineer a Compiler&lt;/i&gt;, &lt;i&gt;Compiler: Principles, Techniques, and Tools&lt;/i&gt;, &lt;i&gt;Advanced Programming in the UNIX Environment&lt;/i&gt;, &lt;i&gt;The RISC-V Reader&lt;/i&gt;, &lt;i&gt;Operating System: Three Easy Pieces&lt;/i&gt;, &lt;i&gt;Computer Systems: A Programmer&#39;s Perspective&lt;/i&gt;, &lt;i&gt;A Tour of C++&lt;/i&gt; etc.
+&lt;ul&gt;
+  &lt;li&gt; Research interests: compiler (both programming language and architecture), software engineering, and operating system.&lt;/li&gt;
+  &lt;li&gt;Compiler: familiar with the theory of compiler (especially for the optimization and backend).&lt;/li&gt;
+  &lt;li&gt;Programming languages:
+      &lt;ul&gt;
+        &lt;li&gt;&lt;b&gt;Proficient&lt;/b&gt;: C;&lt;/li&gt;
+        &lt;li&gt;&lt;b&gt;Familar&lt;/b&gt;: Modern C++ (C++ 20), Java, Python, Haskell, sh, Vimscript.&lt;/li&gt;
+      &lt;/ul&gt;
+  &lt;li&gt;Instuction set architecture: RISC-V, ARM, AMD64.&lt;/li&gt;
+  &lt;li&gt;Development softwares: GCC, Binutils, QEMU, Make, Vim, LLVM.&lt;/li&gt;
+  &lt;li&gt;Operating system experience: Linux (for daily use and development), finishing Linux From Scratch.&lt;/li&gt;
+  &lt;li&gt;Reading: &lt;i&gt;Engineer a Compiler&lt;/i&gt;, &lt;i&gt;Compiler: Principles, Techniques, and Tools&lt;/i&gt;, &lt;i&gt;Advanced Programming in the UNIX Environment&lt;/i&gt;, &lt;i&gt;The RISC-V Reader&lt;/i&gt;, &lt;i&gt;Operating System: Three Easy Pieces&lt;/i&gt;, &lt;i&gt;Computer Systems: A Programmer&#39;s Perspective&lt;/i&gt;, &lt;i&gt;A Tour of C++&lt;/i&gt; etc.
+&lt;/ul&gt;
 &lt;img width=&#34;100%&#34; height=&#34;2&#34; src=&#34;https://forceoflife.cn/resources/blackbar.png&#34;&gt;
 </description>
       
