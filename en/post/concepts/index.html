@@ -101,29 +101,29 @@
   <div id="wrapper">
     <header id="header">
   <h1>
-    <a href="https://forceoflife.cn/">Force of Life</a>
+    <a class="head" href="https://forceoflife.cn/">Force of Life</a>
   </h1>
 
   <nav>
     
     <span class="nav-bar-item">
-      <a class="link" href="/en/">Home</a>
+      <a class="head" href="/en/">Home</a>
     </span>
     
     <span class="nav-bar-item">
-      <a class="link" href="/en/post/">Posts</a>
+      <a class="head" href="/en/post/">Posts</a>
     </span>
     
     <span class="nav-bar-item">
-      <a class="link" href="/en/about/">About</a>
+      <a class="head" href="/en/about/">About</a>
     </span>
     
     <span class="nav-bar-item">
-      <a class="link" href="/en/index.xml">Subscribe</a>
+      <a class="head" href="/en/index.xml">Subscribe</a>
     </span>
     
     <span class="nav-bar-item">
-      <a class="link" href="/zh-cn">中文</a>
+      <a class="head" href="/zh-cn">中文</a>
     </span>
     
   </nav>
@@ -136,19 +136,18 @@
   <h1>Introduction to C&#43;&#43;20: Concepts</h1>
   
   <div>
-    <b>Keywords: </b>
     
-    <a class="link" href='https://forceoflife.cn/tags/c&#43;&#43;'>#C&#43;&#43;</a>
+    <a class="link keywords" href='https://forceoflife.cn/tags/c&#43;&#43;'>#C&#43;&#43;</a>
     
-    <a class="link" href='https://forceoflife.cn/tags/computer'>#Computer</a>
+    <a class="link keywords" href='https://forceoflife.cn/tags/computer'>#Computer</a>
     
   </div>
   
   
   
   <details>
-    <summary>
-      <b>Table of Contents</b>
+    <summary class="toctext">
+        <b>Table of Contents</b>
     </summary>
     <div class="toc"><nav id="TableOfContents">
   <ul>
@@ -170,12 +169,12 @@
     
     <h2 id="concepts">Concepts</h2>
 <p>Sometimes, we want to use template to meet multiple requirements, like this:</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">template</span><span style="color:#666">&lt;</span><span style="color:#a2f;font-weight:bold">typename</span> Seq, <span style="color:#a2f;font-weight:bold">typename</span> value<span style="color:#666">&gt;</span>
+<div class="highlight"><pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#fe8019">template</span><span style="color:#fe8019">&lt;</span><span style="color:#fe8019">typename</span> Seq, <span style="color:#fe8019">typename</span> value<span style="color:#fe8019">&gt;</span>
 </span></span><span style="display:flex;"><span>Value sum(Seq s, Value v)
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>	<span style="color:#a2f;font-weight:bold">for</span> (<span style="color:#a2f;font-weight:bold">const</span> <span style="color:#a2f;font-weight:bold">auto</span> <span style="color:#666">&amp;</span><span style="color:#a0a000">x</span> : s)
-</span></span><span style="display:flex;"><span>		v <span style="color:#666">+=</span> x;
-</span></span><span style="display:flex;"><span>	<span style="color:#a2f;font-weight:bold">return</span> v;
+</span></span><span style="display:flex;"><span>	<span style="color:#fe8019">for</span> (<span style="color:#fe8019">const</span> <span style="color:#fe8019">auto</span> <span style="color:#fe8019">&amp;</span><span style="color:#fb4934">x</span> : s)
+</span></span><span style="display:flex;"><span>		v <span style="color:#fe8019">+=</span> x;
+</span></span><span style="display:flex;"><span>	<span style="color:#fe8019">return</span> v;
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>The <code>sum()</code> requires that:</p>
 <ul>
@@ -185,127 +184,127 @@
 <p>We call such requirements <code>concepts</code>.</p>
 <h3 id="use-of-concepts">Use of Concepts</h3>
 <p>We can use concepts to restrict <code>sum()</code>&rsquo;s paraeters better than using <code>typename</code>, like this:</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">template</span><span style="color:#666">&lt;</span>Sequence Seq, Number Num<span style="color:#666">&gt;</span>
+<div class="highlight"><pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#fe8019">template</span><span style="color:#fe8019">&lt;</span>Sequence Seq, Number Num<span style="color:#fe8019">&gt;</span>
 </span></span><span style="display:flex;"><span>Num sum(Seq s, Num v)
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>	<span style="color:#a2f;font-weight:bold">for</span> (<span style="color:#a2f;font-weight:bold">const</span> <span style="color:#a2f;font-weight:bold">auto</span> <span style="color:#666">&amp;</span><span style="color:#a0a000">x</span> : s)
-</span></span><span style="display:flex;"><span>		v <span style="color:#666">+=</span> x;
-</span></span><span style="display:flex;"><span>	<span style="color:#a2f;font-weight:bold">return</span> v;
+</span></span><span style="display:flex;"><span>	<span style="color:#fe8019">for</span> (<span style="color:#fe8019">const</span> <span style="color:#fe8019">auto</span> <span style="color:#fe8019">&amp;</span><span style="color:#fb4934">x</span> : s)
+</span></span><span style="display:flex;"><span>		v <span style="color:#fe8019">+=</span> x;
+</span></span><span style="display:flex;"><span>	<span style="color:#fe8019">return</span> v;
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>If you want to compile this code, you will receive a error, because we don&rsquo;t define <code>Sequence</code> and <code>Number</code>. A concept is a compile-time predicate specifying how one or more types can be used. But let we skip the definition of <code>Sequence</code> and <code>Number</code>.</p>
 <p>You may think you have fully met <code>sum()</code>&rsquo;s&rsquo; requirements. However, consider this line:</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span>v <span style="color:#666">+=</span> x;
+<div class="highlight"><pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span>v <span style="color:#fe8019">+=</span> x;
 </span></span></code></pre></div><p>This line implies that elements <code>x</code> from <code>s</code> can be added into v, i.e., we should be able to add elements of a <code>Sequence</code> to a <code>Number</code>.We can do that:</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">template</span><span style="color:#666">&lt;</span>Sequence Seq, Number Num<span style="color:#666">&gt;</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#a2f;font-weight:bold">requires</span> Arithmetic<span style="color:#666">&lt;</span>std<span style="color:#666">::</span>ranges<span style="color:#666">::</span>range_value_t<span style="color:#666">&lt;</span>Seq<span style="color:#666">&gt;</span>, Num<span style="color:#666">&gt;</span>
+<div class="highlight"><pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#fe8019">template</span><span style="color:#fe8019">&lt;</span>Sequence Seq, Number Num<span style="color:#fe8019">&gt;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#fe8019">requires</span> Arithmetic<span style="color:#fe8019">&lt;</span>std<span style="color:#fe8019">::</span>ranges<span style="color:#fe8019">::</span>range_value_t<span style="color:#fe8019">&lt;</span>Seq<span style="color:#fe8019">&gt;</span>, Num<span style="color:#fe8019">&gt;</span>
 </span></span><span style="display:flex;"><span>Num sum(Seq s, Num v) {
-</span></span><span style="display:flex;"><span>	<span style="color:#a2f;font-weight:bold">for</span> (<span style="color:#a2f;font-weight:bold">const</span> <span style="color:#a2f;font-weight:bold">auto</span> <span style="color:#a0a000">x</span> : s) {
-</span></span><span style="display:flex;"><span>		v <span style="color:#666">+=</span> x;
+</span></span><span style="display:flex;"><span>	<span style="color:#fe8019">for</span> (<span style="color:#fe8019">const</span> <span style="color:#fe8019">auto</span> <span style="color:#fb4934">x</span> : s) {
+</span></span><span style="display:flex;"><span>		v <span style="color:#fe8019">+=</span> x;
 </span></span><span style="display:flex;"><span>	}
-</span></span><span style="display:flex;"><span>	<span style="color:#a2f;font-weight:bold">return</span> v;
+</span></span><span style="display:flex;"><span>	<span style="color:#fe8019">return</span> v;
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>This saves us from accidentally tring to calculate the <code>sum()</code> of a <code>vector&lt;string&gt;</code> or a <code>vector&lt;int*&gt;</code> while still accepting <code>vector&lt;int&gt;</code> and <code>vector&lt;complex&lt;double&gt;&gt;</code>. You may think this code which makes no sense, however, there may be some inplicit type conversion, which allow the elements in <code>Sequence</code> can be added into <code>Num</code> that we don&rsquo;t want it to be. With <code>Arithmetic</code>, we can restrict these behaviours more precisely. We will also define <code>Arithmetic</code> later, don&rsquo;t worry.</p>
 <p>Anyway, even if you insist that <code>Arithmetic</code> is useless, I still need to introduce a new definition about concepts to you. Consider the keyword <code>requires</code>, it&rsquo;s called a <strong>requirements-clause</strong>. The <code>template&lt;Sequence Seq&gt;</code> notation is a shorthand for an explicit use of <code>requries Sequence&lt;Seq&gt;</code>. If you liked verbosity, you could equivalently have written</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">template</span><span style="color:#666">&lt;</span><span style="color:#a2f;font-weight:bold">typename</span> Seq, <span style="color:#a2f;font-weight:bold">typename</span> Num<span style="color:#666">&gt;</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#a2f;font-weight:bold">requires</span> Sequence<span style="color:#666">&lt;</span>Seq<span style="color:#666">&gt;</span> <span style="color:#666">&amp;&amp;</span> Number<span style="color:#666">&lt;</span>Num<span style="color:#666">&gt;</span> <span style="color:#666">&amp;&amp;</span> Arithmetic<span style="color:#666">&lt;</span>range_value_t<span style="color:#666">&lt;</span>Seq<span style="color:#666">&gt;</span>, Num<span style="color:#666">&gt;</span>
+<div class="highlight"><pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#fe8019">template</span><span style="color:#fe8019">&lt;</span><span style="color:#fe8019">typename</span> Seq, <span style="color:#fe8019">typename</span> Num<span style="color:#fe8019">&gt;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#fe8019">requires</span> Sequence<span style="color:#fe8019">&lt;</span>Seq<span style="color:#fe8019">&gt;</span> <span style="color:#fe8019">&amp;&amp;</span> Number<span style="color:#fe8019">&lt;</span>Num<span style="color:#fe8019">&gt;</span> <span style="color:#fe8019">&amp;&amp;</span> Arithmetic<span style="color:#fe8019">&lt;</span>range_value_t<span style="color:#fe8019">&lt;</span>Seq<span style="color:#fe8019">&gt;</span>, Num<span style="color:#fe8019">&gt;</span>
 </span></span><span style="display:flex;"><span>Num sum(Seq s, Num n)
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>	<span style="color:#080;font-style:italic">//...
-</span></span></span><span style="display:flex;"><span><span style="color:#080;font-style:italic"></span>}
+</span></span><span style="display:flex;"><span>	<span style="color:#928374;font-style:italic">//...
+</span></span></span><span style="display:flex;"><span><span style="color:#928374;font-style:italic"></span>}
 </span></span></code></pre></div><p>but I don&rsquo;t like it.</p>
 <p>There is another notation we can use:</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">template</span><span style="color:#666">&lt;</span>Sequence Seq, Arithmetic<span style="color:#666">&lt;</span>range_value_t<span style="color:#666">&lt;</span>Seq<span style="color:#666">&gt;&gt;</span> Num<span style="color:#666">&gt;</span>
+<div class="highlight"><pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#fe8019">template</span><span style="color:#fe8019">&lt;</span>Sequence Seq, Arithmetic<span style="color:#fe8019">&lt;</span>range_value_t<span style="color:#fe8019">&lt;</span>Seq<span style="color:#fe8019">&gt;&gt;</span> Num<span style="color:#fe8019">&gt;</span>
 </span></span><span style="display:flex;"><span>Num sum(Seq s, Num n);
 </span></span></code></pre></div><p>Furtheremore, someone may have noticed the definition of <code>Arithmetic</code>, but before talking the definition, we are supposed to learn more about concepts&rsquo;s usage.</p>
 <h3 id="concept-based-overloading">Concept-based Overloading</h3>
 <p>We can overload concepts based on their properties, much as we do for functions. Consider a slightly simplified standard-library function <code>advance()</code> that advances an iterator:</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">template</span><span style="color:#666">&lt;</span>forward_iterator Iter<span style="color:#666">&gt;</span>
-</span></span><span style="display:flex;"><span><span style="color:#0b0;font-weight:bold">void</span> advance(Iter p, <span style="color:#0b0;font-weight:bold">int</span> n)
+<div class="highlight"><pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#fe8019">template</span><span style="color:#fe8019">&lt;</span>forward_iterator Iter<span style="color:#fe8019">&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#fabd2f">void</span> advance(Iter p, <span style="color:#fabd2f">int</span> n)
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>	<span style="color:#a2f;font-weight:bold">while</span> (n<span style="color:#666">--</span>)
-</span></span><span style="display:flex;"><span>		<span style="color:#666">++</span>p;
+</span></span><span style="display:flex;"><span>	<span style="color:#fe8019">while</span> (n<span style="color:#fe8019">--</span>)
+</span></span><span style="display:flex;"><span>		<span style="color:#fe8019">++</span>p;
 </span></span><span style="display:flex;"><span>}
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">template</span><span style="color:#666">&lt;</span>random_access_iterator Iter<span style="color:#666">&gt;</span>
-</span></span><span style="display:flex;"><span><span style="color:#0b0;font-weight:bold">void</span> advance(Iter p, <span style="color:#0b0;font-weight:bold">int</span> n)
+</span></span><span style="display:flex;"><span><span style="color:#fe8019">template</span><span style="color:#fe8019">&lt;</span>random_access_iterator Iter<span style="color:#fe8019">&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#fabd2f">void</span> advance(Iter p, <span style="color:#fabd2f">int</span> n)
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>  p <span style="color:#666">+=</span> n;
+</span></span><span style="display:flex;"><span>  p <span style="color:#fe8019">+=</span> n;
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>Like other overloading, this is a compile-time mechanism implying no run-time cost, and where the compiler doesn&rsquo;t find a best choice, it gives an ambiguity error.</p>
 <h3 id="valid-code">Valid Code</h3>
 <p>The question of whether a set of template arguments offers what a template requires of its template parameters ultimately boils down to whether <strong>some expressions are valid</strong>.</p>
 <p>Using a <strong>requires-expression</strong>, we can check if a set of expressions is valid. We can write <code>advance()</code> without the use of the standard-library concept <code>random_access_iterator</code>:</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">template</span><span style="color:#666">&lt;</span>forward_iterator Iter<span style="color:#666">&gt;</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#a2f;font-weight:bold">requires</span> requries(Iter p, <span style="color:#0b0;font-weight:bold">int</span> i) { p[i]; p <span style="color:#666">+</span> i;}
-</span></span><span style="display:flex;"><span><span style="color:#0b0;font-weight:bold">void</span> <span style="color:#00a000">advance</span>(Iter p, <span style="color:#0b0;font-weight:bold">int</span> n)
+<div class="highlight"><pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#fe8019">template</span><span style="color:#fe8019">&lt;</span>forward_iterator Iter<span style="color:#fe8019">&gt;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#fe8019">requires</span> requries(Iter p, <span style="color:#fabd2f">int</span> i) { p[i]; p <span style="color:#fe8019">+</span> i;}
+</span></span><span style="display:flex;"><span><span style="color:#fabd2f">void</span> <span style="color:#fabd2f">advance</span>(Iter p, <span style="color:#fabd2f">int</span> n)
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>	p <span style="color:#666">+=</span> n;
+</span></span><span style="display:flex;"><span>	p <span style="color:#fe8019">+=</span> n;
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>The first <code>requires</code> starts the requirements-clause and the second one starts the <strong>requires-expression</strong>. A <strong>requires-expression</strong> is a predicate that is true if the statements in it are valid code and false if not.</p>
 <p><strong>If you see requires requires in your code, it is probably too low level and will eventually become a problem.</strong> You can consider require-expression the assembly code of generic programming, much like how assembly code is to ordinary programming.</p>
 <h3 id="definition-of-concepts">Definition of Concepts</h3>
 <p>Now, we can start to learn how to define a concept. Before this, you need to know it&rsquo;s easier to use a concept from a good library than to write a new one.</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">template</span><span style="color:#666">&lt;</span><span style="color:#a2f;font-weight:bold">typename</span> T<span style="color:#666">&gt;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">concept</span> Equality_comparable <span style="color:#666">=</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#a2f;font-weight:bold">requires</span> (T a, T b) {
-</span></span><span style="display:flex;"><span>		{ a <span style="color:#666">==</span> b } <span style="color:#666">-&gt;</span> Boolean;
-</span></span><span style="display:flex;"><span>		{ a <span style="color:#666">!=</span> b } <span style="color:#666">-&gt;</span> Boolean;
+<div class="highlight"><pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#fe8019">template</span><span style="color:#fe8019">&lt;</span><span style="color:#fe8019">typename</span> T<span style="color:#fe8019">&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#fe8019">concept</span> Equality_comparable <span style="color:#fe8019">=</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#fe8019">requires</span> (T a, T b) {
+</span></span><span style="display:flex;"><span>		{ a <span style="color:#fe8019">==</span> b } <span style="color:#fe8019">-&gt;</span> Boolean;
+</span></span><span style="display:flex;"><span>		{ a <span style="color:#fe8019">!=</span> b } <span style="color:#fe8019">-&gt;</span> Boolean;
 </span></span><span style="display:flex;"><span>	};
 </span></span></code></pre></div><p>Tha value of a concept is always <strong>bool</strong>. The result of an <code>{...}</code> specified after a <code>-&gt;</code> must be a concept. We can slightly modify the <code>Equality_comparable</code> to handle nonhomogenous comparisons:</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">template</span><span style="color:#666">&lt;</span><span style="color:#a2f;font-weight:bold">typename</span> T, <span style="color:#a2f;font-weight:bold">typename</span> T2 <span style="color:#666">=</span> T<span style="color:#666">&gt;</span> <span style="color:#080;font-style:italic">// default template argument
-</span></span></span><span style="display:flex;"><span><span style="color:#080;font-style:italic"></span><span style="color:#a2f;font-weight:bold">concept</span> Equality_comparable <span style="color:#666">=</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#a2f;font-weight:bold">requires</span> (T a, T2 b) {
-</span></span><span style="display:flex;"><span>		{ a <span style="color:#666">==</span> b } <span style="color:#666">-&gt;</span> Boolean;
-</span></span><span style="display:flex;"><span>		{ a <span style="color:#666">!=</span> b } <span style="color:#666">-&gt;</span> Boolean;
-</span></span><span style="display:flex;"><span>		{ b <span style="color:#666">==</span> a } <span style="color:#666">-&gt;</span> Boolean;
-</span></span><span style="display:flex;"><span>		{ b <span style="color:#666">!=</span> a } <span style="color:#666">-&gt;</span> Boolean;
+<div class="highlight"><pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#fe8019">template</span><span style="color:#fe8019">&lt;</span><span style="color:#fe8019">typename</span> T, <span style="color:#fe8019">typename</span> T2 <span style="color:#fe8019">=</span> T<span style="color:#fe8019">&gt;</span> <span style="color:#928374;font-style:italic">// default template argument
+</span></span></span><span style="display:flex;"><span><span style="color:#928374;font-style:italic"></span><span style="color:#fe8019">concept</span> Equality_comparable <span style="color:#fe8019">=</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#fe8019">requires</span> (T a, T2 b) {
+</span></span><span style="display:flex;"><span>		{ a <span style="color:#fe8019">==</span> b } <span style="color:#fe8019">-&gt;</span> Boolean;
+</span></span><span style="display:flex;"><span>		{ a <span style="color:#fe8019">!=</span> b } <span style="color:#fe8019">-&gt;</span> Boolean;
+</span></span><span style="display:flex;"><span>		{ b <span style="color:#fe8019">==</span> a } <span style="color:#fe8019">-&gt;</span> Boolean;
+</span></span><span style="display:flex;"><span>		{ b <span style="color:#fe8019">!=</span> a } <span style="color:#fe8019">-&gt;</span> Boolean;
 </span></span><span style="display:flex;"><span>	};
 </span></span></code></pre></div><p>Ultimately, we can define a concept that requires arithmetic to be valid between numbers.</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">template</span><span style="color:#666">&lt;</span><span style="color:#a2f;font-weight:bold">typename</span> S<span style="color:#666">&gt;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">concept</span> Sequence <span style="color:#666">=</span> <span style="color:#a2f;font-weight:bold">requires</span>(S a) {
-</span></span><span style="display:flex;"><span>	<span style="color:#a2f;font-weight:bold">typename</span> std<span style="color:#666">::</span>ranges<span style="color:#666">::</span>range_value_t<span style="color:#666">&lt;</span>S<span style="color:#666">&gt;</span>; <span style="color:#080;font-style:italic">// it must provide a value type, and
-</span></span></span><span style="display:flex;"><span><span style="color:#080;font-style:italic"></span>	<span style="color:#a2f;font-weight:bold">typename</span> std<span style="color:#666">::</span>ranges<span style="color:#666">::</span>range_reference_t<span style="color:#666">&lt;</span>S<span style="color:#666">&gt;</span>; <span style="color:#080;font-style:italic">// an iterator type.
-</span></span></span><span style="display:flex;"><span><span style="color:#080;font-style:italic"></span>
-</span></span><span style="display:flex;"><span>  <span style="color:#080;font-style:italic">// it must be a container
-</span></span></span><span style="display:flex;"><span><span style="color:#080;font-style:italic"></span>	{ a.begin() } <span style="color:#666">-&gt;</span> std<span style="color:#666">::</span>same_as<span style="color:#666">&lt;</span>std<span style="color:#666">::</span>ranges<span style="color:#666">::</span>iterator_t<span style="color:#666">&lt;</span>S<span style="color:#666">&gt;&gt;</span>;
-</span></span><span style="display:flex;"><span>	{ a.end() } <span style="color:#666">-&gt;</span> std<span style="color:#666">::</span>same_as<span style="color:#666">&lt;</span>std<span style="color:#666">::</span>ranges<span style="color:#666">::</span>iterator_t<span style="color:#666">&lt;</span>S<span style="color:#666">&gt;&gt;</span>;
+<div class="highlight"><pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#fe8019">template</span><span style="color:#fe8019">&lt;</span><span style="color:#fe8019">typename</span> S<span style="color:#fe8019">&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#fe8019">concept</span> Sequence <span style="color:#fe8019">=</span> <span style="color:#fe8019">requires</span>(S a) {
+</span></span><span style="display:flex;"><span>	<span style="color:#fe8019">typename</span> std<span style="color:#fe8019">::</span>ranges<span style="color:#fe8019">::</span>range_value_t<span style="color:#fe8019">&lt;</span>S<span style="color:#fe8019">&gt;</span>; <span style="color:#928374;font-style:italic">// it must provide a value type, and
+</span></span></span><span style="display:flex;"><span><span style="color:#928374;font-style:italic"></span>	<span style="color:#fe8019">typename</span> std<span style="color:#fe8019">::</span>ranges<span style="color:#fe8019">::</span>range_reference_t<span style="color:#fe8019">&lt;</span>S<span style="color:#fe8019">&gt;</span>; <span style="color:#928374;font-style:italic">// an iterator type.
+</span></span></span><span style="display:flex;"><span><span style="color:#928374;font-style:italic"></span>
+</span></span><span style="display:flex;"><span>  <span style="color:#928374;font-style:italic">// it must be a container
+</span></span></span><span style="display:flex;"><span><span style="color:#928374;font-style:italic"></span>	{ a.begin() } <span style="color:#fe8019">-&gt;</span> std<span style="color:#fe8019">::</span>same_as<span style="color:#fe8019">&lt;</span>std<span style="color:#fe8019">::</span>ranges<span style="color:#fe8019">::</span>iterator_t<span style="color:#fe8019">&lt;</span>S<span style="color:#fe8019">&gt;&gt;</span>;
+</span></span><span style="display:flex;"><span>	{ a.end() } <span style="color:#fe8019">-&gt;</span> std<span style="color:#fe8019">::</span>same_as<span style="color:#fe8019">&lt;</span>std<span style="color:#fe8019">::</span>ranges<span style="color:#fe8019">::</span>iterator_t<span style="color:#fe8019">&lt;</span>S<span style="color:#fe8019">&gt;&gt;</span>;
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#080;font-style:italic">// its iterator type must be at least an input_iterator
-</span></span></span><span style="display:flex;"><span><span style="color:#080;font-style:italic"></span>	<span style="color:#a2f;font-weight:bold">requires</span> std<span style="color:#666">::</span>input_iterator<span style="color:#666">&lt;</span>std<span style="color:#666">::</span>ranges<span style="color:#666">::</span>iterator_t<span style="color:#666">&lt;</span>S<span style="color:#666">&gt;&gt;</span>;
-</span></span><span style="display:flex;"><span>	<span style="color:#a2f;font-weight:bold">requires</span> std<span style="color:#666">::</span>same_as<span style="color:#666">&lt;</span>std<span style="color:#666">::</span>ranges<span style="color:#666">::</span>range_value_t<span style="color:#666">&lt;</span>S<span style="color:#666">&gt;</span>,
-</span></span><span style="display:flex;"><span>  	std<span style="color:#666">::</span>iter_value_t<span style="color:#666">&lt;</span>std<span style="color:#666">::</span>ranges<span style="color:#666">::</span>iterator_t<span style="color:#666">&lt;</span>S<span style="color:#666">&gt;&gt;&gt;</span>;
+</span></span><span style="display:flex;"><span>  <span style="color:#928374;font-style:italic">// its iterator type must be at least an input_iterator
+</span></span></span><span style="display:flex;"><span><span style="color:#928374;font-style:italic"></span>	<span style="color:#fe8019">requires</span> std<span style="color:#fe8019">::</span>input_iterator<span style="color:#fe8019">&lt;</span>std<span style="color:#fe8019">::</span>ranges<span style="color:#fe8019">::</span>iterator_t<span style="color:#fe8019">&lt;</span>S<span style="color:#fe8019">&gt;&gt;</span>;
+</span></span><span style="display:flex;"><span>	<span style="color:#fe8019">requires</span> std<span style="color:#fe8019">::</span>same_as<span style="color:#fe8019">&lt;</span>std<span style="color:#fe8019">::</span>ranges<span style="color:#fe8019">::</span>range_value_t<span style="color:#fe8019">&lt;</span>S<span style="color:#fe8019">&gt;</span>,
+</span></span><span style="display:flex;"><span>  	std<span style="color:#fe8019">::</span>iter_value_t<span style="color:#fe8019">&lt;</span>std<span style="color:#fe8019">::</span>ranges<span style="color:#fe8019">::</span>iterator_t<span style="color:#fe8019">&lt;</span>S<span style="color:#fe8019">&gt;&gt;&gt;</span>;
 </span></span><span style="display:flex;"><span>};
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">template</span><span style="color:#666">&lt;</span><span style="color:#a2f;font-weight:bold">typename</span> T, <span style="color:#a2f;font-weight:bold">typename</span> U<span style="color:#666">=</span>T<span style="color:#666">&gt;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">concept</span> Number <span style="color:#666">=</span>
-</span></span><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">requires</span>(T x, U y) {
-</span></span><span style="display:flex;"><span>	x<span style="color:#666">+</span>y; x<span style="color:#666">-</span>y; x<span style="color:#666">*</span>y; x<span style="color:#666">/</span>y;
-</span></span><span style="display:flex;"><span>	x<span style="color:#666">+=</span>y; x<span style="color:#666">-=</span>y; x<span style="color:#666">*=</span>y; x<span style="color:#666">/=</span>y;
-</span></span><span style="display:flex;"><span>	x<span style="color:#666">=</span>x;
-</span></span><span style="display:flex;"><span>	x<span style="color:#666">=</span><span style="color:#666">0</span>;
+</span></span><span style="display:flex;"><span><span style="color:#fe8019">template</span><span style="color:#fe8019">&lt;</span><span style="color:#fe8019">typename</span> T, <span style="color:#fe8019">typename</span> U<span style="color:#fe8019">=</span>T<span style="color:#fe8019">&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#fe8019">concept</span> Number <span style="color:#fe8019">=</span>
+</span></span><span style="display:flex;"><span><span style="color:#fe8019">requires</span>(T x, U y) {
+</span></span><span style="display:flex;"><span>	x<span style="color:#fe8019">+</span>y; x<span style="color:#fe8019">-</span>y; x<span style="color:#fe8019">*</span>y; x<span style="color:#fe8019">/</span>y;
+</span></span><span style="display:flex;"><span>	x<span style="color:#fe8019">+=</span>y; x<span style="color:#fe8019">-=</span>y; x<span style="color:#fe8019">*=</span>y; x<span style="color:#fe8019">/=</span>y;
+</span></span><span style="display:flex;"><span>	x<span style="color:#fe8019">=</span>x;
+</span></span><span style="display:flex;"><span>	x<span style="color:#fe8019">=</span><span style="color:#d3869b">0</span>;
 </span></span><span style="display:flex;"><span>};
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">template</span><span style="color:#666">&lt;</span><span style="color:#a2f;font-weight:bold">typename</span> T, <span style="color:#a2f;font-weight:bold">typename</span> U<span style="color:#666">&gt;</span>
-</span></span><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">concept</span> Arithmetic <span style="color:#666">=</span> Number<span style="color:#666">&lt;</span>T, U<span style="color:#666">&gt;</span> <span style="color:#666">&amp;&amp;</span> Number<span style="color:#666">&lt;</span>U, T<span style="color:#666">&gt;</span>;
+</span></span><span style="display:flex;"><span><span style="color:#fe8019">template</span><span style="color:#fe8019">&lt;</span><span style="color:#fe8019">typename</span> T, <span style="color:#fe8019">typename</span> U<span style="color:#fe8019">&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#fe8019">concept</span> Arithmetic <span style="color:#fe8019">=</span> Number<span style="color:#fe8019">&lt;</span>T, U<span style="color:#fe8019">&gt;</span> <span style="color:#fe8019">&amp;&amp;</span> Number<span style="color:#fe8019">&lt;</span>U, T<span style="color:#fe8019">&gt;</span>;
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">template</span><span style="color:#666">&lt;</span>Sequence Seq, Number Num<span style="color:#666">&gt;</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#a2f;font-weight:bold">requires</span> Arithmetic<span style="color:#666">&lt;</span>std<span style="color:#666">::</span>ranges<span style="color:#666">::</span>range_value_t<span style="color:#666">&lt;</span>Seq<span style="color:#666">&gt;</span>, Num<span style="color:#666">&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#fe8019">template</span><span style="color:#fe8019">&lt;</span>Sequence Seq, Number Num<span style="color:#fe8019">&gt;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#fe8019">requires</span> Arithmetic<span style="color:#fe8019">&lt;</span>std<span style="color:#fe8019">::</span>ranges<span style="color:#fe8019">::</span>range_value_t<span style="color:#fe8019">&lt;</span>Seq<span style="color:#fe8019">&gt;</span>, Num<span style="color:#fe8019">&gt;</span>
 </span></span><span style="display:flex;"><span>Num sum(Seq s, Num v) {
-</span></span><span style="display:flex;"><span>	<span style="color:#a2f;font-weight:bold">for</span> (<span style="color:#a2f;font-weight:bold">const</span> <span style="color:#a2f;font-weight:bold">auto</span> <span style="color:#a0a000">x</span> : s) {
-</span></span><span style="display:flex;"><span>		v <span style="color:#666">+=</span> x;
+</span></span><span style="display:flex;"><span>	<span style="color:#fe8019">for</span> (<span style="color:#fe8019">const</span> <span style="color:#fe8019">auto</span> <span style="color:#fb4934">x</span> : s) {
+</span></span><span style="display:flex;"><span>		v <span style="color:#fe8019">+=</span> x;
 </span></span><span style="display:flex;"><span>	}
-</span></span><span style="display:flex;"><span>	<span style="color:#a2f;font-weight:bold">return</span> v;
+</span></span><span style="display:flex;"><span>	<span style="color:#fe8019">return</span> v;
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>Last but not least, the concepts specfied for a template are used to check arguments at the point of use of the template. They are not used to check the use of the parameters in the definition of the template. For example:</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">template</span><span style="color:#666">&lt;</span>equality_comparable T<span style="color:#666">&gt;</span>
-</span></span><span style="display:flex;"><span><span style="color:#0b0;font-weight:bold">bool</span> cmp(T a, T b)
+<div class="highlight"><pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#fe8019">template</span><span style="color:#fe8019">&lt;</span>equality_comparable T<span style="color:#fe8019">&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#fabd2f">bool</span> cmp(T a, T b)
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>	<span style="color:#a2f;font-weight:bold">return</span> a <span style="color:#666">&lt;</span> b;
+</span></span><span style="display:flex;"><span>	<span style="color:#fe8019">return</span> a <span style="color:#fe8019">&lt;</span> b;
 </span></span><span style="display:flex;"><span>}
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#0b0;font-weight:bold">bool</span> b0 <span style="color:#666">=</span> cmp(cout, cerr); <span style="color:#080;font-style:italic">// error: ostream doesn&#39;t support ==
-</span></span></span><span style="display:flex;"><span><span style="color:#080;font-style:italic"></span><span style="color:#0b0;font-weight:bold">bool</span> b1 <span style="color:#666">=</span> cmp(<span style="color:#666">2</span>, <span style="color:#666">3</span>); <span style="color:#080;font-style:italic">// ok
-</span></span></span><span style="display:flex;"><span><span style="color:#080;font-style:italic"></span><span style="color:#0b0;font-weight:bold">bool</span> b2 <span style="color:#666">=</span> cmp(<span style="color:#666">2</span><span style="color:#666">+</span><span style="color:#666">3</span>i, <span style="color:#666">3</span><span style="color:#666">+</span><span style="color:#666">4</span>i); <span style="color:#080;font-style:italic">// error: complex&lt;double&gt; doesn&#39;t support &lt;
+</span></span><span style="display:flex;"><span><span style="color:#fabd2f">bool</span> b0 <span style="color:#fe8019">=</span> cmp(cout, cerr); <span style="color:#928374;font-style:italic">// error: ostream doesn&#39;t support ==
+</span></span></span><span style="display:flex;"><span><span style="color:#928374;font-style:italic"></span><span style="color:#fabd2f">bool</span> b1 <span style="color:#fe8019">=</span> cmp(<span style="color:#d3869b">2</span>, <span style="color:#d3869b">3</span>); <span style="color:#928374;font-style:italic">// ok
+</span></span></span><span style="display:flex;"><span><span style="color:#928374;font-style:italic"></span><span style="color:#fabd2f">bool</span> b2 <span style="color:#fe8019">=</span> cmp(<span style="color:#d3869b">2</span><span style="color:#fe8019">+</span><span style="color:#d3869b">3</span>i, <span style="color:#d3869b">3</span><span style="color:#fe8019">+</span><span style="color:#d3869b">4</span>i); <span style="color:#928374;font-style:italic">// error: complex&lt;double&gt; doesn&#39;t support &lt;
 </span></span></span></code></pre></div><p>The check of concepts catches the attempt to pass the <code>ostream</code>s, but accepts the <code>int</code>s and <code>complex&lt;double&gt;</code>s because those two types support <code>==</code>, though <code>complex&lt;double&gt;</code> doesn&rsquo;t support <code>&lt;</code>.</p>
 <p>Delaying the final check of the template definition until instantiation time gives two benefits:</p>
 <ul>
@@ -313,33 +312,33 @@
 <li>We can insert debug, tracing telemetry, etc. code into a template without affecting its interface.</li>
 </ul>
 <p>Given concepts, we can strengthen requirements of all such initializations by preceding <code>auto</code> by a concept:</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">auto</span> <span style="color:#00a000">twice</span>(Arithmetic <span style="color:#a2f;font-weight:bold">auto</span> x) { <span style="color:#a2f;font-weight:bold">return</span> x <span style="color:#666">+</span> x; }
-</span></span><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">auto</span> <span style="color:#00a000">thrice</span>(<span style="color:#a2f;font-weight:bold">auto</span> x) { <span style="color:#a2f;font-weight:bold">return</span> x <span style="color:#666">+</span> x <span style="color:#666">+</span> x; }
+<div class="highlight"><pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#fe8019">auto</span> <span style="color:#fabd2f">twice</span>(Arithmetic <span style="color:#fe8019">auto</span> x) { <span style="color:#fe8019">return</span> x <span style="color:#fe8019">+</span> x; }
+</span></span><span style="display:flex;"><span><span style="color:#fe8019">auto</span> <span style="color:#fabd2f">thrice</span>(<span style="color:#fe8019">auto</span> x) { <span style="color:#fe8019">return</span> x <span style="color:#fe8019">+</span> x <span style="color:#fe8019">+</span> x; }
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">auto</span> x1 <span style="color:#666">=</span> twice(<span style="color:#666">7</span>); <span style="color:#080;font-style:italic">// ok
-</span></span></span><span style="display:flex;"><span><span style="color:#080;font-style:italic"></span>string s <span style="color:#666">=</span> <span style="color:#b44">&#34;hello&#34;</span>;
-</span></span><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">auto</span> x2 <span style="color:#666">=</span> twice(s); <span style="color:#080;font-style:italic">// error: a string doesn&#39;t meet the Arithmetic&#39;s requirements
-</span></span></span><span style="display:flex;"><span><span style="color:#080;font-style:italic"></span><span style="color:#a2f;font-weight:bold">auto</span> x3 <span style="color:#666">=</span> thrice(s); <span style="color:#080;font-style:italic">// ok, x3 = &#34;hellohellohello&#34;
+</span></span><span style="display:flex;"><span><span style="color:#fe8019">auto</span> x1 <span style="color:#fe8019">=</span> twice(<span style="color:#d3869b">7</span>); <span style="color:#928374;font-style:italic">// ok
+</span></span></span><span style="display:flex;"><span><span style="color:#928374;font-style:italic"></span>string s <span style="color:#fe8019">=</span> <span style="color:#b8bb26">&#34;hello&#34;</span>;
+</span></span><span style="display:flex;"><span><span style="color:#fe8019">auto</span> x2 <span style="color:#fe8019">=</span> twice(s); <span style="color:#928374;font-style:italic">// error: a string doesn&#39;t meet the Arithmetic&#39;s requirements
+</span></span></span><span style="display:flex;"><span><span style="color:#928374;font-style:italic"></span><span style="color:#fe8019">auto</span> x3 <span style="color:#fe8019">=</span> thrice(s); <span style="color:#928374;font-style:italic">// ok, x3 = &#34;hellohellohello&#34;
 </span></span></span></code></pre></div><p>Concepts can also constrain the initialization of variables:</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">auto</span> ch1 <span style="color:#666">=</span> open_channel(<span style="color:#b44">&#34;foo&#34;</span>); <span style="color:#080;font-style:italic">// works with whatever open_channel() returns
-</span></span></span><span style="display:flex;"><span><span style="color:#080;font-style:italic"></span>Arithmetic <span style="color:#a2f;font-weight:bold">auto</span> ch2 <span style="color:#666">=</span> open_channel(<span style="color:#b44">&#34;foo&#34;</span>); <span style="color:#080;font-style:italic">// error: a channel is not Arithmetic
-</span></span></span><span style="display:flex;"><span><span style="color:#080;font-style:italic"></span>Channel <span style="color:#a2f;font-weight:bold">auto</span> ch3 <span style="color:#666">=</span> open_channel(<span style="color:#b44">&#34;foo&#34;</span>); <span style="color:#080;font-style:italic">// ok: assuming Channel is an appropriate concept and that open_channel() returns one
+<div class="highlight"><pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#fe8019">auto</span> ch1 <span style="color:#fe8019">=</span> open_channel(<span style="color:#b8bb26">&#34;foo&#34;</span>); <span style="color:#928374;font-style:italic">// works with whatever open_channel() returns
+</span></span></span><span style="display:flex;"><span><span style="color:#928374;font-style:italic"></span>Arithmetic <span style="color:#fe8019">auto</span> ch2 <span style="color:#fe8019">=</span> open_channel(<span style="color:#b8bb26">&#34;foo&#34;</span>); <span style="color:#928374;font-style:italic">// error: a channel is not Arithmetic
+</span></span></span><span style="display:flex;"><span><span style="color:#928374;font-style:italic"></span>Channel <span style="color:#fe8019">auto</span> ch3 <span style="color:#fe8019">=</span> open_channel(<span style="color:#b8bb26">&#34;foo&#34;</span>); <span style="color:#928374;font-style:italic">// ok: assuming Channel is an appropriate concept and that open_channel() returns one
 </span></span></span></code></pre></div><p>This is a great way to counter overuse of <code>auto</code> and to document requirements on code using generic functions. It can also be used to constrain a return type or define a local variable:</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span>Number <span style="color:#a2f;font-weight:bold">auto</span> <span style="color:#00a000">some_function</span>(<span style="color:#0b0;font-weight:bold">int</span> x)
+<div class="highlight"><pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span>Number <span style="color:#fe8019">auto</span> <span style="color:#fabd2f">some_function</span>(<span style="color:#fabd2f">int</span> x)
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>	<span style="color:#080;font-style:italic">// ...
-</span></span></span><span style="display:flex;"><span><span style="color:#080;font-style:italic"></span>	<span style="color:#a2f;font-weight:bold">return</span> fct(x);
-</span></span><span style="display:flex;"><span>	<span style="color:#080;font-style:italic">// ...
-</span></span></span><span style="display:flex;"><span><span style="color:#080;font-style:italic"></span>}
+</span></span><span style="display:flex;"><span>	<span style="color:#928374;font-style:italic">// ...
+</span></span></span><span style="display:flex;"><span><span style="color:#928374;font-style:italic"></span>	<span style="color:#fe8019">return</span> fct(x);
+</span></span><span style="display:flex;"><span>	<span style="color:#928374;font-style:italic">// ...
+</span></span></span><span style="display:flex;"><span><span style="color:#928374;font-style:italic"></span>}
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#080;font-style:italic">// a bit verbose
-</span></span></span><span style="display:flex;"><span><span style="color:#080;font-style:italic"></span><span style="color:#a2f;font-weight:bold">auto</span> <span style="color:#00a000">some_function</span>(<span style="color:#0b0;font-weight:bold">int</span> x)
+</span></span><span style="display:flex;"><span><span style="color:#928374;font-style:italic">// a bit verbose
+</span></span></span><span style="display:flex;"><span><span style="color:#928374;font-style:italic"></span><span style="color:#fe8019">auto</span> <span style="color:#fabd2f">some_function</span>(<span style="color:#fabd2f">int</span> x)
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>  <span style="color:#080;font-style:italic">// ...
-</span></span></span><span style="display:flex;"><span><span style="color:#080;font-style:italic"></span>  Number <span style="color:#a2f;font-weight:bold">auto</span> y <span style="color:#666">=</span> fct(x);
-</span></span><span style="display:flex;"><span>  <span style="color:#a2f;font-weight:bold">return</span> y;
-</span></span><span style="display:flex;"><span>  <span style="color:#080;font-style:italic">// ...
-</span></span></span><span style="display:flex;"><span><span style="color:#080;font-style:italic"></span>}
+</span></span><span style="display:flex;"><span>  <span style="color:#928374;font-style:italic">// ...
+</span></span></span><span style="display:flex;"><span><span style="color:#928374;font-style:italic"></span>  Number <span style="color:#fe8019">auto</span> y <span style="color:#fe8019">=</span> fct(x);
+</span></span><span style="display:flex;"><span>  <span style="color:#fe8019">return</span> y;
+</span></span><span style="display:flex;"><span>  <span style="color:#928374;font-style:italic">// ...
+</span></span></span><span style="display:flex;"><span><span style="color:#928374;font-style:italic"></span>}
 </span></span></code></pre></div><h3 id="concepts-and-types">Concepts and Types</h3>
 <p>Re-consider the last code frament, you may elaborate that we can use type to constrain functions and local variables instead the combination of concepts and <code>auto</code>.</p>
 <p>We need to compare type and concept first:</p>
@@ -363,10 +362,10 @@
 <p>Thus, constrain code with concepts gives more flexibility than constraining with types, and concepts can define the relationship among several arguments.</p>
 <blockquote>
 <p>In <em>A Tour of C++</em>, Bjarne Stroustrup advocates defining most functions as template functions with their arguments constrained by concepts. However, we must use a concept as an adjective rather than a noun, like this:</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#0b0;font-weight:bold">void</span> <span style="color:#00a000">sort</span>(Sortable <span style="color:#a2f;font-weight:bold">auto</span> <span style="color:#666">&amp;</span>);
-</span></span><span style="display:flex;"><span><span style="color:#0b0;font-weight:bold">void</span> <span style="color:#00a000">sort</span>(Sortable <span style="color:#666">&amp;</span>); <span style="color:#080;font-style:italic">// not this
+<div class="highlight"><pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#fabd2f">void</span> <span style="color:#fabd2f">sort</span>(Sortable <span style="color:#fe8019">auto</span> <span style="color:#fe8019">&amp;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#fabd2f">void</span> <span style="color:#fabd2f">sort</span>(Sortable <span style="color:#fe8019">&amp;</span>); <span style="color:#928374;font-style:italic">// not this
 </span></span></span></code></pre></div><p>But in my opinion, the future of C++ will be like this:</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#a2f;font-weight:bold">auto</span>;
+<div class="highlight"><pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#fe8019">auto</span>;
 </span></span></code></pre></div><p>QAQ.</p>
 </blockquote>
     
@@ -376,7 +375,7 @@
     <a class="link" href="https://forceoflife.cn/en/post/jsjzcysjsy/">← prev</a>
     
     
-    <a></a>
+    <a class="link" href="https://forceoflife.cn/en/post/ctrick/">next →</a>
     
   </div>
   <div class="comment">
@@ -384,23 +383,7 @@
     
     
     
-      <script src="https://giscus.app/client.js"
-        data-repo="forceofsystem/forceofsystem.github.io"
-        data-repo-id="R_kgDOJn4OQw"
-        data-category="Announcements"
-        data-category-id="DIC_kwDOJn4OQ84CeqcH"
-        data-mapping="pathname"
-        data-strict="0"
-        data-reactions-enabled="1"
-        data-emit-metadata="0"
-        data-input-position="top"
-        data-theme="preferred_color_scheme"
-        data-lang="en"
-        data-loading="lazy"
-        crossorigin="anonymous"
-        async>
-</script>
-
+      
     
     
     
@@ -409,15 +392,15 @@
 </main>
 
     <footer id="footer">
-  <div>
+  <div class="footcontent">
     <span>© 2023</span> - <span>2024</span>
   </div>
 
-  <div>
+  <div class="footcontent">
     <span>Powered by </span>
-    <a class="link" href="https://gohugo.io/">Hugo</a>
+    <a class="footlink" href="https://gohugo.io/">Hugo</a>
     <span> 🍦 Theme </span>
-    <a class="link" href="https://github.com/forceofsystem/hugo-theme-texify">TeXify</a>
+    <a class="footlink" href="https://github.com/forceofsystem/hugo-theme-texify">TeXify</a>
   </div>
 
   <div class="footnote">

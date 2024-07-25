@@ -103,29 +103,29 @@
   <div id="wrapper">
     <header id="header">
   <h1>
-    <a href="https://forceoflife.cn/">生活之力</a>
+    <a class="head" href="https://forceoflife.cn/">生活之力</a>
   </h1>
 
   <nav>
     
     <span class="nav-bar-item">
-      <a class="link" href="/zh-cn/">主页</a>
+      <a class="head" href="/zh-cn/">主页</a>
     </span>
     
     <span class="nav-bar-item">
-      <a class="link" href="/zh-cn/post/">博客</a>
+      <a class="head" href="/zh-cn/post/">博客</a>
     </span>
     
     <span class="nav-bar-item">
-      <a class="link" href="/zh-cn/about/">关于我</a>
+      <a class="head" href="/zh-cn/about/">关于我</a>
     </span>
     
     <span class="nav-bar-item">
-      <a class="link" href="/zh-cn/index.xml">订阅</a>
+      <a class="head" href="/zh-cn/index.xml">订阅</a>
     </span>
     
     <span class="nav-bar-item">
-      <a class="link" href="/en">EN</a>
+      <a class="head" href="/en">EN</a>
     </span>
     
   </nav>
@@ -138,19 +138,18 @@
   <h1>在Mac上配置Haskell环境</h1>
   
   <div>
-    <b>Keywords: </b>
     
-    <a class="link" href='https://forceoflife.cn/tags/haskell'>#Haskell</a>
+    <a class="link keywords" href='https://forceoflife.cn/tags/haskell'>#Haskell</a>
     
-    <a class="link" href='https://forceoflife.cn/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA'>#计算机</a>
+    <a class="link keywords" href='https://forceoflife.cn/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA'>#计算机</a>
     
   </div>
   
   
   
   <details>
-    <summary>
-      <b>Table of Contents</b>
+    <summary class="toctext">
+        <b>Table of Contents</b>
     </summary>
     <div class="toc"><nav id="TableOfContents">
   <ul>
@@ -172,16 +171,16 @@
 </blockquote>
 <p>要安装 Haskell，首先要打开一个 terminal，之后的操作都会基于 terminal 来完成。</p>
 <p>第一步我们要安装 GHCup，由于这个软件比较新，所以较少有镜像，这里我们选择<a href="https://mirrors.ustc.edu.cn/help/ghcup.html">中科大的镜像网站</a>。但是由于 GHCup 在安装 Cabal 时会下载一个文件，所以我们必须提前替换 hackage 源，否则将无法正常安装。换源方法如下：</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#080;font-style:italic"># 第一步在家目录下创建一个 .cabal 文件夹</span>
-</span></span><span style="display:flex;"><span><span style="color:#a2f">cd</span> ~ <span style="color:#666">&amp;&amp;</span> mkdir .cabal
-</span></span><span style="display:flex;"><span><span style="color:#080;font-style:italic"># 第二步创建并编辑一个 config 文件</span>
+<div class="highlight"><pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#928374;font-style:italic"># 第一步在家目录下创建一个 .cabal 文件夹</span>
+</span></span><span style="display:flex;"><span><span style="color:#fabd2f">cd</span> ~ <span style="color:#fe8019">&amp;&amp;</span> mkdir .cabal
+</span></span><span style="display:flex;"><span><span style="color:#928374;font-style:italic"># 第二步创建并编辑一个 config 文件</span>
 </span></span><span style="display:flex;"><span>vi .cabal/config
 </span></span></code></pre></div><p>这里我选择用 vim，你可以用 nano，vscode 等等编辑器，不会有任何影响，<del>当然，我不推荐你使用 emacs</del>。然后将如下内容粘贴进去，保存退出：</p>
 <pre tabindex="0"><code>repository mirrors.ustc.edu.cn
   url: https://mirrors.ustc.edu.cn/hackage/
   secure: True
 </code></pre><p>之后就可以在终端执行命令了：</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>curl --proto <span style="color:#b44">&#39;=https&#39;</span> --tlsv1.2 -sSf https://mirrors.ustc.edu.cn/ghcup/sh/bootstrap-haskell | <span style="color:#b8860b">BOOTSTRAP_HASKELL_YAML</span><span style="color:#666">=</span>https://mirrors.ustc.edu.cn/ghcup/ghcup-metadata/ghcup-0.0.7.yaml sh
+<div class="highlight"><pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>curl --proto <span style="color:#b8bb26">&#39;=https&#39;</span> --tlsv1.2 -sSf https://mirrors.ustc.edu.cn/ghcup/sh/bootstrap-haskell | BOOTSTRAP_HASKELL_YAML<span style="color:#fe8019">=</span>https://mirrors.ustc.edu.cn/ghcup/ghcup-metadata/ghcup-0.0.7.yaml sh
 </span></span></code></pre></div><p>接下来你会看到这样的界面：</p>
 <p><img alt="image-20230702042402797" src="https://cdn.jsdelivr.net/gh/zzxdyf1314/mycloudimg@master/image-20230702042402797.png"></p>
 <p><strong>请仔细阅读所有提示，如果你不知道该做什么，就照我的选择去做：</strong></p>
@@ -195,15 +194,15 @@
 <li>是否安装 Stack，输入 N，不安装。</li>
 </ol>
 <p>之后的选项都直接回车，就完成了 GHCup 的安装，这里你需要设置当前 shell 的 PATH：</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#a2f">source</span> ~/.ghcup/env
+<div class="highlight"><pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#fabd2f">source</span> ~/.ghcup/env
 </span></span></code></pre></div><p>如果你不想这样做，也可以直接重启你的 shell。</p>
 <p>这时你的 Haskell 环境已经安装完成了，可以简单测试一下：</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ghc --version
+<div class="highlight"><pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ghc --version
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>cabal --version
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>ghci
-</span></span><span style="display:flex;"><span><span style="color:#080;font-style:italic"># 输入 :q 以退出 ghci</span>
+</span></span><span style="display:flex;"><span><span style="color:#928374;font-style:italic"># 输入 :q 以退出 ghci</span>
 </span></span></code></pre></div><p>接下来的步骤是配置 GHCup 的源</p>
 <p>编辑 <code>~/.ghcup/config.yaml</code>文件，向其中添加：</p>
 <pre tabindex="0"><code>url-source:
@@ -239,23 +238,7 @@ ln -s ~/.ghcup/ghc/verison code/bin ghc ~/.ghcup/bin/ghc
     
     
     
-      <script src="https://giscus.app/client.js"
-        data-repo="forceofsystem/forceofsystem.github.io"
-        data-repo-id="R_kgDOJn4OQw"
-        data-category="Announcements"
-        data-category-id="DIC_kwDOJn4OQ84CeqcH"
-        data-mapping="pathname"
-        data-strict="0"
-        data-reactions-enabled="1"
-        data-emit-metadata="0"
-        data-input-position="top"
-        data-theme="preferred_color_scheme"
-        data-lang="en"
-        data-loading="lazy"
-        crossorigin="anonymous"
-        async>
-</script>
-
+      
     
     
     
@@ -264,15 +247,15 @@ ln -s ~/.ghcup/ghc/verison code/bin ghc ~/.ghcup/bin/ghc
 </main>
 
     <footer id="footer">
-  <div>
+  <div class="footcontent">
     <span>© 2023</span> - <span>2024</span>
   </div>
 
-  <div>
+  <div class="footcontent">
     <span>Powered by </span>
-    <a class="link" href="https://gohugo.io/">Hugo</a>
+    <a class="footlink" href="https://gohugo.io/">Hugo</a>
     <span> 🍦 Theme </span>
-    <a class="link" href="https://github.com/forceofsystem/hugo-theme-texify">TeXify</a>
+    <a class="footlink" href="https://github.com/forceofsystem/hugo-theme-texify">TeXify</a>
   </div>
 
   <div class="footnote">

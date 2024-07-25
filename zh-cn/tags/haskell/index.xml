@@ -25,16 +25,16 @@
 &lt;/blockquote&gt;
 &lt;p&gt;要安装 Haskell，首先要打开一个 terminal，之后的操作都会基于 terminal 来完成。&lt;/p&gt;
 &lt;p&gt;第一步我们要安装 GHCup，由于这个软件比较新，所以较少有镜像，这里我们选择&lt;a href=&#34;https://mirrors.ustc.edu.cn/help/ghcup.html&#34;&gt;中科大的镜像网站&lt;/a&gt;。但是由于 GHCup 在安装 Cabal 时会下载一个文件，所以我们必须提前替换 hackage 源，否则将无法正常安装。换源方法如下：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#080;font-style:italic&#34;&gt;# 第一步在家目录下创建一个 .cabal 文件夹&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#a2f&#34;&gt;cd&lt;/span&gt; ~ &lt;span style=&#34;color:#666&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; mkdir .cabal
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#080;font-style:italic&#34;&gt;# 第二步创建并编辑一个 config 文件&lt;/span&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#928374;font-style:italic&#34;&gt;# 第一步在家目录下创建一个 .cabal 文件夹&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#fabd2f&#34;&gt;cd&lt;/span&gt; ~ &lt;span style=&#34;color:#fe8019&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; mkdir .cabal
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#928374;font-style:italic&#34;&gt;# 第二步创建并编辑一个 config 文件&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;vi .cabal/config
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里我选择用 vim，你可以用 nano，vscode 等等编辑器，不会有任何影响，&lt;del&gt;当然，我不推荐你使用 emacs&lt;/del&gt;。然后将如下内容粘贴进去，保存退出：&lt;/p&gt;
 &lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;repository mirrors.ustc.edu.cn
   url: https://mirrors.ustc.edu.cn/hackage/
   secure: True
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;之后就可以在终端执行命令了：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;curl --proto &lt;span style=&#34;color:#b44&#34;&gt;&amp;#39;=https&amp;#39;&lt;/span&gt; --tlsv1.2 -sSf https://mirrors.ustc.edu.cn/ghcup/sh/bootstrap-haskell | &lt;span style=&#34;color:#b8860b&#34;&gt;BOOTSTRAP_HASKELL_YAML&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt;https://mirrors.ustc.edu.cn/ghcup/ghcup-metadata/ghcup-0.0.7.yaml sh
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;curl --proto &lt;span style=&#34;color:#b8bb26&#34;&gt;&amp;#39;=https&amp;#39;&lt;/span&gt; --tlsv1.2 -sSf https://mirrors.ustc.edu.cn/ghcup/sh/bootstrap-haskell | BOOTSTRAP_HASKELL_YAML&lt;span style=&#34;color:#fe8019&#34;&gt;=&lt;/span&gt;https://mirrors.ustc.edu.cn/ghcup/ghcup-metadata/ghcup-0.0.7.yaml sh
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;接下来你会看到这样的界面：&lt;/p&gt;
 &lt;p&gt;&lt;img alt=&#34;image-20230702042402797&#34; src=&#34;https://cdn.jsdelivr.net/gh/zzxdyf1314/mycloudimg@master/image-20230702042402797.png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;请仔细阅读所有提示，如果你不知道该做什么，就照我的选择去做：&lt;/strong&gt;&lt;/p&gt;
@@ -48,15 +48,15 @@
 &lt;li&gt;是否安装 Stack，输入 N，不安装。&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;之后的选项都直接回车，就完成了 GHCup 的安装，这里你需要设置当前 shell 的 PATH：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#a2f&#34;&gt;source&lt;/span&gt; ~/.ghcup/env
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#fabd2f&#34;&gt;source&lt;/span&gt; ~/.ghcup/env
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果你不想这样做，也可以直接重启你的 shell。&lt;/p&gt;
 &lt;p&gt;这时你的 Haskell 环境已经安装完成了，可以简单测试一下：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;ghc --version
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;ghc --version
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;cabal --version
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;ghci
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#080;font-style:italic&#34;&gt;# 输入 :q 以退出 ghci&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#928374;font-style:italic&#34;&gt;# 输入 :q 以退出 ghci&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;接下来的步骤是配置 GHCup 的源&lt;/p&gt;
 &lt;p&gt;编辑 &lt;code&gt;~/.ghcup/config.yaml&lt;/code&gt;文件，向其中添加：&lt;/p&gt;
 &lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;url-source:
