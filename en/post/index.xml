@@ -8,41 +8,7 @@
     <language>en</language>
     <managingEditor>Zhixiao-Zhang@outlook.com (Patrick)</managingEditor>
     <webMaster>Zhixiao-Zhang@outlook.com (Patrick)</webMaster>
-    <lastBuildDate>Thu, 18 Jul 2024 00:52:34 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/en/post/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>How can we use c programming tricks?</title>
-      <link>https://forceoflife.cn/en/post/ctrick/</link>
-      <pubDate>Thu, 18 Jul 2024 00:52:34 +0800</pubDate>
-      <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
-      <guid>https://forceoflife.cn/en/post/ctrick/</guid>
-      
-      <description>&lt;p&gt;Last week, while working on a task involving the &lt;code&gt;core-v binutils&lt;/code&gt;, I encountered an interesting case that illustrates how C programming techniques can be effectively applied. However, before talking about the task, I&amp;rsquo;m suppposed to introduce the background.&lt;/p&gt;
-&lt;h2 id=&#34;background&#34;&gt;Background&lt;/h2&gt;
-&lt;p&gt;I believe that all of you are familiar with the follow code:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;i&lt;span style=&#34;color:#fe8019&#34;&gt;++&lt;/span&gt;;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;, which is called &lt;code&gt;post increment&lt;/code&gt;. This code usually appear inner a loop, like this:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-c++&#34; data-lang=&#34;c++&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#fe8019&#34;&gt;for&lt;/span&gt; (&lt;span style=&#34;color:#fabd2f&#34;&gt;int&lt;/span&gt; i &lt;span style=&#34;color:#fe8019&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#d3869b&#34;&gt;0&lt;/span&gt;; i &lt;span style=&#34;color:#fe8019&#34;&gt;&amp;lt;&lt;/span&gt; N; i&lt;span style=&#34;color:#fe8019&#34;&gt;++&lt;/span&gt;) { ... }
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;It&amp;rsquo;s equal to &lt;code&gt;i = i + 1&lt;/code&gt;, with which we can eliminate some redundant code:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#928374;font-style:italic&#34;&gt;// case 1
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#928374;font-style:italic&#34;&gt;&lt;/span&gt;sum &lt;span style=&#34;color:#fe8019&#34;&gt;+=&lt;/span&gt; &lt;span style=&#34;color:#fe8019&#34;&gt;*&lt;/span&gt;a;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;a &lt;span style=&#34;color:#fe8019&#34;&gt;=&lt;/span&gt; a &lt;span style=&#34;color:#fe8019&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#d3869b&#34;&gt;1&lt;/span&gt;; &lt;span style=&#34;color:#928374;font-style:italic&#34;&gt;// redundant!
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#928374;font-style:italic&#34;&gt;// case 2
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#928374;font-style:italic&#34;&gt;&lt;/span&gt;sum &lt;span style=&#34;color:#fe8019&#34;&gt;+=&lt;/span&gt; &lt;span style=&#34;color:#fe8019&#34;&gt;*&lt;/span&gt;a&lt;span style=&#34;color:#fe8019&#34;&gt;++&lt;/span&gt;; &lt;span style=&#34;color:#928374;font-style:italic&#34;&gt;// nice
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The second case accomplishes the same task as the first but in a more concise and readable manner, since it merges the two operations into a single line rather than separating it into two. If you are confused to why they do the same work, I recommend you to read &lt;a href=&#34;https://en.wikipedia.org/wiki/The_C_Programming_Language&#34;&gt;this book&lt;/a&gt; at first.&lt;/p&gt;
-&lt;p&gt;However, although we can merge the memory access operation and the increment operation in the perspective of C, there will also be three instructions in the assembly code.&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code class=&#34;language-assembly&#34; data-lang=&#34;assembly&#34;&gt;lw  a5, 0(a3)
-add a6, a6, a5 // sum = sum + *a;
-addi a, a, 4 // a++;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Because of the &lt;code&gt;add&lt;/code&gt; instruction only receive immediate numbers and registers, the computer need to load it from the memory. But as we talk above, combining the memory access operation and increment operation can not only reduce a program&amp;rsquo;s size, but also improve the instruction-level parallelism, which can speed up the program&amp;rsquo;s execution. Fortunately, &lt;a href=&#34;https://www.openhwgroup.org&#34;&gt;OpenHW Group&lt;/a&gt;&amp;rsquo;s CPU can feed our need. They extend RISC-V 32-bit isa, add some &lt;code&gt;Post-Increment Load &amp;amp; Store&lt;/code&gt; instructions. You can go through &lt;a href=&#34;https://docs.openhwgroup.org/projects/cv32e40p-user-manual/en/latest/instruction_set_extensions.html#post-increment-load-store-instructions-and-register-register-load-store-instructions&#34;&gt;this page&lt;/a&gt; to learn the detail. In general, we can use one instructions to access somewhere in memory, and then increment the relevant index.&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code class=&#34;language-assembly&#34; data-lang=&#34;assembly&#34;&gt;cv.lb rD, (rs1), rs2
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;For example, the above instruction plays the same role with the following:&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;rD = Sext(Mem8(rs1))
-rs1 += rs2
-&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&#34;the-problem&#34;&gt;The Problem&lt;/h2&gt;
-&lt;p&gt;In order to test instructions can be generated by the compiler exactly, we always create many test cases to ensure it. However, compilers&amp;rsquo; behaviour is different, which usually depends on the optimization level, such as &lt;code&gt;O1&lt;/code&gt;, &lt;code&gt;Og&lt;/code&gt; etc. Thus, sometimes the compiler can&amp;rsquo;t generate specific instructions needed by us, for which we need to use some tricks to achieve it.&lt;/p&gt;</description>
-      
-    </item>
-    
+    <lastBuildDate>Wed, 03 Jul 2024 09:13:27 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/en/post/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Introduction to C&#43;&#43;20: Concepts</title>
       <link>https://forceoflife.cn/en/post/concepts/</link>
