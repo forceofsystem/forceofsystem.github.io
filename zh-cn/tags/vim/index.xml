@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Vim on 生活之力</title>
+    <link>https://forceoflife.cn/zh-cn/tags/vim/</link>
+    <description>Recent content in Vim on 生活之力</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <managingEditor>Zhixiao-Zhang@outlook.com (Patrick)</managingEditor>
+    <webMaster>Zhixiao-Zhang@outlook.com (Patrick)</webMaster>
+    <lastBuildDate>Mon, 29 Jul 2024 13:46:30 +0800</lastBuildDate><atom:link href="https://forceoflife.cn/zh-cn/tags/vim/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>vi 和 vim 你不知道的那些事（一）</title>
+      <link>https://forceoflife.cn/zh-cn/post/vim1/</link>
+      <pubDate>Mon, 29 Jul 2024 13:46:30 +0800</pubDate>
+      <author>Zhixiao-Zhang@outlook.com (Patrick)</author>
+      <guid>https://forceoflife.cn/zh-cn/post/vim1/</guid>
+      
+      <description>&lt;p&gt;国内的很多 vim/neovim 用户都是从 TheCW 的视频中了解 vim 和 neovim 的，CW 的视频主要是以程序员的角度来介绍如何使用 vim，内容也更多聚焦在如何用插件来达到更方便的操作。但很多插件提供的操作都是 vim 本身所具有的，并且在 CW 的视频中虽然介绍了按键映射，但是对 vim 本身按键的缺省功能并没有涉及，使得很多 vim 的用户在并不知情的情况下丧失了很多强大的功能。此外，随着 neovim 的发展，出现了越来越多的 neovim 发行版，这进一步降低了 vim 的使用难度，但也丢掉了许多 vim 的特性，在将 vim 作为一个 ide 使用之前，我认为有必要了解 vim 作为文本编辑器的功能和操作，也为更好地使用 vim 打下基础。所以，我打算写一系列博客来介绍 vi/vim 缺省的功能和操作，希望能够帮助到更多的 vim 用户。&lt;/p&gt;
+&lt;p&gt;注：本文主要内容来自 &lt;a href=&#34;https://www.oreilly.com/library/view/learning-the-vi/9780596529833/&#34;&gt;《Learning the vi and Vim Editors》&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;再注：本文的形式更偏向于 cheat sheet，并不会涉及过多历史性的问题，如 ex 和 vi、vim 的关系等。对于基本操作，只会给出按键和解释，并不会有完整的上下文。如果想要了解更多内容，可以参考上一条注。&lt;/p&gt;
+&lt;h2 id=&#34;移动操作&#34;&gt;移动操作&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;~&lt;/code&gt;: 将当前光标下字符的大小写改为相反的状态并向右移动一列。&lt;/p&gt;
+&lt;p&gt;vim 会将最近 9 次的删除动作保存在 9 个编号的删除寄存器中，假设要恢复 3 号寄存器的内容，输入&lt;code&gt;&amp;quot;3g&lt;/code&gt;。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;这只对被整行删除的内容有用，如果只是删除一部分，那么被删除的内容是不会被保存在寄存器中的。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;code&gt;x&lt;/code&gt;：删除当前光标下的字符。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;xp&lt;/code&gt;：可以用这个命令来交换两个字母的位置，这对会把 &lt;code&gt;main&lt;/code&gt; 打成 &lt;code&gt;mian&lt;/code&gt; 的 C 语言初学者可谓是一大福音。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;J&lt;/code&gt;：将光标放在一行的任何位置的情况下，会将该行与下一行合并（用空格分隔）&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;z&amp;lt;cr&amp;gt;&lt;/code&gt;：将光标移到屏幕顶端并滚动屏幕&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;z.&lt;/code&gt;：将光标移动到屏幕中心并滚动屏幕&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;z-&lt;/code&gt;：将光标移动到屏幕底部并滚动屏幕&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;z 前面可以加行号，即将对应行移动到对应位置。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;code&gt;H&lt;/code&gt;：移动到屏幕顶端的行&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;M&lt;/code&gt;：移动到屏幕中间的行&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;L&lt;/code&gt;：移动到屏幕底端的行&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;H 和 L 可以跟数字，移动到距对应位置 x 行的地方。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;code&gt;+&lt;/code&gt;：移动到下一行的第一个字符处&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;-&lt;/code&gt;：移动到上一行的第一个字符处&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;n|&lt;/code&gt;：移动到当前行的第 n 列处&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;(&lt;/code&gt;：移动到当前句子的开头&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;)&lt;/code&gt;：移动到下一个句子的开头&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;{&lt;/code&gt;：移动到当前段的开头&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;}&lt;/code&gt;：移动到下一段的开头&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;[[&lt;/code&gt;：移动到当前节的开头&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;]]&lt;/code&gt;：移动到下一节的开头&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;vim 会寻找标点符号来判断句子的结束，当这些标点符号后至少有两个空格或作为一行的最后一个非空格字符时，这句话被视为结束。&lt;/p&gt;
+&lt;p&gt;段落是下一个空白行前的文本。&lt;/p&gt;
+&lt;p&gt;还有些与不常见的宏有关。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;code&gt;/&lt;/code&gt; 或 &lt;code&gt;？&lt;/code&gt; 可以与删除、修改文本的命令连用&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;t&lt;/code&gt;：搜索并将光标移到本行中下一次出现搜索目标的前一个字符处&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;T&lt;/code&gt;：搜索并将光标移到本行中上一次出现搜索目标的后一个字符处&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;,&lt;/code&gt;：重复上一个搜索命令，方向相反&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;C-g&lt;/code&gt; 会显示文件信息&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;G&lt;/code&gt;：接受数字为参数，移动到目标行&lt;/p&gt;
+&lt;p&gt;``：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;未编辑：上一次使用 G 的位置；&lt;/li&gt;
+&lt;li&gt;已编辑：回到编辑位置；&lt;/li&gt;
+&lt;li&gt;搜索：上一次搜索位置&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;code&gt;&#39;&#39;&lt;/code&gt;：与上同，但是会回到对应行的开头&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;# 在第 n 行打开文件
+vim +n file
+# 在最后一行打开文件
+vim + file
+# 在第一次出现 pattern 的行首打开文件
+# 可以使用 \ 和 &amp;#34;&amp;#34; 来帮助搜索
+vim +/pattern file
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;code&gt;vi - R&lt;/code&gt; 和 &lt;code&gt;view&lt;/code&gt; 会以只读模式打开文件&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;vi -r file&lt;/code&gt; 会恢复保存在编辑寄存器的文件&lt;/p&gt;
+&lt;p&gt;复制的文本（y）会保存在用字母标识的寄存器中，可以访问任意一个&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;&amp;quot;&amp;lt;registerName&amp;gt;(operation)&lt;/code&gt;：将对应操作的结果放到指定寄存器中&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;使用大写字母指定寄存器时，会将内容附加到当前寄存器内容后。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;code&gt;mx&lt;/code&gt;：将当前位置标记为 x，x 为任何字符&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;&#39;x&lt;/code&gt;：将光标移动到标记 x 所在行的第一个字符&lt;/p&gt;
+&lt;p&gt;``x`：将光标移动到以 x 标记的字符&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;标记只在当前会话中有效。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;ex-操作&#34;&gt;Ex 操作&lt;/h2&gt;
+&lt;h3 id=&#34;基本操作&#34;&gt;基本操作&lt;/h3&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Full name&lt;/th&gt;
+&lt;th&gt;Abbreviation&lt;/th&gt;
+&lt;th&gt;Meaning&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;delete&lt;/td&gt;
+&lt;td&gt;d&lt;/td&gt;
+&lt;td&gt;删除行&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;move&lt;/td&gt;
+&lt;td&gt;m&lt;/td&gt;
+&lt;td&gt;移动行&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;copy&lt;/td&gt;
+&lt;td&gt;co&lt;/td&gt;
+&lt;td&gt;复制行&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;t&lt;/td&gt;
+&lt;td&gt;同上&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;blockquote&gt;
+&lt;p&gt;move 和 copy 指令需要额外指定目标行号。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;指定位置&#34;&gt;指定位置&lt;/h3&gt;
+&lt;p&gt;在 ex 模式中，&lt;code&gt;.&lt;/code&gt; 表示当前行，&lt;code&gt;$&lt;/code&gt; 表示文件的最后一行，&lt;code&gt;%&lt;/code&gt;表示文件中的每一行。还可以用数字直接指定行/范围，如&lt;code&gt;:2d&lt;/code&gt;，&lt;code&gt;:1,3d&lt;/code&gt;；或是用 +，- 来表示相对关系（0 表示开头）。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;:/pattern/=&lt;/code&gt; 会列出 pattern 第一次出现的行号。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;此外，还可以用搜索模式来指定行地址：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;# 删除下一个包含 pattern 的行
+:/pattern/d
+# 删除下一个包含 pattern 的行的下一行
+:/pattern/+d / :/pattern/+1d
+# 从第一个包含 pattern1 的行删除到第一个包含 pattern2 的行
+:/pattern1/,/pattern2/d
+# 将从当前行到第一个包含 pattern 的行之间的文本放到 23 行之后
+:./,pattern/m23
+&lt;/code&gt;&lt;/pre&gt;&lt;blockquote&gt;
+&lt;p&gt;ex 命令都是对行操作，所以 &lt;code&gt;:.,/pattern/d&lt;/code&gt; 会删除当前行到第一个包含 pattern 行之间所有的&lt;strong&gt;行&lt;/strong&gt;，而 vim 的 d 操作只是删除内容，所以 &lt;code&gt;d/pattern&lt;/code&gt; 只会删除当前光标到第一个 pattern 前的所有内容。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;默认情况下，ex 模式下的相对行运算是以当前行为基准的，即 &lt;code&gt;+5&lt;/code&gt; 等价于 &lt;code&gt;.+5&lt;/code&gt;，所以类似的命令可能是无效的：&lt;code&gt;:100,+5p&lt;/code&gt;，如果当前行 + 5 的结果仍小于 100，该命令无效。要想达到类似管道的效果，需要使用 &lt;code&gt;;&lt;/code&gt;，即 &lt;code&gt;:100;+5p&lt;/code&gt;，等价于 &lt;code&gt;:100,105p&lt;/code&gt;。这个方法在搜索模式下很好用。&lt;/p&gt;
+&lt;h3 id=&#34;全局操作与替换&#34;&gt;全局操作与替换&lt;/h3&gt;
+&lt;p&gt;在 ex 模式下，&lt;code&gt;g&lt;/code&gt; 代表全局命令，&lt;code&gt;s&lt;/code&gt; 代表替换（substitute）。&lt;/p&gt;
+&lt;p&gt;在 ex 中，使用 &lt;code&gt;|&lt;/code&gt; 来&lt;strong&gt;分隔&lt;/strong&gt;指令，而不是&lt;strong&gt;管道&lt;/strong&gt;，就像 shell 中的 &lt;code&gt;;&lt;/code&gt; 一样。&lt;/p&gt;
+&lt;p&gt;在保存文件时，可以使用指定行号的方式保存一部分内容到一个文件中：&lt;code&gt;:230,$w newfile&lt;/code&gt;；也可以将文件内容附加到对应文件中：&lt;code&gt;:1,10w newFileName | 340,$w &amp;gt;&amp;gt;newFileName&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;使用 &lt;code&gt;r&lt;/code&gt; 命令来将外部文本读入到当前光标的下一行，可以指定行号来插入到指定行的下一行。同样的，我们可以进行很多高级操作：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;:$r /home/patrickz/data
+:0r /home/patrickz/data
+:/pattern/r /home/patrickz/data
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;ex 可以打开多个文件，并用 &lt;code&gt;:n&lt;/code&gt; 前往下一个文件，用 &lt;code&gt;:rewind&lt;/code&gt;（&lt;code&gt;:rew&lt;/code&gt;）重置回第一个，用 &lt;code&gt;:last&lt;/code&gt; 移动到最后一个，用 &lt;code&gt;:args&lt;/code&gt; 可以查看状态行。&lt;/p&gt;
+&lt;p&gt;vi 会用符号 &lt;code&gt;%&lt;/code&gt; 代表当前文件的文件名，&lt;code&gt;#&lt;/code&gt; 来代表上一个 buffer。&lt;/p&gt;
+&lt;p&gt;替换命令的语法：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;:s/old/new/
+:s/old/new/g
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;上面的 &lt;code&gt;g&lt;/code&gt; 会把&lt;strong&gt;这一行&lt;/strong&gt;中所有的 &lt;code&gt;old&lt;/code&gt; 替换为 &lt;code&gt;new&lt;/code&gt;，&lt;code&gt;:g&lt;/code&gt; 开头才会针对全部文件。可以在 &lt;code&gt;s&lt;/code&gt; 的前面加上数字来表示范围，包括 &lt;code&gt;%&lt;/code&gt; 来代表当前文件。&lt;/p&gt;
+&lt;p&gt;可以用 &lt;code&gt;:e!&lt;/code&gt; 来读出上一个版本的缓冲区内容。可以在命令后加 &lt;code&gt;c&lt;/code&gt; 来使得每一次替换前都会有一个确认环节。如果想进行模式匹配的替换，需要使用下面的命令：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;:g/pattern/s/old/new/g
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;对于如下文本，我们可以采用 &lt;code&gt;:g/&amp;lt;keymap&amp;gt;/s/Esc/ESC/g&lt;/code&gt; 来将以 keycap 开头行的所有 &lt;code&gt;Esc&lt;/code&gt; 替换为 &lt;code&gt;ESC&lt;/code&gt;：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;&amp;lt;keycap&amp;gt;EscEsc&amp;lt;/keycap&amp;gt;
+&amp;lt;keycap&amp;gt;EscEsc&amp;lt;/keycap&amp;gt;
+&amp;lt;keycap&amp;gt;EscEsc&amp;lt;/keycap&amp;gt;
+&amp;lt;keycap&amp;gt;EscEsc&amp;lt;/keycap&amp;gt;
+Esc
+Esc
+&lt;/code&gt;&lt;/pre&gt;&lt;blockquote&gt;
+&lt;p&gt;命令解释：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;:g&lt;/code&gt; ：ex 命令，其后跟着的命令能够对所有行生效&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;/&amp;lt;keycap&amp;gt;&lt;/code&gt; ：搜索以 &lt;code&gt;&amp;lt;keycap&amp;gt;&lt;/code&gt; 开头的行&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;s/Esc/ESC/g&lt;/code&gt; ：将一行中所有的 &lt;code&gt;Esc&lt;/code&gt; 替换为 &lt;code&gt;ESC&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;如果只想替换每行中的第一个 &lt;code&gt;Esc&lt;/code&gt;，不需要加 &lt;code&gt;g&lt;/code&gt;，即 &lt;code&gt;:g/&amp;lt;keymap&amp;gt;/s/Esc/ESC/&lt;/code&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;如果用于搜索行的模式与用于替换的模式相同，则不需要重复输入，即：&lt;code&gt;:g/string/s//new/g&lt;/code&gt;。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;下面两个命令是等价的：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;:g/editer/s//editor/g&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;:%s/editer/editor/g&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;正则表达式（搜索中的元字符）：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;.&lt;/code&gt; ：匹配除换行符外的任一字符，如 &lt;code&gt;p.p&lt;/code&gt; 可以匹配 &lt;code&gt;pep&lt;/code&gt;、&lt;code&gt;pip&lt;/code&gt;、&lt;code&gt;p&amp;amp;p&lt;/code&gt;；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;*&lt;/code&gt; ：匹配出位于此符号前的单一字符（出现一次或多次，贪婪匹配），如 &lt;code&gt;bugs*&lt;/code&gt; 可以匹配出 &lt;code&gt;bugss&lt;/code&gt;、 &lt;code&gt;bugs&lt;/code&gt; 或 &lt;code&gt;bug&lt;/code&gt;。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;:s/End.*/End/&lt;/code&gt; 会将所有在 End 后面的字符删掉（将该行位于 End 后的文本替换成没有文本）。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;^&lt;/code&gt; ：当 &lt;code&gt;^&lt;/code&gt; 位于开头时，其后的正则表达式必须位于一行的开头；当 &lt;code&gt;^&lt;/code&gt; 位于其他位置时，其代表本意。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;$&lt;/code&gt; ：当 &lt;code&gt;$&lt;/code&gt; 位于正则表达式的结尾时，其前面的正则表达式必须位于一行的结尾；当位于其他位置时，其代表本意。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;\&lt;/code&gt; ：转义字符。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;[ ]&lt;/code&gt; ：匹配出方括号里的任何一个字符，如 &lt;code&gt;[AB]&lt;/code&gt; 匹配出 &lt;code&gt;A&lt;/code&gt; 或 &lt;code&gt;B&lt;/code&gt;，而 &lt;code&gt;p[aeiou]t&lt;/code&gt; 可匹配出 &lt;code&gt;pat&lt;/code&gt;、&lt;code&gt;pet&lt;/code&gt;、&lt;code&gt;pit&lt;/code&gt;、&lt;code&gt;pot&lt;/code&gt;、&lt;code&gt;put&lt;/code&gt;，可用连字符来表示范围，如 &lt;code&gt;[A-Z]&lt;/code&gt; 可表示 A 到 Z 间的所有大写字母，&lt;code&gt;[0-9]&lt;/code&gt; 会匹配出任何 0 到 9 间的任何数字，&lt;code&gt;[ ]&lt;/code&gt; 可以包括任何混合字符。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;方括号中 &lt;code&gt;\&lt;/code&gt;、&lt;code&gt;-&lt;/code&gt;、&lt;code&gt;]&lt;/code&gt; 需要转义字符。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;\( \)&lt;/code&gt; ：这个表达式会将 &lt;code&gt;\(&lt;/code&gt; 和 &lt;code&gt;\)&lt;/code&gt; 中的模式保存到特殊的缓冲区，这种方法可以保存 9 个模式，如：&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;\(That\) or \(this\)&lt;/code&gt; 会将 That 保留到保留缓冲区 1 中，将 this 保存到 2 中，保留的模式可以在之后用 &lt;code&gt;\1&lt;/code&gt; 到 &lt;code&gt;\9&lt;/code&gt; 排列，如：&lt;code&gt;:%s/\(That\) or \(this\)/\2 or \1&lt;/code&gt;，会将 &lt;code&gt;That or this&lt;/code&gt; 替换为 &lt;code&gt;this or That&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;也可以在搜索或替换时使用该表示法，如：&lt;code&gt;:s/\(abcd\)\1/alphabet-soup/&lt;/code&gt; 来将 &lt;code&gt;abcdabcd&lt;/code&gt; 替换为 &lt;code&gt;alphabet-soup&lt;/code&gt;。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;\&amp;lt; \&amp;gt;&lt;/code&gt; ：会匹配出以某些字符开头（&lt;code&gt;\&amp;lt;&lt;/code&gt;）或结尾（&lt;code&gt;\&amp;gt;&lt;/code&gt;）的单词（以标点符号或空格来分隔）。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;~&lt;/code&gt; ：匹配出任何上一次搜索时是使用的正则表达式。这种方法只能用在&lt;strong&gt;正则搜索&lt;/strong&gt;（即使用 &lt;code&gt;/&lt;/code&gt;）中，而不能用在替换中。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;替换字符串中的元字符：&lt;/p&gt;
+&lt;p&gt;替换字符串会把 &lt;code&gt;.&lt;/code&gt; 和 &lt;code&gt;$&lt;/code&gt; 当成一般字符串处理，所以&lt;strong&gt;不需要转义&lt;/strong&gt;。但只局限于替换字符串，在搜索时仍需要转义，如 &lt;code&gt;:%s/1\. Start/2. Next, start with $100/&lt;/code&gt; 中，&lt;code&gt;1.&lt;/code&gt; 中的点仍需要转义。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;\n&lt;/code&gt; ：与搜索中的功能类似。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;\&lt;/code&gt; ：转义字符。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;&amp;amp;&lt;/code&gt; ：在替换字符串中，会被替换为搜索模式匹配出的完整文本，如：&lt;code&gt;:%s/Yazstremski/&amp;amp;, Carl&lt;/code&gt; 中的替换字符串为 &lt;code&gt;Yazstremski, Carl&lt;/code&gt;；也可以用来替换可变模式，如：&lt;code&gt;:1,10s/.*/(&amp;amp;)/&lt;/code&gt; 可以用来给 1 到 10 行的内容加上括号。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;~&lt;/code&gt; ：与搜索模式类似，代表上一个替换字符串，如：&lt;code&gt;:s/thier/their/&lt;/code&gt;用来将一行中的第一个 &lt;code&gt;thier&lt;/code&gt; 替换为 &lt;code&gt;their&lt;/code&gt;，而 &lt;code&gt;:s/tiher/~/&lt;/code&gt; 会将第一个 &lt;code&gt;tiher&lt;/code&gt; 替换为 &lt;code&gt;their&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;\u&lt;/code&gt;、&lt;code&gt;\l&lt;/code&gt; ：使替换字符串中的下一个字符变成大写或小写。如，要将当前文件中所有的 &lt;code&gt;That or this&lt;/code&gt; 改为 &lt;code&gt;This or that&lt;/code&gt;，结合前面的例子，我们可以用 &lt;code&gt;:%s/\(That\) or \(this\)/\u\2 or \l\1/&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;\U&lt;/code&gt; 或 &lt;code&gt;\L&lt;/code&gt; 与 &lt;code&gt;\E&lt;/code&gt; 或 &lt;code&gt;\e&lt;/code&gt; ：大写的 U 和 L 会在遇到 &lt;code&gt;\e&lt;/code&gt; 或 &lt;code&gt;\E&lt;/code&gt; 将其后的所有字符都替换为大写或小写，如，要将 &lt;code&gt;Python&lt;/code&gt;替换为 &lt;code&gt;PYTHON&lt;/code&gt; 可以：&lt;code&gt;:s/Python/\U&amp;amp;&lt;/code&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;所有的模式都是大小写敏感的，当然，可以用 &lt;code&gt;[ ]&lt;/code&gt; 来同时选定大小写。、&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;其他技巧：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;&amp;amp;&lt;/code&gt; 可以作为 vi 命令，可以加上范围和模式，如：在将上一行的 &lt;code&gt;Python&lt;/code&gt; 替换为 &lt;code&gt;PYTHON&lt;/code&gt; 后，可以用 &lt;code&gt;:n,.+x&amp;amp;g&lt;/code&gt; 将从第 n 行到第 n + x 行的 &lt;code&gt;Python&lt;/code&gt; 替换为 &lt;code&gt;PYTHON&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;:~&lt;/code&gt; 与 &lt;code&gt;:&amp;amp;&lt;/code&gt; 类似，但 &lt;code&gt;&amp;amp;&lt;/code&gt; 专指上一个替换命令的模式，而 &lt;code&gt;~&lt;/code&gt; 是任何命令中使用的模式（不一定是上一个替换）。&lt;/li&gt;
+&lt;li&gt;除了 &lt;code&gt;/&lt;/code&gt;，分隔字符还可以是除 &lt;code&gt;\&lt;/code&gt;、&lt;code&gt;&amp;quot;&lt;/code&gt;、&lt;code&gt;|&lt;/code&gt; 外的任何字符，这在替换地址时很方便：&lt;code&gt;:%s;/usr1/tim;/home/tim;g&lt;/code&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;在-ex--vi-中执行-unix-命令&#34;&gt;在 Ex / Vi 中执行 Unix 命令&lt;/h2&gt;
+&lt;p&gt;可以用 &lt;code&gt;ex&lt;/code&gt; 模式划定范围后作为输入传递给 &lt;code&gt;unix&lt;/code&gt; 命令过滤：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;:1,4!sort
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;上面的命令会将第一行到第四行的作为输入传递给 &lt;code&gt;sort&lt;/code&gt;，再将排序好的结果替换传入的结果。&lt;/p&gt;
+&lt;p&gt;也可以用 &lt;code&gt;vi/vim&lt;/code&gt; 模式的移动指令将输入传递给 &lt;code&gt;unix&lt;/code&gt; 命令过滤：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;!4jsort
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;可以达到和上面一样的效果。&lt;code&gt;vi/vim&lt;/code&gt; 模式的语法为：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;!{motion}{unix command}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;可以用两个 &lt;code&gt;!&lt;/code&gt; 来默认指定当前行：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;!!command
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;如果想重复上一条指令，可以用如下语法：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;!{motion}!
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&#34;保存命令&#34;&gt;保存命令&lt;/h2&gt;
+&lt;h3 id=&#34;缩写&#34;&gt;缩写&lt;/h3&gt;
+&lt;p&gt;在 vi 中，可以定义缩写，在插入模式下自动展开为原文：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;:ab abbr phrase
+&lt;/code&gt;&lt;/pre&gt;&lt;ul&gt;
+&lt;li&gt;其中，&lt;code&gt;abbr&lt;/code&gt; 是由我们指定的 &lt;code&gt;phrase&lt;/code&gt; 的缩写，&lt;code&gt;ab&lt;/code&gt; 是 abbreviate 的缩写。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;可以用 &lt;code&gt;:ab&lt;/code&gt; 来列出当前的缩写，用 &lt;code&gt;:unab abbr&lt;/code&gt; 来取消指定的缩写。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;在 vi 中，结尾递归不被允许，而文中递归可以使用，但不会被展开；在 vim 中，结尾递归和文中递归都可以使用，但都不会被展开。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;按键映射&#34;&gt;按键映射&lt;/h3&gt;
+&lt;p&gt;在映射按键时，&lt;code&gt;vi&lt;/code&gt; 不希望在命令模式下使用以下按键来定义命令：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;g&lt;/code&gt;、&lt;code&gt;K&lt;/code&gt;、&lt;code&gt;q&lt;/code&gt;、&lt;code&gt;V&lt;/code&gt;、&lt;code&gt;v&lt;/code&gt;、&lt;code&gt;^A&lt;/code&gt;、&lt;code&gt;^K&lt;/code&gt;、&lt;code&gt;^O&lt;/code&gt;、&lt;code&gt;^W&lt;/code&gt;、&lt;code&gt;^X&lt;/code&gt;、&lt;code&gt;_&lt;/code&gt;、&lt;code&gt;*&lt;/code&gt;、&lt;code&gt;\&lt;/code&gt;、&lt;code&gt;=&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;在 vim 中，可以使用 &lt;code&gt;^K&lt;/code&gt;、&lt;code&gt;^_&lt;/code&gt; 和 &lt;code&gt;\&lt;/code&gt;。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;你当然可以用自定义映射覆盖已有的按键，但你会失去该按键的默认功能，除非你真的知道自己在干什么，否则不要这样。&lt;/p&gt;
+&lt;p&gt;vim 中默认的 leader 键是 &lt;code&gt;\&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;有些特殊的键如 &lt;code&gt;ENTER&lt;/code&gt; &lt;code&gt;ESC&lt;/code&gt; &lt;code&gt;BACKSPACE&lt;/code&gt; &lt;code&gt;DELETE&lt;/code&gt; 在 ex 的命令模式中已经有定义，无法正常输入它们，如果将其作为按键映射的一部分，需要在前面加上 &lt;code&gt;CTRL-V&lt;/code&gt;。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;CTRL-V&lt;/code&gt; 会被显示为 &lt;code&gt;^&lt;/code&gt; 字符，但这并不意味着你可以输入 &lt;code&gt;^&lt;/code&gt; 来代替 &lt;code&gt;CTRL-V&lt;/code&gt;。跟在 &lt;code&gt;CTRL-V&lt;/code&gt; 后的一般字符通常都有其他含义，如：&lt;code&gt;^M&lt;/code&gt; 代表换行，&lt;code&gt;^[&lt;/code&gt;代表转义，&lt;code&gt;^H&lt;/code&gt;代表退格。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;如果要将控制字符作为映射的命令，通常只需正常输入即可，如 &lt;code&gt;CTRL-A&lt;/code&gt;。但对于 &lt;code&gt;CTRL-T&lt;/code&gt; &lt;code&gt;CTRL-W&lt;/code&gt; &lt;code&gt;CTRL-X&lt;/code&gt;，必须在映射时用 &lt;code&gt;CTRL-V&lt;/code&gt; 来转义。这种方法可以用在任何 ex 命令上，比如在缩写或替换中。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;不能在插入模式的映射中使用 &lt;code&gt;|&lt;/code&gt;。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;通常我们不会在插入模式中映射按键，但是可以通过在 &lt;code&gt;map&lt;/code&gt; 后加 &lt;code&gt;!&lt;/code&gt; 来强制覆盖按键原来的含义从而产生新的行为，取消映射时也需要使用 &lt;code&gt;!&lt;/code&gt;。&lt;/p&gt;
+&lt;h3 id=&#34;宏&#34;&gt;宏&lt;/h3&gt;
+&lt;p&gt;还可以创建宏来执行复杂的指令序列。在传统的 &lt;code&gt;ex&lt;/code&gt; 和 &lt;code&gt;vi&lt;/code&gt;中，需要先在文本中输入一行命令，然后将其删除（保存在某一个缓冲区中，再用 &lt;code&gt;@&lt;/code&gt; 命令执行缓冲区的内容，如：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;cwgadfly CTRL-V ESC
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;然后按 &lt;code&gt;ESC&lt;/code&gt; 退出插入模式，执行 &lt;code&gt;&amp;quot;gdd&amp;quot;&lt;/code&gt; 删除这一行并将其内容保存在缓冲区 &lt;code&gt;g&lt;/code&gt; 中，按 &lt;code&gt;@g&lt;/code&gt; 能够执行这个宏。由于 &lt;code&gt;@&lt;/code&gt; 会被解释为 vi 命令，所以可以用 &lt;code&gt;.&lt;/code&gt; 来重复执行宏，也可以用 &lt;code&gt;@@&lt;/code&gt; 来重复执行上一次执行的宏。&lt;/p&gt;
+&lt;p&gt;vim 提供了更简单的方法来定义宏，只需要按&lt;code&gt;q&lt;/code&gt; + &lt;code&gt;寄存器名&lt;/code&gt;，vim 就会录制接下来的操作并保存到寄存器中，直到按 &lt;code&gt;q&lt;/code&gt; 停止录制为止。&lt;/p&gt;
+&lt;h2 id=&#34;程序员相关的设置&#34;&gt;程序员相关的设置&lt;/h2&gt;
+&lt;h3 id=&#34;缩进&#34;&gt;缩进&lt;/h3&gt;
+&lt;p&gt;在设置了自动缩进（&lt;code&gt;autoindent&lt;/code&gt;）的输入模式下，&lt;code&gt;CTRL-T&lt;/code&gt; 会给程序加一级缩进，&lt;code&gt;CTRL-D&lt;/code&gt; 会减一级缩进。并且，在输入 &lt;code&gt;^ CTRL-D &lt;/code&gt;时，光标会回到这一行的开头，该行之后的行仍然按照原有缩进进行自动缩进；而 &lt;code&gt;0 CTRL-D&lt;/code&gt; 则会将缩进值归零，进入下一行时不会自动缩进。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;^&lt;/code&gt; 在这里就是&lt;code&gt;shift + 6&lt;/code&gt;，而不是前文中的 &lt;code&gt;CTRL-V&lt;/code&gt;。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;可以用 &lt;code&gt;&amp;lt;&amp;lt;&lt;/code&gt; 和 &lt;code&gt;&amp;gt;&amp;gt;&lt;/code&gt; 来移动当前行的代码，它们分别会将当前行向左/右移动 8 个空格，移动的长度可以通过 &lt;code&gt;shiftwidth&lt;/code&gt; 来自定义，我们通常将其设定为与制表符 &lt;code&gt;tab&lt;/code&gt; 的值相同。制表符的长度可以通过修改 &lt;code&gt;tapstop&lt;/code&gt; 来指定，也可以通过设置 &lt;code&gt;expandtab&lt;/code&gt; 的值从而使 &lt;code&gt;tab&lt;/code&gt; 被替换为对应数量的空格。&lt;/p&gt;
+&lt;p&gt;可以用 &lt;code&gt;set list&lt;/code&gt; 来展示当前的缩进状态，如将 &lt;code&gt;tab&lt;/code&gt; 显示为 &lt;code&gt;^I&lt;/code&gt;，用 &lt;code&gt;$&lt;/code&gt; 来标识行尾。也可以用&lt;code&gt;:l&lt;/code&gt; 来临时显示，如：&lt;code&gt;:5,20 l&lt;/code&gt;。&lt;/p&gt;
+&lt;h3 id=&#34;寻找与标签&#34;&gt;寻找与标签&lt;/h3&gt;
+&lt;p&gt;在寻找括号时，可以设置 &lt;code&gt;showmatch&lt;/code&gt;，当输入 &lt;code&gt;)&lt;/code&gt;、&lt;code&gt;]&lt;/code&gt; 或 &lt;code&gt;}&lt;/code&gt; 时，光标会先移动到对应的开括号处，再回到当前的位置，如果不存在则会提示。&lt;/p&gt;
+&lt;p&gt;可以用 &lt;code&gt;CTRL+]&lt;/code&gt; 来跳转到当前光标下的标识符对应的标签上。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;对于标签，现在更推荐使用 &lt;a href=&#34;https://ctags.io&#34;&gt;universal ctags&lt;/a&gt; 搭配 &lt;a href=&#34;https://github.com/ludovicchabant/vim-gutentags&#34;&gt;vim-gutentags&lt;/a&gt; 来自动生成标签。&lt;/strong&gt; 你也可以使用更复杂的 gtags，但是我更推荐使用 LSP，只保留 ctags 做基本的支持。&lt;/p&gt;</description>
+      
+    </item>
+    
+  </channel>
+</rss>
